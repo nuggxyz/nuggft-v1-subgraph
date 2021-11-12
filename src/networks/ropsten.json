@@ -1,0 +1,9 @@
+{
+    "startblock": 11240000,
+    "minter": "0x42069Ef09ACae8fdD6b29Bf2a0F7f9794bF9a155",
+    "seller": "0x42069Fe5e065673c6b6050fdFD47A57D5a8c819c",
+    "nuggeth": "0x42069bd5C2db737e4eED18d3c697De2829E8E380",
+    "nuggft": "0x42069a24CD53DaB160d8D35ca9dB57937A457F8B",
+    "network": "ropsten",
+    "uniswapv3pool": "0xee815CDC6322031952a095C6cc6FEd036Cb1F70d"
+}

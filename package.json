@@ -1,0 +1,35 @@
+{
+    "name": "nuggft-subgraph",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "repository": "https://github.com/nugg-labs/nuggft-subgraph.git",
+    "devDependencies": {
+        "@assemblyscript/loader": "^0.19.17",
+        "@graphprotocol/graph-cli": "^0.22.2",
+        "@graphprotocol/graph-ts": "^0.22.1",
+        "@types/node": "^16.7.4",
+        "@typescript-eslint/eslint-plugin": "^4.29.3",
+        "@typescript-eslint/parser": "^4.29.3",
+        "assemblyscript": "^0.19.17",
+        "babel-eslint": "^10.1.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-config-universe": "^7.0.1",
+        "eslint-plugin-import": "^2.24.2",
+        "mustache": "^4.2.0",
+        "prettier": "^2.3.2",
+        "ts-node": "^10.2.1",
+        "typechain": "^5.1.2",
+        "typescript": "^4.4.2"
+    },
+    "dependencies": {},
+    "scripts": {
+        "test": "yarn hardhat test",
+        "compile": "yarn hardhat compile",
+        "hardhat:compile": "hardhat compile",
+        "hardhat:console": "hardhat console",
+        "hardhat:test": "hardhat test",
+        "graph:prepare:local": "mustache graph/networks/local.json graph/subgraph.template.yaml > graph/generated/local/subgraph.yaml",
+        "graph:compile:local": "yarn hardhat:compile && rm -rf graph/generated/local && mkdir graph/generated/local && yarn graph:prepare:local && graph codegen --output-dir graph/generated/local graph/generated/local/subgraph.yaml && graph build graph/generated/local/subgraph.yaml --output-dir graph/generated/local/build"
+    }
+}
