@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 description: NuggFT
-repository: https://github.com/nugglabs/nuggft
+repository: https://github.com/nugg-labs/nuggft-subgraph
 # features:
 #     - nonFatalErrors
 schema:
