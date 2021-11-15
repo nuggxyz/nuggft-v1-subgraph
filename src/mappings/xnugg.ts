@@ -66,7 +66,7 @@ export function handleShareAdd(event: ShareAdd): void {
         sharesIncrease = safeDiv(supplyIncrease.times(market.shares), market.tvl);
     }
 
-    const id = 'deposit-'.concat(event.transaction.hash.toHexString());
+    const id = 'add-'.concat(event.transaction.hash.toHexString());
     let transaction = new Trade(id);
 
     transaction.account = account.id;
@@ -116,7 +116,7 @@ export function handleShareSub(event: ShareSub): void {
         sharesDecrease = safeDiv(supplyDecrease.times(market.shares), market.tvl);
     }
 
-    const id = 'withdraw-'.concat(event.transaction.hash.toHexString());
+    const id = 'sub-'.concat(event.transaction.hash.toHexString());
     let transaction = new Trade(id);
 
     transaction.account = account.id;
