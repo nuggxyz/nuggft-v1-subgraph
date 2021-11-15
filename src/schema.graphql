@@ -1,38 +1,37 @@
 type Market @entity {
     id: ID!
 
-    totalAuctions: BigInt!
+    totalSwaps: BigInt!
     totalUsers: BigInt!
 
     genesisBlock: BigInt!
     interval: BigInt!
 
-    currentAuction: Auction
+    currentSwap: Swap
 
     # Pool
     shares: BigInt!
     tvl: BigInt!
     tvlUsd: BigInt! #TODO
-    swaps: [Swap!]! @derivedFrom(field: "market")
+    trades: [Trade!]! @derivedFrom(field: "market")
     rewardTransfers: [RewardTransfer!]! @derivedFrom(field: "market")
-    mints: [Auction!]! @derivedFrom(field: "market")
-    sales: [Auction!]! @derivedFrom(field: "market")
+    mints: [Swap!]! @derivedFrom(field: "market")
+    sales: [Swap!]! @derivedFrom(field: "market")
 
-    auctions: [Auction!]! @derivedFrom(field: "market")
+    swaps: [Swap!]! @derivedFrom(field: "market")
 
-    activeSales: [Auction!]! @derivedFrom(field: "activeMarket")
+    activeSales: [Swap!]! @derivedFrom(field: "activeMarket")
 
     accounts: [Account!]! @derivedFrom(field: "market")
 
-    minter: Account
-    seller: Account
+    nuggswap: Account
 
     ethPriceUsd: BigInt!
 }
 
-type BidTransaction @entity {
+type OfferTransaction @entity {
     id: ID!
-    bid: Bid!
+    offer: Offer!
 
     amount: BigInt!
     amountUsd: BigInt!
@@ -44,13 +43,13 @@ type BidTransaction @entity {
     claim: Boolean!
     winning: Boolean!
 
-    activeBidAmount: BigInt!
-    activeBidAmountUsd: BigInt!
+    activeOfferAmount: BigInt!
+    activeOfferAmountUsd: BigInt!
 }
 
-type Bid @entity {
+type Offer @entity {
     id: ID!
-    auction: Auction!
+    swap: Swap!
     account: Account!
 
     amount: BigInt!
@@ -58,9 +57,9 @@ type Bid @entity {
 
     claimed: Boolean!
     txCount: BigInt!
-    # claim: BidTransaction
-    lastTransaction: BidTransaction
-    bidTransactions: [BidTransaction!]! @derivedFrom(field: "bid")
+    # claim: OfferTransaction
+    lastTransaction: OfferTransaction
+    offerTransactions: [OfferTransaction!]! @derivedFrom(field: "offer")
 }
 
 type Token @entity {
@@ -70,22 +69,22 @@ type Token @entity {
 
     owner: Account!
 
-    mintAuction: Auction
-    lastAuction: Auction
+    mintSwap: Swap
+    lastSwap: Swap
 
-    auctions: [Auction!]! @derivedFrom(field: "token")
-    auctionsCount: BigInt!
+    swaps: [Swap!]! @derivedFrom(field: "token")
+    swapsCount: BigInt!
 }
 
-type Auction @entity {
+type Swap @entity {
     id: ID!
 
     token: Token!
     seller: Account!
     buyer: Account
 
-    top: Bid
-    bidCount: BigInt!
+    top: Offer
+    offerCount: BigInt!
     market: Market!
     activeMarket: Market
 
@@ -93,27 +92,27 @@ type Auction @entity {
     amountUsd: BigInt!
     sold: Boolean!
     finalized: Boolean!
-    startblock: BigInt!
-    endblock: BigInt!
+    startepoch: BigInt!
+    # endepoch: BigInt!
     epoch: BigInt!
     floor: BigInt!
     mint: Boolean!
 
-    bids: [Bid!]! @derivedFrom(field: "auction")
+    offers: [Offer!]! @derivedFrom(field: "swap")
 }
 
 type Account @entity {
     id: ID!
 
-    totalBids: BigInt!
+    totalOffers: BigInt!
     totalTokens: BigInt!
-    totalSwaps: BigInt! #TODO
+    totalTrades: BigInt! #TODO
     market: Market!
 
     tokens: [Token!]! @derivedFrom(field: "owner")
 
-    buys: [Auction!]! @derivedFrom(field: "buyer")
-    sells: [Auction!]! @derivedFrom(field: "seller")
+    buys: [Swap!]! @derivedFrom(field: "buyer")
+    sells: [Swap!]! @derivedFrom(field: "seller")
 
     # Pool
     shares: BigInt!
@@ -127,11 +126,11 @@ type Account @entity {
     deposits: BigInt!
     withdrawals: BigInt!
 
-    bids: [Bid!]! @derivedFrom(field: "account")
-    swaps: [Swap!]! @derivedFrom(field: "account") #TODO
+    offers: [Offer!]! @derivedFrom(field: "account")
+    trades: [Trade!]! @derivedFrom(field: "account") #TODO
 }
 
-type Swap
+type Trade
     @entity { #TODO
     id: ID!
 
@@ -259,9 +258,9 @@ type NuggFTDayData @entity {
     mintCount: BigInt!
 
     # nuggft
-    bidCount: BigInt!
-    mintBidCount: BigInt!
-    saleBidCount: BigInt!
+    offerCount: BigInt!
+    mintOfferCount: BigInt!
+    saleOfferCount: BigInt!
 
     volumeETH: BigInt!
     saleVolumeETH: BigInt!
@@ -271,13 +270,13 @@ type NuggFTDayData @entity {
     saleVolumeUSD: BigInt!
     mintVolumeUSD: BigInt!
 
-    bidVolumeETH: BigInt!
-    saleBidVolumeETH: BigInt!
-    mintBidVolumeETH: BigInt!
+    offerVolumeETH: BigInt!
+    saleOfferVolumeETH: BigInt!
+    mintOfferVolumeETH: BigInt!
 
-    bidVolumeUSD: BigInt!
-    saleBidVolumeUSD: BigInt!
-    mintBidVolumeUSD: BigInt!
+    offerVolumeUSD: BigInt!
+    saleOfferVolumeUSD: BigInt!
+    mintOfferVolumeUSD: BigInt!
 
     floorETH: BigInt!
     saleFloorETH: BigInt!
@@ -306,9 +305,9 @@ type NuggFTHourData @entity {
     mintCount: BigInt!
 
     # nuggft
-    bidCount: BigInt!
-    mintBidCount: BigInt!
-    saleBidCount: BigInt!
+    offerCount: BigInt!
+    mintOfferCount: BigInt!
+    saleOfferCount: BigInt!
 
     volumeETH: BigInt!
     saleVolumeETH: BigInt!
@@ -318,13 +317,13 @@ type NuggFTHourData @entity {
     saleVolumeUSD: BigInt!
     mintVolumeUSD: BigInt!
 
-    bidVolumeETH: BigInt!
-    saleBidVolumeETH: BigInt!
-    mintBidVolumeETH: BigInt!
+    offerVolumeETH: BigInt!
+    saleOfferVolumeETH: BigInt!
+    mintOfferVolumeETH: BigInt!
 
-    bidVolumeUSD: BigInt!
-    saleBidVolumeUSD: BigInt!
-    mintBidVolumeUSD: BigInt!
+    offerVolumeUSD: BigInt!
+    saleOfferVolumeUSD: BigInt!
+    mintOfferVolumeUSD: BigInt!
 
     floorETH: BigInt!
     saleFloorETH: BigInt!

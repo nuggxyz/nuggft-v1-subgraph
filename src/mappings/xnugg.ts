@@ -1,20 +1,8 @@
-import { RewardIncrease, SharesDecrease, SharesIncrease, TokenEarn } from './../generated/local/NuggETH/NuggETH';
-import { RewardTransfer, Swap } from '../generated/local/schema';
-import {
-    MARKET_ID,
-    safeCreateAccount,
-    safeCreateMarket,
-    safeLoadAccount,
-    safeLoadMarket,
-    sentByMinter,
-    sentBySeller,
-    ONE,
-    ZERO,
-    Q128,
-} from './auction';
+import { RoyaltyAdd, ShareSub, ShareAdd, Realize } from '../generated/local/xNUGG/xNUGG';
+import { RewardTransfer, Trade } from '../generated/local/schema';
+import { MARKET_ID, safeCreateAccount, safeLoadMarket, ONE, ZERO, Q128 } from './nuggswap';
 import { safeDiv, toUsd } from './oracle';
-import { onDeposit, onEpsX128Increase, onEveryEvent, onMintRoyalties, onOtherRoyalties, onSaleRoyalties, onWithdraw } from './intervals';
-import { Address, BigInt } from '@graphprotocol/graph-ts';
+import { onDeposit, onOtherRoyalties, onWithdraw } from './intervals';
 
 // export function handleLaunched(event: Launched): void {
 //     let bs = safeCreateMarket(event);
@@ -25,10 +13,10 @@ import { Address, BigInt } from '@graphprotocol/graph-ts';
 
 // export function safeCreateRewardTransfer(id: string): RewardTransfer {}
 
-export function handleRewardIncrease(event: RewardIncrease): void {
+export function handleRoyaltyAdd(event: RoyaltyAdd): void {
     let market = safeLoadMarket(MARKET_ID);
 
-    const id = 'rt-'.concat(event.transaction.hash.toHexString());
+    const id = 'ra-'.concat(event.transaction.hash.toHexString());
 
     let transaction = new RewardTransfer(id);
     transaction.from = event.params.sender;
@@ -59,16 +47,16 @@ export function handleRewardIncrease(event: RewardIncrease): void {
 
     // onEpsX128Increase(event, transaction.epsX128, transaction.epsX128Usd);
 
-    if (sentByMinter(event.params.sender, market.minter)) {
-        onMintRoyalties(event, event.params.amount);
-    } else if (sentBySeller(event.params.sender, market.seller)) {
-        onSaleRoyalties(event, event.params.amount);
-    } else {
-        onOtherRoyalties(event, event.params.amount);
-    }
+    // if (sentByMinter(event.params.sender, market.minter)) {
+    //     onMintRoyalties(event, event.params.amount);
+    // } else if (sentBySeller(event.params.sender, market.seller)) {
+    //     onSaleRoyalties(event, event.params.amount);
+    // } else {
+    onOtherRoyalties(event, event.params.amount);
+    // }
 }
 
-export function handleSharesIncrease(event: SharesIncrease): void {
+export function handleShareAdd(event: ShareAdd): void {
     let market = safeLoadMarket(MARKET_ID);
     let account = safeCreateAccount(event.params.account.toHexString());
     const supplyIncrease = event.params.amount;
@@ -79,14 +67,14 @@ export function handleSharesIncrease(event: SharesIncrease): void {
     }
 
     const id = 'deposit-'.concat(event.transaction.hash.toHexString());
-    let transaction = new Swap(id);
+    let transaction = new Trade(id);
 
     transaction.account = account.id;
     transaction.amount = supplyIncrease;
     transaction.amountUsd = toUsd(supplyIncrease);
     transaction.blockNumber = event.block.number;
     transaction.timestamp = event.block.timestamp;
-    transaction.index = account.totalSwaps;
+    transaction.index = account.totalTrades;
     transaction.market = MARKET_ID;
     transaction.beforeAccountShares = account.shares;
     transaction.beforeMarketShares = market.shares;
@@ -97,7 +85,7 @@ export function handleSharesIncrease(event: SharesIncrease): void {
     account.shares = account.shares.plus(sharesIncrease);
     account.deposits = account.deposits.plus(supplyIncrease);
     account.depositsUsd = account.depositsUsd.plus(toUsd(supplyIncrease));
-    account.totalSwaps = account.totalSwaps.plus(ONE);
+    account.totalTrades = account.totalTrades.plus(ONE);
 
     market.shares = market.shares.plus(sharesIncrease);
 
@@ -116,7 +104,7 @@ export function handleSharesIncrease(event: SharesIncrease): void {
     onDeposit(event, event.params.amount);
 }
 
-export function handleSharesDecrease(event: SharesDecrease): void {
+export function handleShareSub(event: ShareSub): void {
     let market = safeLoadMarket(MARKET_ID);
     let account = safeCreateAccount(event.params.account.toHex());
 
@@ -129,14 +117,14 @@ export function handleSharesDecrease(event: SharesDecrease): void {
     }
 
     const id = 'withdraw-'.concat(event.transaction.hash.toHexString());
-    let transaction = new Swap(id);
+    let transaction = new Trade(id);
 
     transaction.account = account.id;
     transaction.amount = supplyDecrease.neg();
     transaction.amountUsd = toUsd(supplyDecrease).neg();
     transaction.blockNumber = event.block.number;
     transaction.timestamp = event.block.timestamp;
-    transaction.index = account.totalSwaps;
+    transaction.index = account.totalTrades;
     transaction.market = MARKET_ID;
     transaction.beforeAccountShares = account.shares;
     transaction.beforeMarketShares = market.shares;
@@ -147,7 +135,7 @@ export function handleSharesDecrease(event: SharesDecrease): void {
     account.shares = account.shares.minus(sharesDecrease);
     account.withdrawals = account.withdrawals.plus(supplyDecrease);
     account.withdrawalsUsd = account.withdrawalsUsd.plus(toUsd(supplyDecrease));
-    account.totalSwaps = account.totalSwaps.plus(ONE);
+    account.totalTrades = account.totalTrades.plus(ONE);
 
     market.shares = market.shares.minus(sharesDecrease);
     market.tvl = market.tvl.minus(supplyDecrease);
@@ -165,7 +153,7 @@ export function handleSharesDecrease(event: SharesDecrease): void {
     onWithdraw(event, event.params.amount);
 }
 
-export function handleTokenEarn(event: TokenEarn): void {
+export function handleRealize(event: Realize): void {
     let market = safeLoadMarket(MARKET_ID);
     let account = safeCreateAccount(event.params.account.toHex());
 

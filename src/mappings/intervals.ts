@@ -1,6 +1,6 @@
-import { ONE, Q256, safeCreateMarket } from './auction';
-import { ZERO } from './auction';
-import { MARKET_ID } from './auction';
+import { ONE, Q256, safeCreateMarket } from './nuggswap';
+import { ZERO } from './nuggswap';
+import { MARKET_ID } from './nuggswap';
 import { ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { toUsd } from './oracle';
 import { Market, NuggETHHourData, NuggFTDayData, NuggFTHourData } from '../generated/local/schema';
@@ -83,9 +83,9 @@ export function onEveryEvent(event: ethereum.Event): void {
         nuggft_hour.saleCount = ZERO;
         nuggft_hour.mintCount = ZERO;
 
-        nuggft_hour.bidCount = ZERO;
-        nuggft_hour.mintBidCount = ZERO;
-        nuggft_hour.saleBidCount = ZERO;
+        nuggft_hour.offerCount = ZERO;
+        nuggft_hour.mintOfferCount = ZERO;
+        nuggft_hour.saleOfferCount = ZERO;
 
         nuggft_hour.volumeETH = ZERO;
         nuggft_hour.saleVolumeETH = ZERO;
@@ -95,13 +95,13 @@ export function onEveryEvent(event: ethereum.Event): void {
         nuggft_hour.saleVolumeUSD = ZERO;
         nuggft_hour.mintVolumeUSD = ZERO;
 
-        nuggft_hour.bidVolumeETH = ZERO;
-        nuggft_hour.saleBidVolumeETH = ZERO;
-        nuggft_hour.mintBidVolumeETH = ZERO;
+        nuggft_hour.offerVolumeETH = ZERO;
+        nuggft_hour.saleOfferVolumeETH = ZERO;
+        nuggft_hour.mintOfferVolumeETH = ZERO;
 
-        nuggft_hour.bidVolumeUSD = ZERO;
-        nuggft_hour.saleBidVolumeUSD = ZERO;
-        nuggft_hour.mintBidVolumeUSD = ZERO;
+        nuggft_hour.offerVolumeUSD = ZERO;
+        nuggft_hour.saleOfferVolumeUSD = ZERO;
+        nuggft_hour.mintOfferVolumeUSD = ZERO;
 
         nuggft_hour.floorETH = Q256;
         nuggft_hour.saleFloorETH = Q256;
@@ -158,9 +158,9 @@ export function onEveryEvent(event: ethereum.Event): void {
         nuggft_day.saleCount = ZERO;
         nuggft_day.mintCount = ZERO;
 
-        nuggft_day.bidCount = ZERO;
-        nuggft_day.mintBidCount = ZERO;
-        nuggft_day.saleBidCount = ZERO;
+        nuggft_day.offerCount = ZERO;
+        nuggft_day.mintOfferCount = ZERO;
+        nuggft_day.saleOfferCount = ZERO;
 
         nuggft_day.volumeETH = ZERO;
         nuggft_day.saleVolumeETH = ZERO;
@@ -170,13 +170,13 @@ export function onEveryEvent(event: ethereum.Event): void {
         nuggft_day.saleVolumeUSD = ZERO;
         nuggft_day.mintVolumeUSD = ZERO;
 
-        nuggft_day.bidVolumeETH = ZERO;
-        nuggft_day.saleBidVolumeETH = ZERO;
-        nuggft_day.mintBidVolumeETH = ZERO;
+        nuggft_day.offerVolumeETH = ZERO;
+        nuggft_day.saleOfferVolumeETH = ZERO;
+        nuggft_day.mintOfferVolumeETH = ZERO;
 
-        nuggft_day.bidVolumeUSD = ZERO;
-        nuggft_day.saleBidVolumeUSD = ZERO;
-        nuggft_day.mintBidVolumeUSD = ZERO;
+        nuggft_day.offerVolumeUSD = ZERO;
+        nuggft_day.saleOfferVolumeUSD = ZERO;
+        nuggft_day.mintOfferVolumeUSD = ZERO;
 
         nuggft_day.floorETH = Q256;
         nuggft_day.saleFloorETH = Q256;
@@ -234,12 +234,12 @@ export function afterEveryEvent(event: ethereum.Event): void {
 
     nuggeth_hour.save();
 
-    nuggft_day.bidCount = nuggft_day.saleBidCount.plus(nuggft_day.mintBidCount);
+    nuggft_day.offerCount = nuggft_day.saleOfferCount.plus(nuggft_day.mintOfferCount);
     nuggft_day.count = nuggft_day.saleCount.plus(nuggft_day.mintCount);
     nuggft_day.volumeETH = nuggft_day.saleVolumeETH.plus(nuggft_day.mintVolumeETH);
     nuggft_day.volumeUSD = nuggft_day.saleVolumeUSD.plus(nuggft_day.mintVolumeUSD);
-    nuggft_day.bidVolumeETH = nuggft_day.saleBidVolumeETH.plus(nuggft_day.mintBidVolumeETH);
-    nuggft_day.bidVolumeUSD = nuggft_day.saleBidVolumeUSD.plus(nuggft_day.mintBidVolumeUSD);
+    nuggft_day.offerVolumeETH = nuggft_day.saleOfferVolumeETH.plus(nuggft_day.mintOfferVolumeETH);
+    nuggft_day.offerVolumeUSD = nuggft_day.saleOfferVolumeUSD.plus(nuggft_day.mintOfferVolumeUSD);
 
     if (nuggft_day.floorETH.gt(nuggft_day.saleFloorETH)) nuggft_day.floorETH = nuggft_day.saleFloorETH;
     if (nuggft_day.floorETH.gt(nuggft_day.mintFloorETH)) nuggft_day.floorETH = nuggft_day.mintFloorETH;
@@ -253,12 +253,12 @@ export function afterEveryEvent(event: ethereum.Event): void {
 
     nuggft_day.save();
 
-    nuggft_hour.bidCount = nuggft_hour.saleBidCount.plus(nuggft_hour.mintBidCount);
+    nuggft_hour.offerCount = nuggft_hour.saleOfferCount.plus(nuggft_hour.mintOfferCount);
     nuggft_hour.count = nuggft_hour.saleCount.plus(nuggft_hour.mintCount);
     nuggft_hour.volumeETH = nuggft_hour.saleVolumeETH.plus(nuggft_hour.mintVolumeETH);
     nuggft_hour.volumeUSD = nuggft_hour.saleVolumeUSD.plus(nuggft_hour.mintVolumeUSD);
-    nuggft_hour.bidVolumeETH = nuggft_hour.saleBidVolumeETH.plus(nuggft_hour.mintBidVolumeETH);
-    nuggft_hour.bidVolumeUSD = nuggft_hour.saleBidVolumeUSD.plus(nuggft_hour.mintBidVolumeUSD);
+    nuggft_hour.offerVolumeETH = nuggft_hour.saleOfferVolumeETH.plus(nuggft_hour.mintOfferVolumeETH);
+    nuggft_hour.offerVolumeUSD = nuggft_hour.saleOfferVolumeUSD.plus(nuggft_hour.mintOfferVolumeUSD);
 
     if (nuggft_hour.floorETH.gt(nuggft_hour.saleFloorETH)) nuggft_hour.floorETH = nuggft_hour.saleFloorETH;
     if (nuggft_hour.floorETH.gt(nuggft_hour.mintFloorETH)) nuggft_hour.floorETH = nuggft_hour.mintFloorETH;
@@ -348,43 +348,43 @@ export function onEpsX128Increase(event: ethereum.Event, epsX128: BigInt, epsX12
     // afterEveryEvent(event);
 }
 
-export function onSaleRoyalties(event: ethereum.Event, amount: BigInt): void {
-    log.debug('onSaleRoyalties start', []);
-    onEveryEvent(event);
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+// export function onSaleRoyalties(event: ethereum.Event, amount: BigInt): void {
+//     log.debug('onSaleRoyalties start', []);
+//     onEveryEvent(event);
+//     let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
+//     let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
 
-    day.saleRoyaltiesCount = day.saleRoyaltiesCount.plus(ONE);
-    day.saleRoyaltiesETH = day.saleRoyaltiesETH.plus(amount);
-    day.saleRoyaltiesUSD = day.saleRoyaltiesUSD.plus(toUsd(amount));
+//     day.saleRoyaltiesCount = day.saleRoyaltiesCount.plus(ONE);
+//     day.saleRoyaltiesETH = day.saleRoyaltiesETH.plus(amount);
+//     day.saleRoyaltiesUSD = day.saleRoyaltiesUSD.plus(toUsd(amount));
 
-    hour.saleRoyaltiesCount = hour.saleRoyaltiesCount.plus(ONE);
-    hour.saleRoyaltiesETH = hour.saleRoyaltiesETH.plus(amount);
-    hour.saleRoyaltiesUSD = hour.saleRoyaltiesUSD.plus(toUsd(amount));
+//     hour.saleRoyaltiesCount = hour.saleRoyaltiesCount.plus(ONE);
+//     hour.saleRoyaltiesETH = hour.saleRoyaltiesETH.plus(amount);
+//     hour.saleRoyaltiesUSD = hour.saleRoyaltiesUSD.plus(toUsd(amount));
 
-    day.save();
-    hour.save();
-    afterEveryEvent(event);
-}
+//     day.save();
+//     hour.save();
+//     afterEveryEvent(event);
+// }
 
-export function onMintRoyalties(event: ethereum.Event, amount: BigInt): void {
-    log.debug('onMintRoyalties start', []);
-    onEveryEvent(event);
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+// export function onMintRoyalties(event: ethereum.Event, amount: BigInt): void {
+//     log.debug('onMintRoyalties start', []);
+//     onEveryEvent(event);
+//     let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
+//     let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
 
-    day.mintRoyaltiesCount = day.mintRoyaltiesCount.plus(ONE);
-    day.mintRoyaltiesETH = day.mintRoyaltiesETH.plus(amount);
-    day.mintRoyaltiesUSD = day.mintRoyaltiesUSD.plus(toUsd(amount));
+//     day.mintRoyaltiesCount = day.mintRoyaltiesCount.plus(ONE);
+//     day.mintRoyaltiesETH = day.mintRoyaltiesETH.plus(amount);
+//     day.mintRoyaltiesUSD = day.mintRoyaltiesUSD.plus(toUsd(amount));
 
-    hour.mintRoyaltiesCount = hour.mintRoyaltiesCount.plus(ONE);
-    hour.mintRoyaltiesETH = hour.mintRoyaltiesETH.plus(amount);
-    hour.mintRoyaltiesUSD = hour.mintRoyaltiesUSD.plus(toUsd(amount));
+//     hour.mintRoyaltiesCount = hour.mintRoyaltiesCount.plus(ONE);
+//     hour.mintRoyaltiesETH = hour.mintRoyaltiesETH.plus(amount);
+//     hour.mintRoyaltiesUSD = hour.mintRoyaltiesUSD.plus(toUsd(amount));
 
-    day.save();
-    hour.save();
-    afterEveryEvent(event);
-}
+//     day.save();
+//     hour.save();
+//     afterEveryEvent(event);
+// }
 
 export function onOtherRoyalties(event: ethereum.Event, amount: BigInt): void {
     log.debug('onOtherRoyalties start', []);
@@ -405,123 +405,123 @@ export function onOtherRoyalties(event: ethereum.Event, amount: BigInt): void {
     afterEveryEvent(event);
 }
 
-export function onMintWin(event: ethereum.Event, amount: BigInt): void {
-    log.debug('onMintWin start', []);
+// export function onMintWin(event: ethereum.Event, amount: BigInt): void {
+//     log.debug('onMintWin start', []);
+//     onEveryEvent(event);
+//     let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
+//     let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
+//     let amountUSD = toUsd(amount);
+
+//     day.mintCount = day.mintCount.plus(ONE);
+//     day.mintVolumeETH = day.mintVolumeETH.plus(amount);
+//     day.mintVolumeUSD = day.mintVolumeUSD.plus(toUsd(amount));
+
+//     hour.mintCount = hour.mintCount.plus(ONE);
+//     hour.mintVolumeETH = hour.mintVolumeETH.plus(amount);
+//     hour.mintVolumeUSD = hour.mintVolumeUSD.plus(toUsd(amount));
+
+//     if (day.mintFloorETH.gt(amount)) {
+//         day.mintFloorETH = amount;
+//         day.mintFloorUSD = amountUSD;
+//     }
+
+//     if (day.mintCeilingETH.lt(amount)) {
+//         day.mintCeilingETH = amount;
+//         day.mintCeilingUSD = amountUSD;
+//     }
+
+//     if (hour.mintFloorETH.gt(amount)) {
+//         hour.mintFloorETH = amount;
+//         hour.mintFloorUSD = amountUSD;
+//     }
+
+//     if (hour.mintCeilingETH.lt(amount)) {
+//         hour.mintCeilingETH = amount;
+//         hour.mintCeilingUSD = amountUSD;
+//     }
+
+//     day.save();
+//     hour.save();
+//     afterEveryEvent(event);
+// }
+
+// export function onSaleWin(event: ethereum.Event, amount: BigInt): void {
+//     log.debug('onSaleWin start', []);
+//     onEveryEvent(event);
+//     let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
+//     let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
+//     let amountUSD = toUsd(amount);
+
+//     day.saleCount = day.saleCount.plus(ONE);
+//     day.saleVolumeETH = day.saleVolumeETH.plus(amount);
+//     day.saleVolumeUSD = day.saleVolumeUSD.plus(toUsd(amount));
+
+//     hour.saleCount = hour.saleCount.plus(ONE);
+//     hour.saleVolumeETH = hour.saleVolumeETH.plus(amount);
+//     hour.saleVolumeUSD = hour.saleVolumeUSD.plus(toUsd(amount));
+
+//     if (day.saleFloorETH.gt(amount)) {
+//         day.saleFloorETH = amount;
+//         day.saleFloorUSD = amountUSD;
+//     }
+
+//     if (day.saleCeilingETH.lt(amount)) {
+//         day.saleCeilingETH = amount;
+//         day.saleCeilingUSD = amountUSD;
+//     }
+
+//     if (hour.saleFloorETH.gt(amount)) {
+//         hour.saleFloorETH = amount;
+//         hour.saleFloorUSD = amountUSD;
+//     }
+
+//     if (hour.saleCeilingETH.lt(amount)) {
+//         hour.saleCeilingETH = amount;
+//         hour.saleCeilingUSD = amountUSD;
+//     }
+
+//     day.save();
+//     hour.save();
+//     afterEveryEvent(event);
+// }
+
+export function onSubmitOffer(event: ethereum.Event, amount: BigInt): void {
+    log.debug('onSubmitOffer start', []);
     onEveryEvent(event);
     let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
     let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
     let amountUSD = toUsd(amount);
 
-    day.mintCount = day.mintCount.plus(ONE);
-    day.mintVolumeETH = day.mintVolumeETH.plus(amount);
-    day.mintVolumeUSD = day.mintVolumeUSD.plus(toUsd(amount));
+    day.saleOfferCount = day.saleOfferCount.plus(ONE);
+    day.saleOfferVolumeETH = day.saleOfferVolumeETH.plus(amount);
+    day.saleOfferVolumeUSD = day.saleOfferVolumeUSD.plus(amountUSD);
 
-    hour.mintCount = hour.mintCount.plus(ONE);
-    hour.mintVolumeETH = hour.mintVolumeETH.plus(amount);
-    hour.mintVolumeUSD = hour.mintVolumeUSD.plus(toUsd(amount));
-
-    if (day.mintFloorETH.gt(amount)) {
-        day.mintFloorETH = amount;
-        day.mintFloorUSD = amountUSD;
-    }
-
-    if (day.mintCeilingETH.lt(amount)) {
-        day.mintCeilingETH = amount;
-        day.mintCeilingUSD = amountUSD;
-    }
-
-    if (hour.mintFloorETH.gt(amount)) {
-        hour.mintFloorETH = amount;
-        hour.mintFloorUSD = amountUSD;
-    }
-
-    if (hour.mintCeilingETH.lt(amount)) {
-        hour.mintCeilingETH = amount;
-        hour.mintCeilingUSD = amountUSD;
-    }
+    hour.saleOfferCount = hour.saleOfferCount.plus(ONE);
+    hour.saleOfferVolumeETH = hour.saleOfferVolumeETH.plus(amount);
+    hour.saleOfferVolumeUSD = hour.saleOfferVolumeUSD.plus(amountUSD);
 
     day.save();
     hour.save();
     afterEveryEvent(event);
 }
 
-export function onSaleWin(event: ethereum.Event, amount: BigInt): void {
-    log.debug('onSaleWin start', []);
-    onEveryEvent(event);
-    let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
-    let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
-    let amountUSD = toUsd(amount);
+// export function onMintOffer(event: ethereum.Event, amount: BigInt): void {
+//     log.debug('onMintOffer start', []);
+//     onEveryEvent(event);
+//     let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
+//     let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
 
-    day.saleCount = day.saleCount.plus(ONE);
-    day.saleVolumeETH = day.saleVolumeETH.plus(amount);
-    day.saleVolumeUSD = day.saleVolumeUSD.plus(toUsd(amount));
+//     let amountUSD = toUsd(amount);
 
-    hour.saleCount = hour.saleCount.plus(ONE);
-    hour.saleVolumeETH = hour.saleVolumeETH.plus(amount);
-    hour.saleVolumeUSD = hour.saleVolumeUSD.plus(toUsd(amount));
+//     day.mintOfferCount = day.mintOfferCount.plus(ONE);
+//     day.mintOfferVolumeETH = day.mintOfferVolumeETH.plus(amount);
+//     day.mintOfferVolumeUSD = day.mintOfferVolumeUSD.plus(amountUSD);
 
-    if (day.saleFloorETH.gt(amount)) {
-        day.saleFloorETH = amount;
-        day.saleFloorUSD = amountUSD;
-    }
+//     hour.mintOfferCount = hour.mintOfferCount.plus(ONE);
+//     hour.mintOfferVolumeETH = hour.mintOfferVolumeETH.plus(amount);
+//     hour.mintOfferVolumeUSD = hour.mintOfferVolumeUSD.plus(amountUSD);
 
-    if (day.saleCeilingETH.lt(amount)) {
-        day.saleCeilingETH = amount;
-        day.saleCeilingUSD = amountUSD;
-    }
-
-    if (hour.saleFloorETH.gt(amount)) {
-        hour.saleFloorETH = amount;
-        hour.saleFloorUSD = amountUSD;
-    }
-
-    if (hour.saleCeilingETH.lt(amount)) {
-        hour.saleCeilingETH = amount;
-        hour.saleCeilingUSD = amountUSD;
-    }
-
-    day.save();
-    hour.save();
-    afterEveryEvent(event);
-}
-
-export function onSaleBid(event: ethereum.Event, amount: BigInt): void {
-    log.debug('onSaleBid start', []);
-    onEveryEvent(event);
-    let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
-    let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
-    let amountUSD = toUsd(amount);
-
-    day.saleBidCount = day.saleBidCount.plus(ONE);
-    day.saleBidVolumeETH = day.saleBidVolumeETH.plus(amount);
-    day.saleBidVolumeUSD = day.saleBidVolumeUSD.plus(amountUSD);
-
-    hour.saleBidCount = hour.saleBidCount.plus(ONE);
-    hour.saleBidVolumeETH = hour.saleBidVolumeETH.plus(amount);
-    hour.saleBidVolumeUSD = hour.saleBidVolumeUSD.plus(amountUSD);
-
-    day.save();
-    hour.save();
-    afterEveryEvent(event);
-}
-
-export function onMintBid(event: ethereum.Event, amount: BigInt): void {
-    log.debug('onMintBid start', []);
-    onEveryEvent(event);
-    let day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
-    let hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
-
-    let amountUSD = toUsd(amount);
-
-    day.mintBidCount = day.mintBidCount.plus(ONE);
-    day.mintBidVolumeETH = day.mintBidVolumeETH.plus(amount);
-    day.mintBidVolumeUSD = day.mintBidVolumeUSD.plus(amountUSD);
-
-    hour.mintBidCount = hour.mintBidCount.plus(ONE);
-    hour.mintBidVolumeETH = hour.mintBidVolumeETH.plus(amount);
-    hour.mintBidVolumeUSD = hour.mintBidVolumeUSD.plus(amountUSD);
-
-    day.save();
-    hour.save();
-    afterEveryEvent(event);
-}
+//     day.save();
+//     hour.save();
+//     afterEveryEvent(event);
+// }

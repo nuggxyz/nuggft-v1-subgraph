@@ -1,8 +1,8 @@
 import { Transfer } from '../generated/local/NuggFT/NuggFT';
-import { ADDRESS_ZERO, ONE, safeCreateAccount, safeCreateAuction, safeCreateToken } from './auction';
+import { ADDRESS_ZERO, getTokenId, ONE, safeCreateAccount, safeCreateToken } from './nuggswap';
 
 export function handleTransfer(event: Transfer): void {
-    let token = safeCreateToken(event.params.tokenId.toString());
+    let token = safeCreateToken(getTokenId(event.address, event.params.tokenId));
     let seller = safeCreateAccount(event.params.from.toHexString());
     let buyer = safeCreateAccount(event.params.to.toHexString());
 

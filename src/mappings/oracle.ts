@@ -1,5 +1,5 @@
 import { BigDecimal, BigInt, ethereum, store } from '@graphprotocol/graph-ts';
-import { MARKET_ID, ONE, safeCreateMarket, safeLoadMarket, ZERO } from './auction';
+import { MARKET_ID, ONE, safeCreateMarket, safeLoadMarket, ZERO } from './nuggswap';
 
 import { onEveryEvent } from './intervals';
 import { Swap } from '../generated/ropsten/UniswapV3Pool/UniswapV3Pool';

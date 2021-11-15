@@ -1,14 +1,14 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es2021",
         "module": "commonjs",
-        "strict": true,
+        "strict": false,
         "esModuleInterop": true,
         "resolveJsonModule": true,
         "downlevelIteration": true,
         "outDir": "./build" /* Redirect output structure to the directory. */
         //   "rootDir": "./src"
-    },
+    }
 
     // "include": ["src/**/*"],
     // "exclude": ["test", "build", "types"]

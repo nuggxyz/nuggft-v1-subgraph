@@ -1,11 +1,8 @@
 {
     "startblock": 1,
-    "minter": "0xd113f8cd340f6bf023b1C4CC46a118BEf0af5880",
-    "seller": "0xd113f8cd340f6bf023b1C4CC46a118BEf0af5880",
-
-    "nuggeth": "0x5E986c0666b85bD8A8B5e414726022630D400b18",
+    "nuggswap": "0xd113f8cd340f6bf023b1C4CC46a118BEf0af5880",
+    "xnugg": "0x5E986c0666b85bD8A8B5e414726022630D400b18",
     "nuggft": "0x5E986c0666b85bD8A8B5e414726022630D400b18",
-
     "uniswapv3pool": "0x5E986c0666b85bD8A8B5e414726022630D400b18",
     "network": "mainnet"
 }

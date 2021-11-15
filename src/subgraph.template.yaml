@@ -7,117 +7,76 @@ schema:
     file: ../../schema.graphql
 dataSources:
     - kind: ethereum/contract
-      name: NuggMinter
+      name: NuggSwap
       # prettier-ignore
       network: {{network}}
       source:
-          address: '{{minter}}'
-          abi: NuggMinter
+          address: '{{nuggswap}}'
+          abi: NuggSwap
           # prettier-ignore
           startBlock: {{startblock}}
       mapping:
           kind: ethereum/events
           apiVersion: 0.0.5
           language: wasm/assemblyscript
-          file: ../../mappings/auction.ts
+          file: ../../mappings/nuggswap.ts
           entities:
               - Market
               - Auction
               - Bid
               - BidTransaction
               - Token
-              - NuggETHDayData
-              - NuggETHHourData
+              - XNUGGDayData
+              - XNUGGHourData
               - NuggFTDayData
               - NuggFTHourData
               - Account
           abis:
-              - name: NuggMinter
-                file: ../../../artifacts/contracts/auction/NuggMinter.sol/NuggMinter.json
+              - name: NuggSwap
+                file: ../../abis/NuggSwap.json
           eventHandlers:
-              - event: BidPlaced(indexed uint256,indexed address,uint256,uint8)
-                handler: handleBidPlaced
-              - event: NormalClaim(indexed uint256,indexed address,uint256,uint8)
-                handler: handleNormalClaim
-              - event: WinningClaim(indexed uint256,indexed address,uint256)
-                handler: handleWinningClaim
-              - event: Launched(indexed address)
-                handler: handleLaunchedMinter
+              - event: SubmitOffer(address,uint256,uint256,address,uint256)
+                handler: handleOffer
+              - event: SubmitClaim(address,uint256,uint256,address)
+                handler: handleSubmitClaim
+              - event: SubmitSwap(address,uint256,uint256,address,uint256,uint64)
+                handler: handleSubmitSwap
+              - event: Genesis(uint128,uint128)
+                handler: handleGenesis
     - kind: ethereum/contract
-      name: NuggSeller
+      name: xNUGG
       # prettier-ignore
       network: {{network}}
       source:
-          address: '{{seller}}'
-          abi: NuggSeller
+          address: '{{xnugg}}'
+          abi: xNUGG
           # prettier-ignore
           startBlock: {{startblock}}
       mapping:
           kind: ethereum/events
           apiVersion: 0.0.5
           language: wasm/assemblyscript
-          file: ../../mappings/auction.ts
-          entities:
-              - Market
-              - Auction
-              - Bid
-              - BidTransaction
-              - Token
-              - NuggETHDayData
-              - NuggETHHourData
-              - NuggFTDayData
-              - NuggFTHourData
-              - Account
-          abis:
-              - name: NuggSeller
-                file: ../../../artifacts/contracts/auction/NuggSeller.sol/NuggSeller.json
-          eventHandlers:
-              - event: BidPlaced(indexed uint256,indexed address,uint256,uint8)
-                handler: handleBidPlaced
-              - event: NormalClaim(indexed uint256,indexed address,uint256,uint8)
-                handler: handleNormalClaim
-              - event: WinningClaim(indexed uint256,indexed address,uint256)
-                handler: handleWinningClaim
-              - event: Launched(indexed address)
-                handler: handleLaunchedSeller
-              - event: SaleStart(uint256,uint256,uint256,uint256)
-                handler: handleSaleStart
-              - event: SaleStop(uint256)
-                handler: handleSaleStop
-    - kind: ethereum/contract
-      name: NuggETH
-      # prettier-ignore
-      network: {{network}}
-      source:
-          address: '{{nuggeth}}'
-          abi: NuggETH
-          # prettier-ignore
-          startBlock: {{startblock}}
-      mapping:
-          kind: ethereum/events
-          apiVersion: 0.0.5
-          language: wasm/assemblyscript
-          file: ../../mappings/nuggeth.ts
+          file: ../../mappings/xnugg.ts
           entities:
               - Market
               - RewardTransfer
               - Account
-              - NuggETHDayData
-              - NuggETHHourData
+              - XNUGGDayData
+              - XNUGGHourData
               - NuggFTDayData
               - NuggFTHourData
               - Swap
           abis:
-              - name: NuggETH
-                file: ../../../artifacts/contracts/weth/NuggETH.sol/NuggETH.json
+              - name: xNUGG
+                file: ../../abis/xNUGG.json
           eventHandlers:
-              - event: RewardIncrease(indexed address,uint256)
-                handler: handleRewardIncrease
-              - event: SharesDecrease(indexed address,address,uint256)
-                handler: handleSharesDecrease
-              - event: SharesIncrease(indexed address,address,uint256)
-                handler: handleSharesIncrease
-              - event: TokenEarn(indexed address,address,uint256)
+              - event: RoyaltyAdd(indexed address,uint256)
+                handler: handleRoyaltyAdd
+              - event: ShareSub(indexed address,address,uint256)
+                handler: handleShareSub
+              - event: ShareAdd(indexed address,address,uint256)
+                handler: handleShareAdd
+              - event: Realize(indexed address,address,uint256)
                 handler: handleTokenEarn
     - kind: ethereum/contract
       name: UniswapV3Pool
@@ -161,7 +120,7 @@ dataSources:
               - TokenTransfer
           abis:
               - name: NuggFT
-                file: ../../../artifacts/contracts/NuggFT.sol/NuggFT.json
+                file: ../../abis/NuggFT.json
           eventHandlers:
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleTransfer
