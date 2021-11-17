@@ -36,7 +36,7 @@ dataSources:
                 file: ../../abis/NuggSwap.json
           eventHandlers:
               - event: SubmitOffer(address,uint256,uint256,address,uint256)
-                handler: handleOffer
+                handler: handleSubmitOffer
               - event: SubmitClaim(address,uint256,uint256,address)
                 handler: handleSubmitClaim
               - event: SubmitSwap(address,uint256,uint256,address,uint256,uint64)

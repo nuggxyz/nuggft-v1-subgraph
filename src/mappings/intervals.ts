@@ -3,8 +3,8 @@ import { ZERO } from './nuggswap';
 import { MARKET_ID } from './nuggswap';
 import { ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { toUsd } from './oracle';
-import { Market, NuggETHHourData, NuggFTDayData, NuggFTHourData } from '../generated/local/schema';
-import { NuggETHDayData } from '../generated/local/schema';
+import { Market, XNUGGHourData, NuggFTDayData, NuggFTHourData } from '../generated/local/schema';
+import { XNUGGDayData } from '../generated/local/schema';
 
 let UNIX_DAY = BigInt.fromI32(86400);
 let UNIX_HOUR = BigInt.fromI32(86400 / 24);
@@ -37,43 +37,43 @@ export function onEveryEvent(event: ethereum.Event): void {
     let hourID = getHourId(event);
     let hourUnix = getHourUnix(event);
 
-    let nuggeth_day = NuggETHDayData.load(dayID);
+    let xnugg_day = XNUGGDayData.load(dayID);
     let nuggft_day = NuggFTDayData.load(dayID);
 
-    let nuggeth_hour = NuggETHHourData.load(hourID);
+    let xnugg_hour = XNUGGHourData.load(hourID);
     let nuggft_hour = NuggFTHourData.load(hourID);
 
-    if (nuggeth_hour === null) {
-        nuggeth_hour = new NuggETHHourData(hourID);
-        nuggeth_hour.periodStartUnix = hourUnix;
+    if (xnugg_hour === null) {
+        xnugg_hour = new XNUGGHourData(hourID);
+        xnugg_hour.periodStartUnix = hourUnix;
 
-        nuggeth_hour.depositCount = ZERO;
-        nuggeth_hour.withdrawCount = ZERO;
-        nuggeth_hour.transferCount = ZERO;
-        nuggeth_hour.royaltiesCount = ZERO;
-        nuggeth_hour.mintRoyaltiesCount = ZERO;
-        nuggeth_hour.saleRoyaltiesCount = ZERO;
-        nuggeth_hour.otherRoyaltiesCount = ZERO;
-        nuggeth_hour.depositETH = ZERO;
-        nuggeth_hour.depositUSD = ZERO;
-        nuggeth_hour.withdrawETH = ZERO;
-        nuggeth_hour.withdrawUSD = ZERO;
-        nuggeth_hour.transferETH = ZERO;
-        nuggeth_hour.transferUSD = ZERO;
-        nuggeth_hour.tvlETH = ZERO;
-        nuggeth_hour.tvlUSD = ZERO;
-        nuggeth_hour.shares = ZERO;
-        nuggeth_hour.epsX128ETH = ZERO;
-        nuggeth_hour.epsX128USD = ZERO;
+        xnugg_hour.depositCount = ZERO;
+        xnugg_hour.withdrawCount = ZERO;
+        xnugg_hour.transferCount = ZERO;
+        xnugg_hour.royaltiesCount = ZERO;
+        xnugg_hour.mintRoyaltiesCount = ZERO;
+        xnugg_hour.saleRoyaltiesCount = ZERO;
+        xnugg_hour.otherRoyaltiesCount = ZERO;
+        xnugg_hour.depositETH = ZERO;
+        xnugg_hour.depositUSD = ZERO;
+        xnugg_hour.withdrawETH = ZERO;
+        xnugg_hour.withdrawUSD = ZERO;
+        xnugg_hour.transferETH = ZERO;
+        xnugg_hour.transferUSD = ZERO;
+        xnugg_hour.tvlETH = ZERO;
+        xnugg_hour.tvlUSD = ZERO;
+        xnugg_hour.shares = ZERO;
+        xnugg_hour.epsX128ETH = ZERO;
+        xnugg_hour.epsX128USD = ZERO;
 
-        nuggeth_hour.royaltiesETH = ZERO;
-        nuggeth_hour.royaltiesUSD = ZERO;
-        nuggeth_hour.saleRoyaltiesETH = ZERO;
-        nuggeth_hour.saleRoyaltiesUSD = ZERO;
-        nuggeth_hour.mintRoyaltiesETH = ZERO;
-        nuggeth_hour.mintRoyaltiesUSD = ZERO;
-        nuggeth_hour.otherRoyaltiesETH = ZERO;
-        nuggeth_hour.otherRoyaltiesUSD = ZERO;
+        xnugg_hour.royaltiesETH = ZERO;
+        xnugg_hour.royaltiesUSD = ZERO;
+        xnugg_hour.saleRoyaltiesETH = ZERO;
+        xnugg_hour.saleRoyaltiesUSD = ZERO;
+        xnugg_hour.mintRoyaltiesETH = ZERO;
+        xnugg_hour.mintRoyaltiesUSD = ZERO;
+        xnugg_hour.otherRoyaltiesETH = ZERO;
+        xnugg_hour.otherRoyaltiesUSD = ZERO;
     }
     if (nuggft_hour == null) {
         nuggft_hour = new NuggFTHourData(hourID);
@@ -120,35 +120,35 @@ export function onEveryEvent(event: ethereum.Event): void {
         nuggft_hour.mintCeilingUSD = ZERO;
     }
 
-    if (nuggeth_day === null) {
-        nuggeth_day = new NuggETHDayData(dayID);
-        nuggeth_day.periodStartUnix = dayUnix;
-        nuggeth_day.depositCount = ZERO;
-        nuggeth_day.withdrawCount = ZERO;
-        nuggeth_day.transferCount = ZERO;
-        nuggeth_day.royaltiesCount = ZERO;
-        nuggeth_day.mintRoyaltiesCount = ZERO;
-        nuggeth_day.saleRoyaltiesCount = ZERO;
-        nuggeth_day.otherRoyaltiesCount = ZERO;
-        nuggeth_day.depositETH = ZERO;
-        nuggeth_day.depositUSD = ZERO;
-        nuggeth_day.withdrawETH = ZERO;
-        nuggeth_day.withdrawUSD = ZERO;
-        nuggeth_day.transferETH = ZERO;
-        nuggeth_day.transferUSD = ZERO;
-        nuggeth_day.tvlETH = ZERO;
-        nuggeth_day.tvlUSD = ZERO;
-        nuggeth_day.shares = ZERO;
-        nuggeth_day.epsX128ETH = ZERO;
-        nuggeth_day.epsX128USD = ZERO;
-        nuggeth_day.royaltiesETH = ZERO;
-        nuggeth_day.royaltiesUSD = ZERO;
-        nuggeth_day.saleRoyaltiesETH = ZERO;
-        nuggeth_day.saleRoyaltiesUSD = ZERO;
-        nuggeth_day.mintRoyaltiesETH = ZERO;
-        nuggeth_day.mintRoyaltiesUSD = ZERO;
-        nuggeth_day.otherRoyaltiesETH = ZERO;
-        nuggeth_day.otherRoyaltiesUSD = ZERO;
+    if (xnugg_day === null) {
+        xnugg_day = new XNUGGDayData(dayID);
+        xnugg_day.periodStartUnix = dayUnix;
+        xnugg_day.depositCount = ZERO;
+        xnugg_day.withdrawCount = ZERO;
+        xnugg_day.transferCount = ZERO;
+        xnugg_day.royaltiesCount = ZERO;
+        xnugg_day.mintRoyaltiesCount = ZERO;
+        xnugg_day.saleRoyaltiesCount = ZERO;
+        xnugg_day.otherRoyaltiesCount = ZERO;
+        xnugg_day.depositETH = ZERO;
+        xnugg_day.depositUSD = ZERO;
+        xnugg_day.withdrawETH = ZERO;
+        xnugg_day.withdrawUSD = ZERO;
+        xnugg_day.transferETH = ZERO;
+        xnugg_day.transferUSD = ZERO;
+        xnugg_day.tvlETH = ZERO;
+        xnugg_day.tvlUSD = ZERO;
+        xnugg_day.shares = ZERO;
+        xnugg_day.epsX128ETH = ZERO;
+        xnugg_day.epsX128USD = ZERO;
+        xnugg_day.royaltiesETH = ZERO;
+        xnugg_day.royaltiesUSD = ZERO;
+        xnugg_day.saleRoyaltiesETH = ZERO;
+        xnugg_day.saleRoyaltiesUSD = ZERO;
+        xnugg_day.mintRoyaltiesETH = ZERO;
+        xnugg_day.mintRoyaltiesUSD = ZERO;
+        xnugg_day.otherRoyaltiesETH = ZERO;
+        xnugg_day.otherRoyaltiesUSD = ZERO;
     }
     if (nuggft_day == null) {
         nuggft_day = new NuggFTDayData(dayID);
@@ -195,44 +195,42 @@ export function onEveryEvent(event: ethereum.Event): void {
         nuggft_day.mintCeilingUSD = ZERO;
     }
 
-    nuggeth_day.save();
+    xnugg_day.save();
     nuggft_day.save();
-    nuggeth_hour.save();
+    xnugg_hour.save();
     nuggft_hour.save();
-    // return [nuggeth_hour, nuggft_hour, nuggeth_day, nuggft_day];
+    // return [xnugg_hour, nuggft_hour, xnugg_day, nuggft_day];
 }
 
 export function afterEveryEvent(event: ethereum.Event): void {
     log.info('afterEveryEvent start', []);
     let market = safeCreateMarket(event);
 
-    let nuggeth_day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
+    let xnugg_day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
     let nuggft_day = NuggFTDayData.load(getDayId(event)) as NuggFTDayData;
 
-    let nuggeth_hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+    let xnugg_hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
     let nuggft_hour = NuggFTHourData.load(getHourId(event)) as NuggFTHourData;
 
-    nuggeth_day.royaltiesCount = nuggeth_day.saleRoyaltiesCount.plus(nuggeth_day.mintRoyaltiesCount).plus(nuggeth_day.otherRoyaltiesCount);
-    nuggeth_day.royaltiesETH = nuggeth_day.saleRoyaltiesETH.plus(nuggeth_day.mintRoyaltiesETH).plus(nuggeth_day.otherRoyaltiesETH);
-    nuggeth_day.royaltiesUSD = nuggeth_day.saleRoyaltiesUSD.plus(nuggeth_day.mintRoyaltiesUSD).plus(nuggeth_day.otherRoyaltiesUSD);
+    xnugg_day.royaltiesCount = xnugg_day.saleRoyaltiesCount.plus(xnugg_day.mintRoyaltiesCount).plus(xnugg_day.otherRoyaltiesCount);
+    xnugg_day.royaltiesETH = xnugg_day.saleRoyaltiesETH.plus(xnugg_day.mintRoyaltiesETH).plus(xnugg_day.otherRoyaltiesETH);
+    xnugg_day.royaltiesUSD = xnugg_day.saleRoyaltiesUSD.plus(xnugg_day.mintRoyaltiesUSD).plus(xnugg_day.otherRoyaltiesUSD);
 
-    nuggeth_day.tvlETH = market.tvl;
-    nuggeth_day.tvlUSD = market.tvlUsd;
-    nuggeth_day.shares = market.shares;
+    xnugg_day.tvlETH = market.tvl;
+    xnugg_day.tvlUSD = market.tvlUsd;
+    xnugg_day.shares = market.shares;
 
-    nuggeth_day.save();
+    xnugg_day.save();
 
-    nuggeth_hour.royaltiesCount = nuggeth_hour.saleRoyaltiesCount
-        .plus(nuggeth_hour.mintRoyaltiesCount)
-        .plus(nuggeth_hour.otherRoyaltiesCount);
-    nuggeth_hour.royaltiesETH = nuggeth_hour.saleRoyaltiesETH.plus(nuggeth_hour.mintRoyaltiesETH).plus(nuggeth_hour.otherRoyaltiesETH);
-    nuggeth_hour.royaltiesUSD = nuggeth_hour.saleRoyaltiesUSD.plus(nuggeth_hour.mintRoyaltiesUSD).plus(nuggeth_hour.otherRoyaltiesUSD);
+    xnugg_hour.royaltiesCount = xnugg_hour.saleRoyaltiesCount.plus(xnugg_hour.mintRoyaltiesCount).plus(xnugg_hour.otherRoyaltiesCount);
+    xnugg_hour.royaltiesETH = xnugg_hour.saleRoyaltiesETH.plus(xnugg_hour.mintRoyaltiesETH).plus(xnugg_hour.otherRoyaltiesETH);
+    xnugg_hour.royaltiesUSD = xnugg_hour.saleRoyaltiesUSD.plus(xnugg_hour.mintRoyaltiesUSD).plus(xnugg_hour.otherRoyaltiesUSD);
 
-    nuggeth_hour.tvlETH = market.tvl;
-    nuggeth_hour.tvlUSD = market.tvlUsd;
-    nuggeth_hour.shares = market.shares;
+    xnugg_hour.tvlETH = market.tvl;
+    xnugg_hour.tvlUSD = market.tvlUsd;
+    xnugg_hour.shares = market.shares;
 
-    nuggeth_hour.save();
+    xnugg_hour.save();
 
     nuggft_day.offerCount = nuggft_day.saleOfferCount.plus(nuggft_day.mintOfferCount);
     nuggft_day.count = nuggft_day.saleCount.plus(nuggft_day.mintCount);
@@ -277,8 +275,8 @@ export function onDeposit(event: ethereum.Event, amount: BigInt): void {
     log.info('onDeposit start', []);
     onEveryEvent(event);
 
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+    let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+    let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
     day.depositCount = day.depositCount.plus(ONE);
     day.depositETH = day.depositETH.plus(amount);
@@ -296,8 +294,8 @@ export function onDeposit(event: ethereum.Event, amount: BigInt): void {
 export function onWithdraw(event: ethereum.Event, amount: BigInt): void {
     log.debug('onWithdraw start', []);
     onEveryEvent(event);
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+    let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+    let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
     day.withdrawCount = day.withdrawCount.plus(ONE);
     day.withdrawETH = day.withdrawETH.plus(amount);
@@ -315,8 +313,8 @@ export function onWithdraw(event: ethereum.Event, amount: BigInt): void {
 export function onTransfer(event: ethereum.Event, amount: BigInt): void {
     log.debug('onTransfer start', []);
     onEveryEvent(event);
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+    let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+    let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
     day.transferCount = day.transferCount.plus(ONE);
     day.transferETH = day.transferETH.plus(amount);
@@ -335,8 +333,8 @@ export function onEpsX128Increase(event: ethereum.Event, epsX128: BigInt, epsX12
     log.debug('onRoyalties start', []);
     onEveryEvent(event);
 
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+    let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+    let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
     day.epsX128ETH = day.epsX128ETH.plus(epsX128);
     hour.epsX128ETH = hour.epsX128ETH.plus(epsX128);
@@ -351,8 +349,8 @@ export function onEpsX128Increase(event: ethereum.Event, epsX128: BigInt, epsX12
 // export function onSaleRoyalties(event: ethereum.Event, amount: BigInt): void {
 //     log.debug('onSaleRoyalties start', []);
 //     onEveryEvent(event);
-//     let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-//     let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+//     let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+//     let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
 //     day.saleRoyaltiesCount = day.saleRoyaltiesCount.plus(ONE);
 //     day.saleRoyaltiesETH = day.saleRoyaltiesETH.plus(amount);
@@ -370,8 +368,8 @@ export function onEpsX128Increase(event: ethereum.Event, epsX128: BigInt, epsX12
 // export function onMintRoyalties(event: ethereum.Event, amount: BigInt): void {
 //     log.debug('onMintRoyalties start', []);
 //     onEveryEvent(event);
-//     let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-//     let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+//     let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+//     let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
 //     day.mintRoyaltiesCount = day.mintRoyaltiesCount.plus(ONE);
 //     day.mintRoyaltiesETH = day.mintRoyaltiesETH.plus(amount);
@@ -389,8 +387,8 @@ export function onEpsX128Increase(event: ethereum.Event, epsX128: BigInt, epsX12
 export function onOtherRoyalties(event: ethereum.Event, amount: BigInt): void {
     log.debug('onOtherRoyalties start', []);
     onEveryEvent(event);
-    let day = NuggETHDayData.load(getDayId(event)) as NuggETHDayData;
-    let hour = NuggETHHourData.load(getHourId(event)) as NuggETHHourData;
+    let day = XNUGGDayData.load(getDayId(event)) as XNUGGDayData;
+    let hour = XNUGGHourData.load(getHourId(event)) as XNUGGHourData;
 
     day.otherRoyaltiesCount = day.otherRoyaltiesCount.plus(ONE);
     day.otherRoyaltiesETH = day.otherRoyaltiesETH.plus(amount);

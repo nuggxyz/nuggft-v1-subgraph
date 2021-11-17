@@ -333,11 +333,11 @@ export function handleSubmitSwap(event: SubmitSwap): void {
 // }
 
 export function handleSubmitOffer(event: SubmitOffer): void {
-    let swap = safeLoadSwap(getSwapId(event.params.nft, event.params.tokenid, event.params.swapnum));
+    let swap = safeCreateSwap(event, event.params.nft, event.params.tokenid, event.params.swapnum);
 
-    if (swap === null) {
-        swap = safeCreateSwap(event, event.params.nft, event.params.tokenid, event.params.swapnum);
-    }
+    // if (swap === null) {
+    //     swap = safeCreateSwap(event, event.params.nft, event.params.tokenid, event.params.swapnum);
+    // }
 
     let account = safeCreateAccount(event.params.account.toHexString());
     // let token = safeCreateToken(swap.token);

@@ -31,6 +31,9 @@
         "hardhat:console": "hardhat console",
         "hardhat:test": "hardhat test",
         "graph:prepare:local": "mustache src/networks/local.json src/subgraph.template.yaml > src/generated/local/subgraph.yaml",
-        "graph:compile:local": "rm -rf src/generated/local && mkdir src/generated/local && yarn graph:prepare:local && graph codegen --output-dir src/generated/local src/generated/local/subgraph.yaml && graph build src/generated/local/subgraph.yaml --output-dir src/generated/local/build"
+        "graph:compile:local": "rm -rf src/generated/local && mkdir src/generated/local && yarn graph:prepare:local && graph codegen --output-dir src/generated/local src/generated/local/subgraph.yaml && graph build src/generated/local/subgraph.yaml --output-dir src/generated/local/build",
+        "graph:prepare:ropsten": "mustache src/networks/ropsten.json src/subgraph.template.yaml > src/generated/ropsten/subgraph.yaml",
+        "graph:compile:ropsten": "rm -rf src/generated/ropsten && mkdir src/generated/ropsten && yarn graph:prepare:ropsten && graph codegen --output-dir src/generated/ropsten src/generated/ropsten/subgraph.yaml && graph build src/generated/ropsten/subgraph.yaml --output-dir src/generated/ropsten/build",
+        "graph:deploy:ropsten": "yarn graph:compile:ropsten &&  graph auth https://api.thegraph.com/deploy/ 92c86fdaab064b86baa7721f2c32bcff && graph deploy   --debug --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ nugglabs/nuggftropsten  src/generated/ropsten/subgraph.yaml"
     }
 }
