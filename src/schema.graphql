@@ -7,337 +7,107 @@ type Market @entity {
     genesisBlock: BigInt!
     interval: BigInt!
 
-    currentSwap: Swap
-
     # Pool
-    shares: BigInt!
-    tvl: BigInt!
-    tvlUsd: BigInt! #TODO
-    trades: [Trade!]! @derivedFrom(field: "market")
-    rewardTransfers: [RewardTransfer!]! @derivedFrom(field: "market")
-    mints: [Swap!]! @derivedFrom(field: "market")
-    sales: [Swap!]! @derivedFrom(field: "market")
+    xnugg: BigInt!
 
-    swaps: [Swap!]! @derivedFrom(field: "market")
-
-    activeSales: [Swap!]! @derivedFrom(field: "activeMarket")
-
-    accounts: [Account!]! @derivedFrom(field: "market")
-
-    nuggswap: Account
+    tvlEth: BigInt!
+    tvlUsd: BigInt!
 
     ethPriceUsd: BigInt!
+    xnuggPriceUsd: BigInt!
+    xnuggPriceEth: BigInt!
+
+    epoch: Epoch!
 }
 
-type OfferTransaction @entity {
-    id: ID!
-    offer: Offer!
-
-    amount: BigInt!
-    amountUsd: BigInt!
-
-    currency: BigInt!
-    blockNumber: BigInt!
-    timestamp: BigInt! #DONE
-    index: BigInt!
-    claim: Boolean!
-    winning: Boolean!
-
-    activeOfferAmount: BigInt!
-    activeOfferAmountUsd: BigInt!
-}
+# Waiting
+# Minting
+# Selling
+# Claimable
+# Stale
 
 type Offer @entity {
     id: ID!
-    swap: Swap!
-    account: Account!
 
-    amount: BigInt!
-    amountUsd: BigInt!
+    swap: Swap!
+    user: User!
+
+    eth: BigInt!
+    ethUsd: BigInt!
 
     claimed: Boolean!
-    txCount: BigInt!
-    # claim: OfferTransaction
-    lastTransaction: OfferTransaction
-    offerTransactions: [OfferTransaction!]! @derivedFrom(field: "offer")
+
+    owner: boolean!
 }
 
-type Token @entity {
+type Epoch @entity {
+    id: ID!
+    startblock: BigInt!
+    endblock: BigInt!
+}
+
+type Item @entity {
+    id: ID!
+}
+
+type Nugg @entity {
     id: ID!
 
-    market: Market!
+    owner: User!
 
-    owner: Account!
+    data: BigInt!
 
-    mintSwap: Swap
-    lastSwap: Swap
-
-    swaps: [Swap!]! @derivedFrom(field: "token")
-    swapsCount: BigInt!
+    swaps: [Swap!]! @derivedFrom(field: "nugg")
+    items: [Item!]! @derivedFrom(field: "nugg")
 }
 
 type Swap @entity {
     id: ID!
 
-    token: Token!
-    seller: Account!
-    buyer: Account
-
-    top: Offer
-    offerCount: BigInt!
-    market: Market!
-    activeMarket: Market
-
-    amount: BigInt!
-    amountUsd: BigInt!
-    sold: Boolean!
-    finalized: Boolean!
-    startepoch: BigInt!
-    # endepoch: BigInt!
-    epoch: BigInt!
-    floor: BigInt!
-    mint: Boolean!
+    nugg: Nugg!
 
     offers: [Offer!]! @derivedFrom(field: "swap")
+
+    epochId: BigInt!
+
+    eth: BigInt!
+    ethUsd: BigInt!
+
+    owner: User!
+    leader: User!
 }
 
-type Account @entity {
+type User @entity {
     id: ID!
 
-    totalOffers: BigInt!
-    totalTokens: BigInt!
-    totalTrades: BigInt! #TODO
-    market: Market!
+    xnugg: BigInt!
 
-    tokens: [Token!]! @derivedFrom(field: "owner")
+    nuggs: [Nugg!]! @derivedFrom(field: "user")
 
-    buys: [Swap!]! @derivedFrom(field: "buyer")
-    sells: [Swap!]! @derivedFrom(field: "seller")
+    offers: [Offer!]! @derivedFrom(field: "user")
 
-    # Pool
-    shares: BigInt!
-    # supply: BigInt! #TODO
-    # supplyUsd: BigInt! #TODO
-
-    earnings: BigInt!
-    earningsUsd: BigInt!
-    withdrawalsUsd: BigInt!
-    depositsUsd: BigInt!
-    deposits: BigInt!
-    withdrawals: BigInt!
-
-    offers: [Offer!]! @derivedFrom(field: "account")
-    trades: [Trade!]! @derivedFrom(field: "account") #TODO
+    trades: [Trade!]! @derivedFrom(field: "user")
 }
 
-type Trade
-    @entity { #TODO
+type Trade @entity {
     id: ID!
 
-    account: Account! #done
-    amount: BigInt!
-    amountUsd: BigInt!
+    user: User!
+
+    xnugg: BigInt!
+    xnuggUsd: BigInt!
+    xnuggEth: BigInt!
+
     blockNumber: BigInt!
     timestamp: BigInt!
-    index: BigInt!
-    market: Market! #done
-    beforeMarketShares: BigInt!
-    beforeAccountShares: BigInt!
-    beforeTvl: BigInt!
-    beforeTvlUsd: BigInt!
-    deposit: Boolean!
-
-    afterMarketShares: BigInt!
-    afterAccountShares: BigInt!
-    afterTvl: BigInt!
-    afterTvlUsd: BigInt!
 }
 
-type RewardTransfer @entity {
+type Stake @entity {
     id: ID!
-    from: Bytes!
-    amountUsd: BigInt!
-    amount: BigInt!
+
+    ethUsd: BigInt!
+    eth: BigInt!
+
     blockNumber: BigInt!
-    timestamp: BigInt! #TODO
-    market: Market!
-
-    shares: BigInt!
-    epsX128: BigInt!
-    epsX128Usd: BigInt!
-
-    beforeTvl: BigInt!
-    beforeTvlUsd: BigInt!
-
-    afterTvl: BigInt!
-    afterTvlUsd: BigInt!
-}
-
-# Data accumulated and condensed into days
-type XNUGGDayData @entity {
-    id: ID!
-    periodStartUnix: BigInt!
-
-    # xnugg
-    depositCount: BigInt!
-    withdrawCount: BigInt!
-    transferCount: BigInt!
-    royaltiesCount: BigInt!
-    mintRoyaltiesCount: BigInt!
-    saleRoyaltiesCount: BigInt!
-    otherRoyaltiesCount: BigInt!
-
-    depositETH: BigInt!
-    depositUSD: BigInt!
-    withdrawETH: BigInt!
-    withdrawUSD: BigInt!
-    transferETH: BigInt!
-    transferUSD: BigInt!
-
-    epsX128ETH: BigInt!
-    epsX128USD: BigInt!
-
-    tvlETH: BigInt!
-    tvlUSD: BigInt!
-    shares: BigInt!
-
-    royaltiesETH: BigInt!
-    royaltiesUSD: BigInt!
-    saleRoyaltiesETH: BigInt!
-    saleRoyaltiesUSD: BigInt!
-    mintRoyaltiesETH: BigInt!
-    mintRoyaltiesUSD: BigInt!
-    otherRoyaltiesETH: BigInt!
-    otherRoyaltiesUSD: BigInt!
-}
-
-# Data accumulated and condensed into hours
-type XNUGGHourData @entity {
-    id: ID!
-    periodStartUnix: BigInt!
-
-    # xnugg
-    depositCount: BigInt!
-    withdrawCount: BigInt!
-    transferCount: BigInt!
-    royaltiesCount: BigInt!
-    mintRoyaltiesCount: BigInt!
-    saleRoyaltiesCount: BigInt!
-    otherRoyaltiesCount: BigInt!
-    depositETH: BigInt!
-    depositUSD: BigInt!
-    withdrawETH: BigInt!
-    withdrawUSD: BigInt!
-    transferETH: BigInt!
-    transferUSD: BigInt!
-
-    epsX128ETH: BigInt!
-    epsX128USD: BigInt!
-
-    tvlETH: BigInt!
-    tvlUSD: BigInt!
-    shares: BigInt!
-
-    royaltiesETH: BigInt!
-    royaltiesUSD: BigInt!
-    saleRoyaltiesETH: BigInt!
-    saleRoyaltiesUSD: BigInt!
-    mintRoyaltiesETH: BigInt!
-    mintRoyaltiesUSD: BigInt!
-    otherRoyaltiesETH: BigInt!
-    otherRoyaltiesUSD: BigInt!
-}
-
-# Data accumulated and condensed into days
-type NuggFTDayData @entity {
-    id: ID!
-    periodStartUnix: BigInt!
-
-    count: BigInt!
-    saleCount: BigInt!
-    mintCount: BigInt!
-
-    # nuggft
-    offerCount: BigInt!
-    mintOfferCount: BigInt!
-    saleOfferCount: BigInt!
-
-    volumeETH: BigInt!
-    saleVolumeETH: BigInt!
-    mintVolumeETH: BigInt!
-
-    volumeUSD: BigInt!
-    saleVolumeUSD: BigInt!
-    mintVolumeUSD: BigInt!
-
-    offerVolumeETH: BigInt!
-    saleOfferVolumeETH: BigInt!
-    mintOfferVolumeETH: BigInt!
-
-    offerVolumeUSD: BigInt!
-    saleOfferVolumeUSD: BigInt!
-    mintOfferVolumeUSD: BigInt!
-
-    floorETH: BigInt!
-    saleFloorETH: BigInt!
-    mintFloorETH: BigInt!
-
-    floorUSD: BigInt!
-    saleFloorUSD: BigInt!
-    mintFloorUSD: BigInt!
-
-    ceilingETH: BigInt!
-    saleCeilingETH: BigInt!
-    mintCeilingETH: BigInt!
-
-    ceilingUSD: BigInt!
-    saleCeilingUSD: BigInt!
-    mintCeilingUSD: BigInt!
-}
-
-# Data accumulated and condensed into hours
-type NuggFTHourData @entity {
-    id: ID!
-    periodStartUnix: BigInt!
-
-    count: BigInt!
-    saleCount: BigInt!
-    mintCount: BigInt!
-
-    # nuggft
-    offerCount: BigInt!
-    mintOfferCount: BigInt!
-    saleOfferCount: BigInt!
-
-    volumeETH: BigInt!
-    saleVolumeETH: BigInt!
-    mintVolumeETH: BigInt!
-
-    volumeUSD: BigInt!
-    saleVolumeUSD: BigInt!
-    mintVolumeUSD: BigInt!
-
-    offerVolumeETH: BigInt!
-    saleOfferVolumeETH: BigInt!
-    mintOfferVolumeETH: BigInt!
-
-    offerVolumeUSD: BigInt!
-    saleOfferVolumeUSD: BigInt!
-    mintOfferVolumeUSD: BigInt!
-
-    floorETH: BigInt!
-    saleFloorETH: BigInt!
-    mintFloorETH: BigInt!
-
-    floorUSD: BigInt!
-    saleFloorUSD: BigInt!
-    mintFloorUSD: BigInt!
-
-    ceilingETH: BigInt!
-    saleCeilingETH: BigInt!
-    mintCeilingETH: BigInt!
-
-    ceilingUSD: BigInt!
-    saleCeilingUSD: BigInt!
-    mintCeilingUSD: BigInt!
+    timestamp: BigInt!
 }

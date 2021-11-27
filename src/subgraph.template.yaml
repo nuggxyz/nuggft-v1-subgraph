@@ -22,26 +22,25 @@ dataSources:
           file: ../../mappings/nuggswap.ts
           entities:
               - Market
-              - Auction
-              - Bid
-              - BidTransaction
-              - Token
-              - XNUGGDayData
-              - XNUGGHourData
-              - NuggFTDayData
-              - NuggFTHourData
-              - Account
+              - Swap
+              - Offer
+              - Nugg
+              - User
           abis:
               - name: NuggSwap
                 file: ../../abis/NuggSwap.json
           eventHandlers:
-              - event: SubmitOffer(address,uint256,uint256,address,uint256)
-                handler: handleSubmitOffer
-              - event: SubmitClaim(address,uint256,uint256,address)
-                handler: handleSubmitClaim
-              - event: SubmitSwap(address,uint256,uint256,address,uint256,uint64)
-                handler: handleSubmitSwap
-              - event: Genesis(uint128,uint128)
+              - event: Mint(address,uint256,uint256,address,uint256)
+                handler: handleMint
+              - event: Commit(address,uint256,uint256,address,uint256)
+                handler: handleCommit
+              - event: Offer(address,uint256,uint256,address,uint256)
+                handler: handleOffer
+              - event: Claim(address,uint256,uint256,address)
+                handler: handleClaim
+              - event: Swap(address,uint256,uint256,address,uint256,uint64)
+                handler: handleSwap
+              - event: Genesis()
                 handler: handleGenesis
     - kind: ethereum/contract
       name: xNUGG
@@ -59,19 +58,15 @@ dataSources:
           file: ../../mappings/xnugg.ts
           entities:
               - Market
-              - RewardTransfer
-              - Account
-              - XNUGGDayData
-              - XNUGGHourData
-              - NuggFTDayData
-              - NuggFTHourData
-              - Swap
+              - Stake
+              - User
+              - Trade
           abis:
               - name: xNUGG
                 file: ../../abis/xNUGG.json
           eventHandlers:
-              - event: RoyaltyAdd(indexed address,uint256)
-                handler: handleRoyaltyAdd
+              - event: Receive(address,uint256)
+                handler: handleReceive
               - event: ShareSub(indexed address,address,uint256)
                 handler: handleShareSub
               - event: ShareAdd(indexed address,address,uint256)
