@@ -8,7 +8,8 @@
         "downlevelIteration": true,
         "outDir": "./build" /* Redirect output structure to the directory. */
         //   "rootDir": "./src"
-    }
+    },
+    "extends": "./node_modules/node_modules/assemblyscript/base-tsconfig.json"
 
     // "include": ["src/**/*"],
     // "exclude": ["test", "build", "types"]

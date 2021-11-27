@@ -1,21 +1,29 @@
-type Market @entity {
+type Protocol @entity {
     id: ID!
 
     totalSwaps: BigInt!
     totalUsers: BigInt!
+    totalNuggs: BigInt!
+    totalItems: BigInt!
+    totalItemSwaps: BigInt!
 
     genesisBlock: BigInt!
     interval: BigInt!
 
-    # Pool
-    xnugg: BigInt!
+    xnuggUser: User!
+    nuggftUser: User!
+    nullUser: User!
+
+    xnuggTotalSupply: BigInt!
+    xnuggTotalEth: BigInt!
+
+    nuggftTotalEth: BigInt!
+
+    priceUsdcWeth: BigInt!
+    priceWethXnugg: BigInt!
 
     tvlEth: BigInt!
     tvlUsd: BigInt!
-
-    ethPriceUsd: BigInt!
-    xnuggPriceUsd: BigInt!
-    xnuggPriceEth: BigInt!
 
     epoch: Epoch!
 }
@@ -37,38 +45,53 @@ type Offer @entity {
 
     claimed: Boolean!
 
-    owner: boolean!
+    owner: Boolean!
 }
 
 type Epoch @entity {
     id: ID!
-    startblock: BigInt!
-    endblock: BigInt!
+    # startblock: BigInt!
+    # endblock: BigInt!
 }
 
 type Item @entity {
     id: ID!
+    count: BigInt!
+}
+
+type NuggItem @entity {
+    id: ID!
+
+    item: Item!
+    nugg: Nugg!
+
+    count: BigInt!
 }
 
 type Nugg @entity {
     id: ID!
 
-    owner: User!
+    user: User!
 
     data: BigInt!
 
+    activeSwap: Swap
+
     swaps: [Swap!]! @derivedFrom(field: "nugg")
-    items: [Item!]! @derivedFrom(field: "nugg")
+
+    items: [NuggItem!]! @derivedFrom(field: "nugg")
 }
 
 type Swap @entity {
     id: ID!
 
+    nuggId: String!
     nugg: Nugg!
 
     offers: [Offer!]! @derivedFrom(field: "swap")
 
-    epochId: BigInt!
+    epochId: String!
+    epoch: Epoch!
 
     eth: BigInt!
     ethUsd: BigInt!
@@ -86,28 +109,26 @@ type User @entity {
 
     offers: [Offer!]! @derivedFrom(field: "user")
 
-    trades: [Trade!]! @derivedFrom(field: "user")
+    # trades: [Trade!]! @derivedFrom(field: "user")
 }
 
-type Trade @entity {
-    id: ID!
+# type Trade @entity {
+#     id: ID!
 
-    user: User!
+#     user: User!
 
-    xnugg: BigInt!
-    xnuggUsd: BigInt!
-    xnuggEth: BigInt!
+#     xnugg: BigInt!
 
-    blockNumber: BigInt!
-    timestamp: BigInt!
-}
+#     blockNumber: BigInt!
+#     timestamp: BigInt!
+# }
 
-type Stake @entity {
-    id: ID!
+# type Stake @entity {
+#     id: ID!
 
-    ethUsd: BigInt!
-    eth: BigInt!
+#     ethUsd: BigInt!
+#     eth: BigInt!
 
-    blockNumber: BigInt!
-    timestamp: BigInt!
-}
+#     blockNumber: BigInt!
+#     timestamp: BigInt!
+# }

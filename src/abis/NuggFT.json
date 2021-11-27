@@ -1,5 +1,16 @@
 [
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_xnugg",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
         "anonymous": false,
         "inputs": [
             {
@@ -47,6 +58,312 @@
             }
         ],
         "name": "ApprovalForAll",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "endingEpoch",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "Claim",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "itemId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "endingEpoch",
+                "type": "uint256"
+            }
+        ],
+        "name": "ClaimItem",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "Commit",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "itemId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "CommitItem",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [],
+        "name": "Genesis",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "epoch",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "Mint",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "Offer",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "itemId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "OfferItem",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "itemId",
+                "type": "uint256"
+            }
+        ],
+        "name": "PopItem",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "items",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "PreMint",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "itemId",
+                "type": "uint256"
+            }
+        ],
+        "name": "PushItem",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "Swap",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "itemId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "eth",
+                "type": "uint256"
+            }
+        ],
+        "name": "SwapItem",
         "type": "event"
     },
     {
@@ -104,8 +421,186 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "balance",
+                "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "endingEpoch",
+                "type": "uint256"
+            }
+        ],
+        "name": "claim",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "itemid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "endingEpoch",
+                "type": "uint256"
+            }
+        ],
+        "name": "claimItem",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            }
+        ],
+        "name": "commit",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "itemid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "commitItem",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            }
+        ],
+        "name": "delegate",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "itemid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "delegateItem",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "epoch",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "res",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "genesis",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            }
+        ],
+        "name": "getActiveSwap",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "leader",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_epoch",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "isOwner",
+                "type": "bool"
             }
         ],
         "stateMutability": "view",
@@ -123,8 +618,66 @@
         "outputs": [
             {
                 "internalType": "address",
-                "name": "operator",
+                "name": "",
                 "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "index",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "getOfferByAccount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "infoOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "base",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "items",
+                "type": "uint256[]"
             }
         ],
         "stateMutability": "view",
@@ -158,19 +711,62 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "currentEpochId",
+                "name": "tokenid",
                 "type": "uint256"
             }
         ],
-        "name": "nuggSwapMint",
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
         "outputs": [
             {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "uint256",
-                "name": "tokenId",
+                "name": "tokenid",
                 "type": "uint256"
             }
         ],
-        "stateMutability": "nonpayable",
+        "name": "offer",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "itemid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "buyingTokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "offerItem",
+        "outputs": [],
+        "stateMutability": "payable",
         "type": "function"
     },
     {
@@ -185,37 +781,8 @@
         "outputs": [
             {
                 "internalType": "address",
-                "name": "owner",
+                "name": "",
                 "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "salePrice",
-                "type": "uint256"
-            }
-        ],
-        "name": "royaltyInfo",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "receiver",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "royaltyAmount",
-                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -263,7 +830,7 @@
             },
             {
                 "internalType": "bytes",
-                "name": "data",
+                "name": "_data",
                 "type": "bytes"
             }
         ],
@@ -281,7 +848,7 @@
             },
             {
                 "internalType": "bool",
-                "name": "_approved",
+                "name": "approved",
                 "type": "bool"
             }
         ],
@@ -312,6 +879,79 @@
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "tokenid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "floor",
+                "type": "uint256"
+            }
+        ],
+        "name": "swap",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellingTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "itemid",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "floor",
+                "type": "uint256"
+            }
+        ],
+        "name": "swapItem",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "tokenURI",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "res",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "address",
                 "name": "from",
                 "type": "address"
@@ -330,6 +970,19 @@
         "name": "transferFrom",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "xnugg",
+        "outputs": [
+            {
+                "internalType": "address payable",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]

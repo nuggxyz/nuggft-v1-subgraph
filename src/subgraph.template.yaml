@@ -6,42 +6,41 @@ repository: https://github.com/nugg-labs/nuggft-subgraph
 schema:
     file: ../../schema.graphql
 dataSources:
-    - kind: ethereum/contract
-      name: NuggSwap
-      # prettier-ignore
-      network: {{network}}
-      source:
-          address: '{{nuggswap}}'
-          abi: NuggSwap
-          # prettier-ignore
-          startBlock: {{startblock}}
-      mapping:
-          kind: ethereum/events
-          apiVersion: 0.0.5
-          language: wasm/assemblyscript
-          file: ../../mappings/nuggswap.ts
-          entities:
-              - Market
-              - Swap
-              - Offer
-              - Nugg
-              - User
-          abis:
-              - name: NuggSwap
-                file: ../../abis/NuggSwap.json
-          eventHandlers:
-              - event: Mint(address,uint256,uint256,address,uint256)
-                handler: handleMint
-              - event: Commit(address,uint256,uint256,address,uint256)
-                handler: handleCommit
-              - event: Offer(address,uint256,uint256,address,uint256)
-                handler: handleOffer
-              - event: Claim(address,uint256,uint256,address)
-                handler: handleClaim
-              - event: Swap(address,uint256,uint256,address,uint256,uint64)
-                handler: handleSwap
-              - event: Genesis()
-                handler: handleGenesis
+    # - kind: ethereum/contract
+    #   name: NuggSwap
+    #   # prettier-ignore
+    #   network: {{network}}
+    #   source:
+    #       address: '{{nuggswap}}'
+    #       abi: NuggSwap
+    #       # prettier-ignore
+    #       startBlock: {{startblock}}
+    #   mapping:
+    #       kind: ethereum/events
+    #       apiVersion: 0.0.5
+    #       language: wasm/assemblyscript
+    #       file: ../../mappings/nuggswap.ts
+    #       entities:
+    #           - Protocol
+    #           - Swap
+    #           - Offer
+    #           - Nugg
+    #           - User
+    #       abis:
+    #           - name: NuggSwap
+    #             file: ../../abis/NuggSwap.json
+    #       eventHandlers:
+    #           - event: Mint(address,uint256,address,uint256)
+    #             handler: handleMint
+    #           - event: Commit(address,uint256,uint256,address,uint256)
+    #             handler: handleCommit
+    #           - event: Offer(address,uint256,uint256,address,uint256)
+    #             handler: handleOffer
+    #           - event: Claim(address,uint256,uint256,address)
+    #             handler: handleClaim
+    #           - event: Swap(address,uint256,address,uint256)
+    #             handler: handleSwap
+
     - kind: ethereum/contract
       name: xNUGG
       # prettier-ignore
@@ -57,28 +56,26 @@ dataSources:
           language: wasm/assemblyscript
           file: ../../mappings/xnugg.ts
           entities:
-              - Market
-              - Stake
+              - Protocol
               - User
-              - Trade
           abis:
               - name: xNUGG
                 file: ../../abis/xNUGG.json
           eventHandlers:
+              - event: Transfer(indexed address,indexed address,uint256)
+                handler: handleTransferxNUGG
               - event: Receive(address,uint256)
                 handler: handleReceive
-              - event: ShareSub(indexed address,address,uint256)
-                handler: handleShareSub
-              - event: ShareAdd(indexed address,address,uint256)
-                handler: handleShareAdd
-              - event: Realize(indexed address,address,uint256)
-                handler: handleTokenEarn
+              - event: Send(address,uint256)
+                handler: handleSend
+              - event: Genesis()
+                handler: handleGenesisxNUGG
     - kind: ethereum/contract
-      name: UniswapV3Pool
+      name: UniswapV3PoolUsdc
       # prettier-ignore
       network: {{network}}
       source:
-          address: '{{uniswapv3pool}}'
+          address: '{{uniswapv3pool_weth_usdc}}'
           abi: UniswapV3Pool
           # prettier-ignore
           startBlock: {{startblock}}
@@ -86,15 +83,37 @@ dataSources:
           kind: ethereum/events
           apiVersion: 0.0.5
           language: wasm/assemblyscript
-          file: ../../mappings/oracle.ts
+          file: ../../mappings/uniswap.ts
           entities:
-              - Market
+              - Protocol
           abis:
               - name: UniswapV3Pool
                 file: ../../abis/UniswapV3Pool.json
           eventHandlers:
               - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
-                handler: handleSwap
+                handler: handleUsdcWethUniswap
+    - kind: ethereum/contract
+      name: UniswapV3PoolXNugg
+      # prettier-ignore
+      network: {{network}}
+      source:
+          address: '{{uniswapv3pool_weth_xnugg}}'
+          abi: UniswapV3Pool
+          # prettier-ignore
+          startBlock: {{startblock}}
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.5
+          language: wasm/assemblyscript
+          file: ../../mappings/uniswap.ts
+          entities:
+              - Protocol
+          abis:
+              - name: UniswapV3Pool
+                file: ../../abis/UniswapV3Pool.json
+          eventHandlers:
+              - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+                handler: handleWethXnuggUniswap
     - kind: ethereum/contract
       name: NuggFT
       # prettier-ignore
@@ -110,12 +129,39 @@ dataSources:
           language: wasm/assemblyscript
           file: ../../mappings/nuggft.ts
           entities:
-              - Market
-              - Auction
-              - TokenTransfer
+              - Protocol
+              - Swap
+              - Nugg
+              - Item
           abis:
               - name: NuggFT
                 file: ../../abis/NuggFT.json
           eventHandlers:
               - event: Transfer(indexed address,indexed address,indexed uint256)
-                handler: handleTransfer
+                handler: handleTransferNuggFT
+              - event: Claim(uint256,uint256,address)
+                handler: handleClaim
+              - event: ClaimItem(uint256,uint256,uint256,uint256)
+                handler: handleClaimItem
+              - event: Commit(uint256,address,uint256)
+                handler: handleCommit
+              - event: CommitItem(uint256,uint256,uint256,uint256)
+                handler: handleCommitItem
+              - event: Genesis()
+                handler: handleGenesisNuggFT
+              - event: Mint(uint256,address,uint256)
+                handler: handleMint
+              - event: Offer(uint256,address,uint256)
+                handler: handleOffer
+              - event: OfferItem(uint256,uint256,uint256,uint256)
+                handler: handleOfferItem
+              - event: Swap(uint256,address,uint256)
+                handler: handleSwapNuggFT
+              - event: SwapItem(uint256,uint256,uint256)
+                handler: handleSwapNuggFTItem
+              - event: PopItem(uint256,uint256)
+                handler: handleSwapNuggFTItem
+              - event: PreMint(uint256,uint256[])
+                handler: handleSwapNuggFTItem
+              - event: PushItem(uint256,uint256)
+                handler: handleSwapNuggFTItem

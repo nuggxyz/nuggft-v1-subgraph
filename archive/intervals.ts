@@ -2,9 +2,9 @@ import { ONE, Q256, safeCreateMarket } from './nuggswap';
 import { ZERO } from './nuggswap';
 import { MARKET_ID } from './nuggswap';
 import { ethereum, BigInt, log } from '@graphprotocol/graph-ts';
-import { toUsd } from './oracle';
-import { Market, XNUGGHourData, NuggFTDayData, NuggFTHourData } from '../generated/local/schema';
-import { XNUGGDayData } from '../generated/local/schema';
+import { toUsd } from '../src/mappings/uniswap';
+import { Market, XNUGGHourData, NuggFTDayData, NuggFTHourData } from '../src/generated/local/schema';
+import { XNUGGDayData } from '../src/generated/local/schema';
 
 let UNIX_DAY = BigInt.fromI32(86400);
 let UNIX_HOUR = BigInt.fromI32(86400 / 24);

@@ -1,167 +1,62 @@
-import { RoyaltyAdd, ShareSub, ShareAdd, Realize } from '../generated/local/xNUGG/xNUGG';
-import { RewardTransfer, Trade } from '../generated/local/schema';
-import { MARKET_ID, safeCreateAccount, safeLoadMarket, ONE, ZERO, Q128 } from './nuggswap';
-import { safeDiv, toUsd } from './oracle';
-import { onDeposit, onOtherRoyalties, onWithdraw } from './intervals';
+import { BigInt, log } from '@graphprotocol/graph-ts';
+import { Protocol, User } from '../generated/local/schema';
+import { Transfer, Receive, Send, Genesis } from '../generated/local/xNUGG/xNUGG';
 
-// export function handleLaunched(event: Launched): void {
-//     let bs = safeCreateMarket(event);
-//     bs.save();
-// }
+export function handleTransfer(event: Transfer) {
+    log.info('xNUGG handleTransfer start', []);
 
-// export function safeCreatePosition(id: string): Position {}
+    let proto = Protocol.load('0x42069');
 
-// export function safeCreateRewardTransfer(id: string): RewardTransfer {}
+    assert(proto != null, 'xNUGG handleTransfer: PROTOCOL CANNOT BE NULL');
 
-export function handleRoyaltyAdd(event: RoyaltyAdd): void {
-    let market = safeLoadMarket(MARKET_ID);
+    if (event.params.to.toHexString() == proto.nullUser) {
+        proto.xnuggTotalSupply = proto.xnuggTotalSupply.minus(event.params.value);
+    } else {
+        let to = User.load(event.params.to.toHexString().toLowerCase());
 
-    const id = 'ra-'.concat(event.transaction.hash.toHexString());
+        if (to == null) {
+            to = new User(event.params.to.toHexString().toLowerCase());
+            to.xnugg = BigInt.fromString('0');
+        }
 
-    let transaction = new RewardTransfer(id);
-    transaction.from = event.params.sender;
-    transaction.timestamp = event.block.timestamp;
-    transaction.amount = event.params.amount;
-    transaction.amountUsd = toUsd(event.params.amount);
-    transaction.blockNumber = event.block.number;
-    transaction.market = MARKET_ID;
+        to.xnugg = to.xnugg.plus(event.params.value);
 
-    transaction.shares = market.shares;
-    transaction.beforeTvl = market.tvl;
-    transaction.beforeTvlUsd = market.tvlUsd;
-
-    transaction.epsX128 = safeDiv(event.params.amount.times(Q128), market.shares);
-    transaction.epsX128Usd = toUsd(transaction.epsX128);
-
-    // transaction.epsX128 = ZERO;
-    // transaction.epsX128Usd = ZERO;
-
-    market.tvl = market.tvl.plus(event.params.amount);
-    market.tvlUsd = toUsd(market.tvl);
-
-    transaction.afterTvl = market.tvl;
-    transaction.afterTvlUsd = market.tvlUsd;
-
-    market.save();
-    transaction.save();
-
-    // onEpsX128Increase(event, transaction.epsX128, transaction.epsX128Usd);
-
-    // if (sentByMinter(event.params.sender, market.minter)) {
-    //     onMintRoyalties(event, event.params.amount);
-    // } else if (sentBySeller(event.params.sender, market.seller)) {
-    //     onSaleRoyalties(event, event.params.amount);
-    // } else {
-    onOtherRoyalties(event, event.params.amount);
-    // }
-}
-
-export function handleShareAdd(event: ShareAdd): void {
-    let market = safeLoadMarket(MARKET_ID);
-    let account = safeCreateAccount(event.params.account.toHexString());
-    const supplyIncrease = event.params.amount;
-    let sharesIncrease = event.params.amount;
-
-    if (!market.tvl.equals(ZERO)) {
-        sharesIncrease = safeDiv(supplyIncrease.times(market.shares), market.tvl);
+        to.save();
     }
 
-    const id = 'add-'.concat(event.transaction.hash.toHexString());
-    let transaction = new Trade(id);
+    if (event.params.from.toHexString() == proto.nullUser) {
+        proto.xnuggTotalSupply = proto.xnuggTotalSupply.plus(event.params.value);
+    } else {
+        let from = User.load(event.params.from.toHexString().toLowerCase());
 
-    transaction.account = account.id;
-    transaction.amount = supplyIncrease;
-    transaction.amountUsd = toUsd(supplyIncrease);
-    transaction.blockNumber = event.block.number;
-    transaction.timestamp = event.block.timestamp;
-    transaction.index = account.totalTrades;
-    transaction.market = MARKET_ID;
-    transaction.beforeAccountShares = account.shares;
-    transaction.beforeMarketShares = market.shares;
-    transaction.beforeTvl = market.tvl;
-    transaction.beforeTvlUsd = market.tvlUsd;
-    transaction.deposit = true;
+        assert(from != null, 'xNUGG handleTransfer: FROM ADDRESS CANNOT BE NULL');
 
-    account.shares = account.shares.plus(sharesIncrease);
-    account.deposits = account.deposits.plus(supplyIncrease);
-    account.depositsUsd = account.depositsUsd.plus(toUsd(supplyIncrease));
-    account.totalTrades = account.totalTrades.plus(ONE);
+        from.xnugg = from.xnugg.minus(event.params.value);
 
-    market.shares = market.shares.plus(sharesIncrease);
-
-    market.tvl = market.tvl.plus(supplyIncrease);
-    market.tvlUsd = toUsd(market.tvl);
-
-    transaction.afterAccountShares = account.shares;
-    transaction.afterMarketShares = market.shares;
-    transaction.afterTvl = market.tvl;
-    transaction.afterTvlUsd = market.tvlUsd;
-
-    market.save();
-    account.save();
-    transaction.save();
-
-    onDeposit(event, event.params.amount);
-}
-
-export function handleShareSub(event: ShareSub): void {
-    let market = safeLoadMarket(MARKET_ID);
-    let account = safeCreateAccount(event.params.account.toHex());
-
-    const supplyDecrease = event.params.amount;
-
-    let sharesDecrease = event.params.amount;
-
-    if (!market.tvl.equals(ZERO)) {
-        sharesDecrease = safeDiv(supplyDecrease.times(market.shares), market.tvl);
+        from.save();
     }
 
-    const id = 'sub-'.concat(event.transaction.hash.toHexString());
-    let transaction = new Trade(id);
+    proto.save();
 
-    transaction.account = account.id;
-    transaction.amount = supplyDecrease.neg();
-    transaction.amountUsd = toUsd(supplyDecrease).neg();
-    transaction.blockNumber = event.block.number;
-    transaction.timestamp = event.block.timestamp;
-    transaction.index = account.totalTrades;
-    transaction.market = MARKET_ID;
-    transaction.beforeAccountShares = account.shares;
-    transaction.beforeMarketShares = market.shares;
-    transaction.beforeTvl = market.tvl;
-    transaction.beforeTvlUsd = market.tvlUsd;
-    transaction.deposit = false;
-
-    account.shares = account.shares.minus(sharesDecrease);
-    account.withdrawals = account.withdrawals.plus(supplyDecrease);
-    account.withdrawalsUsd = account.withdrawalsUsd.plus(toUsd(supplyDecrease));
-    account.totalTrades = account.totalTrades.plus(ONE);
-
-    market.shares = market.shares.minus(sharesDecrease);
-    market.tvl = market.tvl.minus(supplyDecrease);
-    market.tvlUsd = toUsd(market.tvl);
-
-    transaction.afterAccountShares = account.shares;
-    transaction.afterMarketShares = market.shares;
-    transaction.afterTvl = market.tvl;
-    transaction.afterTvlUsd = market.tvlUsd;
-
-    market.save();
-    account.save();
-    transaction.save();
-
-    onWithdraw(event, event.params.amount);
+    log.info('xNUGG handleTransfer end', []);
 }
 
-export function handleRealize(event: Realize): void {
-    let market = safeLoadMarket(MARKET_ID);
-    let account = safeCreateAccount(event.params.account.toHex());
+export function handleReceive(event: Receive): void {
+    let proto = Protocol.load('0x42069');
 
-    account.earnings = account.earnings.plus(event.params.amount);
-    account.earningsUsd = account.earningsUsd.plus(toUsd(event.params.amount));
+    assert(proto != null, 'xNUGG handleTransfer: PROTOCOL CANNOT BE NULL');
 
-    market.save();
-    account.save();
+    proto.tvlEth = proto.tvlEth.plus(event.params.eth);
 
-    // onWithdraw(event, event.params.amount);
+    proto.save();
+}
+
+export function handleSend(event: Send): void {
+    let proto = Protocol.load('0x42069');
+
+    assert(proto != null, 'xNUGG handleTransfer: PROTOCOL CANNOT BE NULL');
+
+    proto.tvlEth = proto.tvlEth.minus(event.params.eth);
+
+    proto.save();
 }
