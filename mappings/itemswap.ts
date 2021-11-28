@@ -1,4 +1,4 @@
-import { log, BigInt } from '@graphprotocol/graph-ts';
+import { log, BigInt, store } from '@graphprotocol/graph-ts';
 import {
     Claim,
     ClaimItem,
@@ -13,58 +13,80 @@ import {
 import { ItemOffer, ItemSwap, NuggItem } from '../generated/local/schema';
 import { Nugg, Swap as SwapObject, Protocol, User, Offer as OfferObject } from '../generated/local/schema';
 import { invariant, wethToUsdc } from './uniswap';
+import { safeLoadItemSwapHelperNull, safeNewItemSwap, safeNewItemOffer } from './safeload';
+import {
+    safeLoadProtocol,
+    safeLoadNugg,
+    safeLoadNuggItem,
+    safeLoadItemSwap,
+    safeLoadItemSwapHelper,
+    safeLoadItemOfferHelper,
+    safeLoadItem,
+    safeLoadNuggItemHelper,
+    safeLoadItemOfferHelperNull,
+} from './safeload';
 
 export function handleCommitItem(event: CommitItem): void {
     log.info('handleCommitItem start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
+    let proto = safeLoadProtocol('0x42069');
 
-    invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
 
-    let sellingNugg = Nugg.load(event.params.sellingTokenId.toString()) as Nugg;
+    let item = safeLoadItem(event.params.itemId.toString());
 
-    invariant(sellingNugg != null, 'handleOfferItem: NUGG CANNOT BE NULL');
+    let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    let nuggItem = NuggItem.load(sellingNugg.id.concat('-').concat(event.params.itemId.toString())) as NuggItem;
+    if (nuggitem.activeSwap == '') log.critical('handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
 
-    invariant(nuggItem != null, 'handleOfferItem: NUGG.activeSwap CANNOT BE NULL');
-    invariant(nuggItem.activeSwap != null, 'handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL');
+    let itemswap = safeLoadItemSwap(nuggitem.activeSwap as string);
 
-    let swap = ItemSwap.load(nuggItem.activeSwap) as ItemSwap;
+    if (itemswap.epoch != null) log.critical('handleOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
 
-    invariant(swap != null, 'handleOfferItem: SWAP CANNOT BE NULL');
-    invariant(swap.epochId == null, 'handleCommitItem: SWAP.epochId MUST BE NULL');
+    let owneritemoffer = safeLoadItemOfferHelper(itemswap, sellingNugg);
 
-    let buyingNugg = Nugg.load(event.params.buyingTokenId.toHexString()) as Nugg;
+    // itemswap.epochId = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
 
-    invariant(nuggItem != null, 'handleOfferItem: BUYINGNUGG CANNOT BE NULL');
+    store.remove('ItemSwap', itemswap.id);
+    store.remove('ItemOffer', owneritemoffer.id);
 
-    let offer = ItemOffer.load(swap.id.concat('-').concat(buyingNugg.id)) as ItemOffer;
+    itemswap.epoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
+    itemswap.id = nuggitem.id.concat('-').concat(itemswap.epoch as string);
+    itemswap.save();
 
-    if (offer == null) {
-        offer = new ItemOffer(swap.id.concat('-').concat(buyingNugg.id));
-        offer.claimed = false;
-        offer.eth = BigInt.fromString('0');
-        offer.ethUsd = BigInt.fromString('0');
-        offer.owner = false;
-        offer.nugg = buyingNugg.id;
-        offer.swap = swap.id;
-        offer.save();
+    owneritemoffer.id = itemswap.id.concat('-').concat(itemswap.owner);
+    owneritemoffer.swap = itemswap.id;
+
+    owneritemoffer.save();
+
+    nuggitem.activeSwap = itemswap.id;
+    nuggitem.save();
+
+    let buyingNugg = safeLoadNugg(event.params.buyingTokenId.toString());
+
+    let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyingNugg);
+
+    if (itemoffer == null) {
+        itemoffer = new ItemOffer(itemswap.id.concat('-').concat(buyingNugg.id));
+        itemoffer.claimed = false;
+        itemoffer.eth = BigInt.fromString('0');
+        itemoffer.ethUsd = BigInt.fromString('0');
+        itemoffer.owner = false;
+        itemoffer.nugg = buyingNugg.id;
+        itemoffer.swap = itemswap.id;
+        itemoffer.save();
     }
 
-    offer.eth = offer.eth.plus(event.transaction.value);
-    offer.ethUsd = wethToUsdc(offer.eth);
+    itemoffer.eth = itemoffer.eth.plus(event.transaction.value);
+    itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
 
-    swap.eth = offer.eth;
-    swap.ethUsd = offer.ethUsd;
+    itemswap.eth = itemoffer.eth;
+    itemswap.ethUsd = itemoffer.ethUsd;
 
-    swap.leader = buyingNugg.id;
+    itemswap.leader = buyingNugg.id;
 
-    swap.epochId = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
-    swap.epoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
-
-    offer.save();
-    swap.save();
+    itemoffer.save();
+    itemswap.save();
 
     log.info('handleCommitItem end', []);
 }
@@ -72,50 +94,39 @@ export function handleCommitItem(event: CommitItem): void {
 export function handleOfferItem(event: OfferItem): void {
     log.info('handleOfferItem start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
 
-    invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
+    let item = safeLoadItem(event.params.itemId.toString());
 
-    let nugg = Nugg.load(event.params.sellingTokenId.toString()) as Nugg;
+    let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    invariant(nugg != null, 'handleOfferItem: NUGG CANNOT BE NULL');
+    if (nuggitem.activeSwap == '') log.critical('handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
 
-    let nuggItem = NuggItem.load(event.params.itemId.toString()) as NuggItem;
+    let itemswap = safeLoadItemSwap(nuggitem.activeSwap as string);
 
-    invariant(nuggItem != null, 'handleOfferItem: NUGG.activeSwap CANNOT BE NULL');
-    invariant(nuggItem.activeSwap != null, 'handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL');
+    let buyingNugg = safeLoadNugg(event.params.buyingTokenId.toString());
 
-    let swap = ItemSwap.load(nuggItem.activeSwap) as ItemSwap;
+    let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyingNugg);
 
-    invariant(swap != null, 'handleOfferItem: SWAP CANNOT BE NULL');
-
-    let buyingNugg = Nugg.load(event.params.buyingTokenId.toString()) as Nugg;
-
-    invariant(buyingNugg != null, 'handleOfferItem: NUGG CANNOT BE NULL');
-
-    let offer = ItemOffer.load(swap.id.concat('-').concat(buyingNugg.id)) as ItemOffer;
-
-    if (offer == null) {
-        offer = new ItemOffer(swap.id.concat('-').concat(buyingNugg.id));
-        offer.claimed = false;
-        offer.eth = BigInt.fromString('0');
-        offer.ethUsd = BigInt.fromString('0');
-        offer.owner = false;
-        offer.nugg = buyingNugg.id;
-        offer.swap = swap.id;
-        offer.save();
+    if (itemoffer == null) {
+        itemoffer = new ItemOffer(itemswap.id.concat('-').concat(buyingNugg.id));
+        itemoffer.claimed = false;
+        itemoffer.eth = BigInt.fromString('0');
+        itemoffer.ethUsd = BigInt.fromString('0');
+        itemoffer.owner = false;
+        itemoffer.nugg = buyingNugg.id;
+        itemoffer.swap = itemswap.id;
+        itemoffer.save();
     }
 
-    offer.eth = offer.eth.plus(event.transaction.value);
-    offer.ethUsd = wethToUsdc(offer.eth);
+    itemoffer.eth = itemoffer.eth.plus(event.transaction.value);
+    itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
+    itemoffer.save();
 
-    swap.eth = offer.eth;
-    swap.ethUsd = offer.ethUsd;
-
-    swap.leader = buyingNugg.id;
-
-    offer.save();
-    swap.save();
+    itemswap.eth = itemoffer.eth;
+    itemswap.ethUsd = itemoffer.ethUsd;
+    itemswap.leader = buyingNugg.id;
+    itemswap.save();
 
     log.info('handleOffer end', []);
 }
@@ -123,33 +134,30 @@ export function handleOfferItem(event: OfferItem): void {
 export function handleClaimItem(event: ClaimItem): void {
     log.info('handleClaimItem start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
 
-    invariant(proto != null, 'handleClaimItem: PROTOCOL CANNOT BE NULL');
+    let item = safeLoadItem(event.params.itemId.toString());
 
-    let sellingNugg = Nugg.load(event.params.sellingTokenId.toString()) as Nugg;
+    let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    invariant(sellingNugg != null, 'handleClaimItem: SELLINGNUGG CANNOT BE NULL');
+    let itemswap = safeLoadItemSwapHelper(nuggitem, event.params.endingEpoch);
 
-    let swap = ItemSwap.load(
-        sellingNugg.id.concat('-').concat(event.params.itemId.toString()).concat(event.params.endingEpoch.toString()),
-    ) as ItemSwap;
+    let buyingNugg = safeLoadNugg(event.params.buyingTokenId.toString());
 
-    invariant(swap != null, 'handleClaimItem: SWAP CANNOT BE NULL');
+    let itemoffer = safeLoadItemOfferHelper(itemswap, buyingNugg);
 
-    let buyingNugg = Nugg.load(event.params.buyingTokenId.toString()) as Nugg;
+    itemoffer.claimed = true;
 
-    invariant(buyingNugg != null, 'handleClaimItem: BUYINGNUGG CANNOT BE NULL');
+    if (itemswap.leader == buyingNugg.id) {
+        nuggitem.activeSwap = null;
+        nuggitem.save();
+        if (itemswap.owner == buyingNugg.id) {
+            store.remove('OfferItem', itemoffer.id);
+            store.remove('SwapItem', itemswap.id);
+        }
+    }
 
-    // @todo - make sure to do this somewhere else - nugg.activeSwap = null;
-
-    let offer = ItemOffer.load(swap.id.concat('-').concat(buyingNugg.id)) as ItemOffer;
-
-    invariant(offer != null, 'handleClaimItem: ITEMOFFER CANNOT BE NULL');
-
-    offer.claimed = true;
-
-    offer.save();
+    itemoffer.save();
 
     log.info('handleClaimItem end', []);
 }
@@ -157,43 +165,38 @@ export function handleClaimItem(event: ClaimItem): void {
 export function handleSwapItem(event: SwapItem): void {
     log.info('handleSwapItem start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
 
-    invariant(proto != null, 'handleSwapItem: PROTOCOL CANNOT BE NULL');
+    let item = safeLoadItem(event.params.itemId.toString());
 
-    let sellingNugg = Nugg.load(event.params.sellingTokenId.toHexString()) as Nugg;
+    let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    invariant(sellingNugg != null, 'handleSwapItem: SELLINGNUGG CANNOT BE NULL');
+    if (nuggitem.activeSwap != null) log.critical('handleSwapItem: nuggitem.activeSwap MUST BE NULL', []);
 
-    let sellingNuggItem = NuggItem.load(sellingNugg.id.concat(event.params.itemId.toString())) as NuggItem;
+    let itemSwap = safeNewItemSwap(nuggitem, BigInt.fromString('0'));
 
-    invariant(sellingNuggItem != null, 'handleSwapItem: SELLINGNUGGITEM CANNOT BE NULL');
-    invariant(sellingNuggItem.activeSwap == null, 'handleSwapItem: sellingNuggItem.activeSwap MUST BE NULL');
-
-    let itemSwap = new ItemSwap(sellingNuggItem.id);
-    sellingNuggItem.activeSwap = itemSwap.id;
-    itemSwap.sellingNuggItem = sellingNuggItem.id;
-    itemSwap.sellingNuggItemId = sellingNuggItem.id;
-
-    // swap.epochId = proto.epoch;
-    // swap.epoch = proto.epoch;
+    itemSwap.sellingNuggItem = nuggitem.id;
+    itemSwap.sellingNuggItemId = nuggitem.id;
     itemSwap.eth = event.transaction.value;
     itemSwap.ethUsd = wethToUsdc(itemSwap.eth);
     itemSwap.owner = sellingNugg.id;
-    // swap.leader = proto.nullUser;
-
+    itemSwap.offers = [];
+    itemSwap.leader = sellingNugg.id;
     itemSwap.save();
 
-    let offer = new ItemOffer(itemSwap.id.concat('-').concat(sellingNugg.id));
+    nuggitem.activeSwap = itemSwap.id;
+    nuggitem.count = nuggitem.count.minus(BigInt.fromString('1'));
+    nuggitem.save();
 
-    offer.claimed = false;
-    offer.eth = event.transaction.value;
-    offer.ethUsd = wethToUsdc(offer.eth);
-    offer.owner = true;
-    offer.nugg = sellingNugg.id;
-    offer.swap = itemSwap.id;
+    let itemoffer = safeNewItemOffer(itemSwap, sellingNugg);
 
-    offer.save();
+    itemoffer.claimed = false;
+    itemoffer.eth = event.transaction.value;
+    itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
+    itemoffer.owner = true;
+    itemoffer.nugg = sellingNugg.id;
+    itemoffer.swap = itemSwap.id;
+    itemoffer.save();
 
     log.info('handleSwapItem end', []);
 }

@@ -1,5 +1,5 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from './../../generated/local/schema';
+import { Nugg, Protocol } from './../../generated/local/schema';
 import { Genesis, PreMint__Params } from './../../generated/local/NuggFT/NuggFT';
 import { handlePreMint } from './../../mappings/nuggft';
 import { logStore } from 'matchstick-as/assembly/store';
@@ -17,6 +17,10 @@ export function handlePreMintDummy1(): void {
 
 export function handlePreMintDummy0(): void {
     handleEvent(createEvent(BigInt.fromString('0'), [BigInt.fromString('5'), BigInt.fromString('11'), BigInt.fromString('11')]));
+}
+
+export function handlePreMintDummy2(nugg: Nugg, items: BigInt[]): void {
+    handleEvent(createEvent(BigInt.fromString(nugg.id), items));
 }
 
 export function handleEvent(event: PreMint): void {
