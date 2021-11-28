@@ -2,9 +2,11 @@ import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
 import { Nugg, User, Item, NuggItem, ItemSwap, ItemOffer } from '../../generated/local/schema';
 import { handleSwapItem } from '../../mappings/itemswap';
 import { SwapItem, SwapItem__Params } from '../../generated/local/NuggFT/NuggFT';
-import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';
+import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
 import { handlePreMintDummy2 } from '../nuggft/PreMint.test';
+import { safeLoadItem } from '../../mappings/safeload';
+import { safeNewUser, safeNewNugg, safeLoadNuggItemHelper, safeLoadItemSwapHelper, safeLoadItemOfferHelper } from '../../mappings/safeload';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
 
@@ -37,8 +39,11 @@ export function createEvent(sellingTokenId: BigInt, itemId: BigInt, value: BigIn
 test('SwapItem 0 - no value', () => {
     runGenesisxNugg();
     // handlePreMintDummy0();
+    log.info('here1', []);
 
-    let user = new User(address3);
+    let user = safeNewUser(Address.fromString(address3));
+    log.info('here1', []);
+
     user.xnugg = BigInt.fromString('0');
     user.ethin = BigInt.fromString('0');
     user.ethout = BigInt.fromString('0');
@@ -46,7 +51,9 @@ test('SwapItem 0 - no value', () => {
     user.offers = [];
     user.save();
 
-    let nugg = new Nugg('420');
+    let nugg = safeNewNugg(BigInt.fromString('420'));
+    log.info('here1', []);
+
     nugg.swaps = [];
     nugg.items = [];
     nugg.offers = [];
@@ -54,28 +61,22 @@ test('SwapItem 0 - no value', () => {
     nugg.save();
 
     let floor = '200';
+    log.info('here1', []);
 
     handlePreMintDummy2(nugg, [BigInt.fromI32(11), BigInt.fromI32(12)]);
+    log.info('here2', []);
 
-    let item11 = Item.load('11') as Item;
-    let item12 = Item.load('12') as Item;
+    let item11 = safeLoadItem(BigInt.fromString('11'));
+    let item12 = safeLoadItem(BigInt.fromString('12'));
 
-    let nuggItem11 = NuggItem.load(nugg.id + '-' + item11.id) as NuggItem;
-    let nuggItem12 = NuggItem.load(nugg.id + '-' + item12.id) as NuggItem;
-
-    assert.fieldEquals('NuggItem', nuggItem11.id, 'count', '1');
-    assert.fieldEquals('NuggItem', nuggItem12.id, 'count', '1');
-    // assert.fieldEquals('NuggItem', nuggItem11.id, 'activeSwap', '');
-    // assert.fieldEquals('NuggItem', nuggItem12.id, 'activeSwap', '');
+    let nuggItem11 = safeLoadNuggItemHelper(nugg, item11);
+    let nuggItem12 = safeLoadNuggItemHelper(nugg, item12);
 
     handleSwapItemDummy0(nuggItem11, BigInt.fromString(floor));
 
-    assert.fieldEquals('NuggItem', nuggItem11.id, 'count', '0');
-    assert.fieldEquals('NuggItem', nuggItem12.id, 'count', '1');
+    let itemSwap11 = safeLoadItemSwapHelper(nuggItem11, BigInt.fromString('0'));
 
-    let itemSwap11 = ItemSwap.load(nuggItem11.id + '-' + '0') as ItemSwap;
-
-    let itemOffer11 = ItemOffer.load(itemSwap11.id + '-' + nugg.id) as ItemOffer;
+    let itemOffer11 = safeLoadItemOfferHelper(itemSwap11, nugg);
 
     assert.notInStore('ItemSwap', nuggItem12.id + '-' + '0');
 

@@ -23,8 +23,8 @@ test('handleGenesis 0', () => {
     handleGenesis(newGenesisEvent);
     assert.fieldEquals('Protocol', '0x42069', 'id', '0x42069');
 
-    assert.fieldEquals('Protocol', '0x42069', 'xnuggUser', newGenesisEvent.address.toHexString());
-    assert.fieldEquals('Protocol', '0x42069', 'nuggftUser', niladdress);
+    assert.fieldEquals('Protocol', '0x42069', 'xnuggUser', '' + newGenesisEvent.address.toHexString());
+    assert.fieldEquals('Protocol', '0x42069', 'nuggftUser', '' + niladdress);
 
     assert.fieldEquals('Epoch', '0', 'id', '0');
 

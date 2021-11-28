@@ -1,7 +1,8 @@
-import { BigInt, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
 import { Epoch, Protocol, User } from '../generated/local/schema';
 import { Transfer, Receive, Send, Genesis } from '../generated/local/xNUGG/xNUGG';
 import { invariant } from './uniswap';
+import { safeLoadProtocol, safeLoadUser, safeNewUser, safeLoadUserNull } from './safeload';
 
 export function handleGenesis(event: Genesis): void {
     log.info('handleGenesisxNUGG start', []);
@@ -24,13 +25,13 @@ export function handleGenesis(event: Genesis): void {
     proto.priceUsdcWeth = BigInt.fromString('0');
     proto.priceWethXnugg = BigInt.fromString('0');
 
-    let xnugg = new User(event.address.toHexString());
+    let xnugg = safeNewUser(event.address);
     xnugg.xnugg = BigInt.fromString('0');
     xnugg.nuggs = [];
     xnugg.offers = [];
     xnugg.save();
 
-    let nil = new User('0x0000000000000000000000000000000000000000');
+    let nil = safeNewUser(Address.fromString('0x0000000000000000000000000000000000000000'));
     nil.xnugg = BigInt.fromString('0');
     nil.nuggs = [];
     nil.offers = [];
@@ -59,17 +60,15 @@ export function handleGenesis(event: Genesis): void {
 export function handleTransfer(event: Transfer): void {
     log.info('xNUGG handleTransfer start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
-
-    invariant(proto != null, 'xNUGG handleTransfer: PROTOCOL CANNOT BE NULL');
+    let proto = safeLoadProtocol('0x42069');
 
     if (event.params.to.toHexString() == proto.nullUser) {
         proto.xnuggTotalSupply = proto.xnuggTotalSupply.minus(event.params.value);
     } else {
-        let to = User.load(event.params.to.toHexString()) as User;
+        let to = safeLoadUserNull(event.params.to);
 
         if (to == null) {
-            to = new User(event.params.to.toHexString()) as User;
+            to = safeNewUser(event.params.to);
             to.xnugg = BigInt.fromString('0');
         }
 
@@ -81,9 +80,7 @@ export function handleTransfer(event: Transfer): void {
     if (event.params.from.toHexString() == proto.nullUser) {
         proto.xnuggTotalSupply = proto.xnuggTotalSupply.plus(event.params.value);
     } else {
-        let from = User.load(event.params.from.toHexString()) as User;
-
-        invariant(from != null, 'xNUGG handleTransfer: FROM ADDRESS CANNOT BE NULL');
+        let from = safeLoadUser(event.params.from);
 
         from.xnugg = from.xnugg.minus(event.params.value);
 
@@ -98,13 +95,11 @@ export function handleTransfer(event: Transfer): void {
 export function handleReceive(event: Receive): void {
     log.info('xNUGG handleReceive start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
+    let proto = safeLoadProtocol('0x42069');
 
-    invariant(proto != null, 'xNUGG handleReceive: PROTOCOL CANNOT BE NULL');
-
-    let user = User.load(event.params.sender.toHexString()) as User;
+    let user = safeLoadUserNull(event.params.sender);
     if (user == null) {
-        user = new User(event.params.sender.toHexString()) as User;
+        user = safeNewUser(event.params.sender);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -122,14 +117,12 @@ export function handleReceive(event: Receive): void {
 export function handleSend(event: Send): void {
     log.info('xNUGG handleSend start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
+    let proto = safeLoadProtocol('0x42069');
 
-    invariant(proto != null, 'xNUGG handleSend: PROTOCOL CANNOT BE NULL');
-
-    let user = User.load(event.params.receiver.toHexString()) as User;
+    let user = safeLoadUserNull(event.params.receiver);
 
     if (user == null) {
-        user = new User(event.params.receiver.toHexString()) as User;
+        user = safeNewUser(event.params.receiver);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');

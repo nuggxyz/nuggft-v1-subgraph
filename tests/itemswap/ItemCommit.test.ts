@@ -11,6 +11,8 @@ import { handlePreMintDummy2 } from '../nuggft/PreMint.test';
 import { handleSwapItemDummy0 } from './ItemSwap.test';
 
 // import { handleSwapDummy0 } from './ItemSwap.test';
+import { safeNewNugg, safeNewUser } from '../../mappings/safeload';
+import { safeLoadItem, safeLoadNuggItemHelper, safeLoadItemSwapHelper, safeLoadItemOfferHelper } from '../../mappings/safeload';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
 
@@ -44,7 +46,7 @@ export function createEvent(sellingTokenId: BigInt, itemId: BigInt, buyingTokenI
 test('CommitItem 0 - with value', () => {
     runGenesisxNugg();
 
-    let user = new User(address1);
+    let user = safeNewUser(Address.fromString(address1));
     user.xnugg = BigInt.fromString('0');
     user.ethin = BigInt.fromString('0');
     user.ethout = BigInt.fromString('0');
@@ -52,14 +54,14 @@ test('CommitItem 0 - with value', () => {
     user.offers = [];
     user.save();
 
-    let seller = new Nugg('420');
+    let seller = safeNewNugg(BigInt.fromString('420'));
     seller.swaps = [];
     seller.items = [];
     seller.offers = [];
     seller.user = user.id;
     seller.save();
 
-    let buyer = new Nugg('69');
+    let buyer = safeNewNugg(BigInt.fromString('69'));
     buyer.swaps = [];
     buyer.items = [];
     buyer.offers = [];
@@ -71,24 +73,22 @@ test('CommitItem 0 - with value', () => {
 
     handlePreMintDummy2(seller, [BigInt.fromI32(11), BigInt.fromI32(12)]);
 
-    let item11 = Item.load('11') as Item;
-    let item12 = Item.load('12') as Item;
+    let item11 = safeLoadItem(BigInt.fromString('11'));
+    let item12 = safeLoadItem(BigInt.fromString('12'));
 
-    let sellerItem11 = NuggItem.load(seller.id + '-' + item11.id) as NuggItem;
-    let sellerItem12 = NuggItem.load(seller.id + '-' + item12.id) as NuggItem;
+    let sellerItem11 = safeLoadNuggItemHelper(seller, item11);
+    let sellerItem12 = safeLoadNuggItemHelper(seller, item12);
 
     assert.fieldEquals('NuggItem', sellerItem11.id, 'count', '1');
     assert.fieldEquals('NuggItem', sellerItem12.id, 'count', '1');
 
     handleSwapItemDummy0(sellerItem11, BigInt.fromString(floor));
 
-    // let sellerItemSwap11 = ItemSwap.load(sellerItem11.id + '-' + '0') as ItemSwap;
-
     handleCommitItemDummy0(sellerItem11, buyer, BigInt.fromString(buyamount));
 
-    let sellerItemSwap11 = ItemSwap.load(sellerItem11.id + '-' + '1') as ItemSwap;
+    let sellerItemSwap11 = safeLoadItemSwapHelper(sellerItem11, BigInt.fromString('1'));
 
-    let buyerItemOffer11 = ItemOffer.load(sellerItemSwap11.id + '-' + buyer.id) as ItemOffer;
+    let buyerItemOffer11 = safeLoadItemOfferHelper(sellerItemSwap11, buyer);
 
     assert.fieldEquals('ItemSwap', sellerItemSwap11.id, 'id', sellerItemSwap11.id);
     assert.fieldEquals('ItemSwap', sellerItemSwap11.id, 'leader', buyer.id);

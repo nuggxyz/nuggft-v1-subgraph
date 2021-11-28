@@ -13,12 +13,10 @@ import {
 import { ItemOffer, ItemSwap, NuggItem } from '../generated/local/schema';
 import { Nugg, Swap as SwapObject, Protocol, User, Offer as OfferObject } from '../generated/local/schema';
 import { invariant, wethToUsdc } from './uniswap';
-import { safeLoadItemSwapHelperNull, safeNewItemSwap, safeNewItemOffer } from './safeload';
+import { safeLoadItemSwapHelperNull, safeNewItemSwap, safeNewItemOffer, safeLoadActiveItemSwap } from './safeload';
 import {
     safeLoadProtocol,
     safeLoadNugg,
-    safeLoadNuggItem,
-    safeLoadItemSwap,
     safeLoadItemSwapHelper,
     safeLoadItemOfferHelper,
     safeLoadItem,
@@ -31,21 +29,17 @@ export function handleCommitItem(event: CommitItem): void {
 
     let proto = safeLoadProtocol('0x42069');
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId.toString());
+    let item = safeLoadItem(event.params.itemId);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap == '') log.critical('handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
-
-    let itemswap = safeLoadItemSwap(nuggitem.activeSwap as string);
+    let itemswap = safeLoadActiveItemSwap(nuggitem);
 
     if (itemswap.epoch != null) log.critical('handleOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
 
     let owneritemoffer = safeLoadItemOfferHelper(itemswap, sellingNugg);
-
-    // itemswap.epochId = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
 
     store.remove('ItemSwap', itemswap.id);
     store.remove('ItemOffer', owneritemoffer.id);
@@ -62,7 +56,7 @@ export function handleCommitItem(event: CommitItem): void {
     nuggitem.activeSwap = itemswap.id;
     nuggitem.save();
 
-    let buyingNugg = safeLoadNugg(event.params.buyingTokenId.toString());
+    let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyingNugg);
 
@@ -94,17 +88,15 @@ export function handleCommitItem(event: CommitItem): void {
 export function handleOfferItem(event: OfferItem): void {
     log.info('handleOfferItem start', []);
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId.toString());
+    let item = safeLoadItem(event.params.itemId);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap == '') log.critical('handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
+    let itemswap = safeLoadActiveItemSwap(nuggitem);
 
-    let itemswap = safeLoadItemSwap(nuggitem.activeSwap as string);
-
-    let buyingNugg = safeLoadNugg(event.params.buyingTokenId.toString());
+    let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyingNugg);
 
@@ -134,15 +126,15 @@ export function handleOfferItem(event: OfferItem): void {
 export function handleClaimItem(event: ClaimItem): void {
     log.info('handleClaimItem start', []);
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId.toString());
+    let item = safeLoadItem(event.params.itemId);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
     let itemswap = safeLoadItemSwapHelper(nuggitem, event.params.endingEpoch);
 
-    let buyingNugg = safeLoadNugg(event.params.buyingTokenId.toString());
+    let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
 
     let itemoffer = safeLoadItemOfferHelper(itemswap, buyingNugg);
 
@@ -165,9 +157,9 @@ export function handleClaimItem(event: ClaimItem): void {
 export function handleSwapItem(event: SwapItem): void {
     log.info('handleSwapItem start', []);
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId.toString());
+    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId.toString());
+    let item = safeLoadItem(event.params.itemId);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 

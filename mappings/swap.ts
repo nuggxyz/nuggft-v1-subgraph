@@ -1,40 +1,29 @@
 import { log, BigInt, store } from '@graphprotocol/graph-ts';
+import { Claim, Commit, Swap as SwapEvent, Mint, Offer } from '../generated/local/NuggFT/NuggFT';
+import { Swap as SwapObject, User, Offer as OfferObject } from '../generated/local/schema';
 import {
-    Claim,
-    ClaimItem,
-    Commit,
-    CommitItem,
-    Swap as SwapEvent,
-    Mint,
-    Offer,
-    OfferItem,
-    SwapItem,
-} from '../generated/local/NuggFT/NuggFT';
-import { Nugg, Swap as SwapObject, Protocol, User, Offer as OfferObject } from '../generated/local/schema';
+    safeLoadActiveSwap,
+    safeLoadNugg,
+    safeLoadOfferHelperNull,
+    safeLoadProtocol,
+    safeLoadUserNull,
+    safeNewOfferHelper,
+    safeNewSwapHelper,
+    safeNewUser,
+} from './safeload';
 import { invariant, wethToUsdc } from './uniswap';
-// import { invariant, wethToUsdc } from './uniswap';
 
 export function handleMint(event: Mint): void {
     log.info('handleMint start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
-    log.info('Protocol.load', []);
+    let proto = safeLoadProtocol('0x42069');
 
-    // invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
+    let nugg = safeLoadNugg(BigInt.fromString(proto.epoch));
 
-    let nugg = Nugg.load(proto.epoch) as Nugg;
-    log.info('Nugg.load', []);
-    log.info(nugg.activeSwap == null ? 'true' : 'false', []);
-    log.info(event.params ? event.params.account.toHexString() : 'null', []);
-
-    // invariant(nugg != null, 'handleMint: NUGG CANNOT BE NULL');
-    // invariant(nugg.activeSwap == null, 'handleMint: NUGG.activeSwap MUST BE NULL');
-
-    let user = User.load(event.params.account.toHexString());
-    log.info('User.load', []);
+    let user = safeLoadUserNull(event.params.account);
 
     if (user == null) {
-        user = new User(event.params.account.toHexString());
+        user = safeNewUser(event.params.account);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -44,11 +33,13 @@ export function handleMint(event: Mint): void {
 
     user.save();
 
-    let swap = new SwapObject(proto.epoch.concat('-').concat(proto.epoch));
+    if (proto.epoch != event.params.epoch.toString())
+        log.critical('handleMint: INVALID EPOCH: ' + proto.epoch + ' != ' + event.params.epoch.toString(), []);
+
+    let swap = safeNewSwapHelper(BigInt.fromString(proto.epoch), BigInt.fromString(proto.epoch));
 
     invariant(proto.epoch == event.params.epoch.toString(), 'handleMint: INVALID EPOCH');
 
-    // swap.epochId = proto.epoch;
     swap.epoch = proto.epoch;
     swap.eth = event.transaction.value;
     swap.ethUsd = wethToUsdc(swap.eth);
@@ -61,7 +52,7 @@ export function handleMint(event: Mint): void {
 
     nugg.save();
 
-    let offer = new OfferObject(swap.id.concat('-').concat(user.id));
+    let offer = safeNewOfferHelper(swap, user);
 
     offer.claimed = false;
     offer.eth = event.transaction.value;
@@ -78,19 +69,15 @@ export function handleMint(event: Mint): void {
 export function handleCommit(event: Commit): void {
     log.info('handleCommit start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
-    log.info('Protocol.load', []);
+    let proto = safeLoadProtocol('0x42069');
 
-    // invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
+    let nugg = safeLoadNugg(event.params.tokenid);
 
-    let nugg = Nugg.load(event.params.tokenid.toString()) as Nugg;
+    let swap = safeLoadActiveSwap(nugg);
 
-    // invariant(nugg != null, 'handleCommit: NUGG CANNOT BE NULL');
-    invariant(nugg.activeSwap != null, 'handleCommit: NUGG.activeSwap CANNOT BE NULL');
-    let swap = SwapObject.load(nugg.activeSwap as string) as SwapObject;
     let owneroffer = OfferObject.load(swap.id.concat('-').concat(swap.owner)) as OfferObject;
 
-    invariant(swap.epoch == '', 'handleCommit: SWAP.epochId MUST BE NULL');
+    if (swap.epoch != '') log.critical('handleCommit: SWAP.epochId MUST BE NULL', []);
 
     store.remove('Swap', swap.id);
     store.remove('Offer', owneroffer.id);
@@ -106,12 +93,10 @@ export function handleCommit(event: Commit): void {
 
     nugg.save();
 
-    // invariant(swap != null, 'handleCommit: SWAP CANNOT BE NULL');
-
-    let user = User.load(event.params.account.toHexString());
+    let user = safeLoadUserNull(event.params.account);
 
     if (user == null) {
-        user = new User(event.params.account.toHexString());
+        user = safeNewUser(event.params.account);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -119,10 +104,10 @@ export function handleCommit(event: Commit): void {
         user.save();
     }
 
-    let offer = OfferObject.load(swap.id.concat('-').concat(user.id));
+    let offer = safeLoadOfferHelperNull(swap, user);
 
     if (offer == null) {
-        offer = new OfferObject(swap.id.concat('-').concat(user.id));
+        offer = safeNewOfferHelper(swap, user);
         offer.claimed = false;
         offer.eth = BigInt.fromString('0');
         offer.ethUsd = BigInt.fromString('0');
@@ -151,25 +136,14 @@ export function handleCommit(event: Commit): void {
 export function handleOffer(event: Offer): void {
     log.info('handleOffer start', []);
 
-    // let proto = Protocol.load('0x42069') as Protocol as Protocol;
+    let nugg = safeLoadNugg(event.params.tokenid);
 
-    // invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
+    let swap = safeLoadActiveSwap(nugg);
 
-    let nugg = Nugg.load(event.params.tokenid.toString()) as Nugg;
-    log.info('Nugg.load', []);
-
-    // invariant(nugg != null, 'handleOffer: NUGG CANNOT BE NULL');
-    invariant(nugg.activeSwap != null, 'handleOffer: NUGG.activeSwap CANNOT BE NULL');
-
-    let swap = SwapObject.load(nugg.activeSwap as string) as SwapObject;
-    log.info('SwapObject.load', []);
-
-    // invariant(swap != null, 'handleOffer: SWAP CANNOT BE NULL');
-
-    let user = User.load(event.params.account.toHexString());
+    let user = safeLoadUserNull(event.params.account);
 
     if (user == null) {
-        user = new User(event.params.account.toHexString());
+        user = safeNewUser(event.params.account);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -178,10 +152,10 @@ export function handleOffer(event: Offer): void {
         user.save();
     }
 
-    let offer = OfferObject.load(swap.id.concat('-').concat(user.id));
+    let offer = safeLoadOfferHelperNull(swap, user);
 
     if (offer == null) {
-        offer = new OfferObject(swap.id.concat('-').concat(user.id));
+        offer = safeNewOfferHelper(swap, user);
         offer.claimed = false;
         offer.eth = BigInt.fromString('0');
         offer.ethUsd = BigInt.fromString('0');
@@ -209,31 +183,13 @@ export function handleOffer(event: Offer): void {
 export function handleClaim(event: Claim): void {
     log.info('handleClaim start', []);
 
-    // let proto = Protocol.load('0x42069') as Protocol;
-
-    // invariant(proto != null, 'handleClaim: PROTOCOL CANNOT BE NULL');
-
-    let nugg = Nugg.load(event.params.tokenid.toString()) as Nugg;
-    log.info('Nugg.load', []);
-
-    // invariant(nugg != null, 'handleClaim: NUGG CANNOT BE NULL');
-
-    // let endingEpoch = event.params.endingEpoch.toString().replace('0', proto.)
+    let nugg = safeLoadNugg(event.params.tokenid);
 
     let swap = SwapObject.load(nugg.id.concat('-').concat(event.params.endingEpoch.toString())) as SwapObject;
-    log.info('SwapObject.load', []);
-
-    // invariant(swap != null, 'handleClaim: SWAP CANNOT BE NULL');
 
     let user = User.load(event.params.account.toHexString()) as User;
-    log.info('User.load', []);
-
-    // invariant(nugg != null, 'handleClaim: USER CANNOT BE NULL');
-
-    // @todo - make sure to do this somewhere else - nugg.activeSwap = null;
 
     let offer = OfferObject.load(swap.id.concat('-').concat(user.id)) as OfferObject;
-    log.info('OfferObject.load', []);
 
     offer.claimed = true;
 
@@ -254,29 +210,17 @@ export function handleClaim(event: Claim): void {
 export function handleSwap(event: SwapEvent): void {
     log.info('handleSwap start', []);
 
-    let proto = Protocol.load('0x42069') as Protocol;
-
-    // invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
-
     let user = User.load(event.params.account.toHexString()) as User;
 
-    // invariant(user != null, 'handleSwap: USER CANNOT BE NULL');
-
-    let nugg = Nugg.load(event.params.tokenid.toString()) as Nugg;
-
-    // invariant(nugg != null, 'handleOffer: NUGG CANNOT BE NULL');
-    // invariant(nugg.activeSwap == null, 'handleOffer: NUGG.activeSwap MUST BE NULL');
+    let nugg = safeLoadNugg(event.params.tokenid);
 
     let swap = new SwapObject(nugg.id.concat('-').concat('0'));
 
-    // swap.epochId = proto.epoch;
-    // swap.epoch = proto.epoch;
     swap.eth = event.transaction.value;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = user.id;
     swap.leader = user.id;
     swap.offers = [];
-    // swap.epoch =
 
     swap.save();
 
