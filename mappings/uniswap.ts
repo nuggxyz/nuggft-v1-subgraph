@@ -2,10 +2,10 @@ import { BigInt, log } from '@graphprotocol/graph-ts';
 
 import { Protocol } from '../generated/local/schema';
 import { Swap } from '../generated/local/UniswapV3PoolUsdc/UniswapV3Pool';
-export { runTests } from '../../tests/protocol.test';
 
 export function invariant(test: boolean, error: string): void {
     if (!test) {
+        log.warning(error, []);
         log.critical(error, []);
     }
 }

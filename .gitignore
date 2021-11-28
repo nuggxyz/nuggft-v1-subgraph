@@ -2,3 +2,4 @@ generated
 .env
 
 node_modules
+.bin

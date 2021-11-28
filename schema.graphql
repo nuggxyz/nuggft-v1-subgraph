@@ -110,6 +110,8 @@ type User @entity {
     id: ID!
 
     xnugg: BigInt!
+    ethin: BigInt!
+    ethout: BigInt!
 
     nuggs: [Nugg!]! @derivedFrom(field: "user")
 

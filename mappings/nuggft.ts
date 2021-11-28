@@ -17,10 +17,31 @@ import {
 import { Transfer } from '../generated/ropsten/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant } from './uniswap';
-export { runTests } from '../../tests/protocol.test';
 
 function makeNuggItemId(tokenId: string, itemId: string): string {
     return tokenId.concat('-').concat(itemId);
+}
+
+export function handleGenesisNuggFT(event: Genesis): void {
+    log.info('handleGenesisNuggFT start', []);
+
+    let proto = Protocol.load('0x42069') as Protocol;
+
+    invariant(proto != null, 'handleGenesisNuggFT: PROTOCALL CANNOT BE NULL');
+
+    let nuggft = new User(event.address.toHexString());
+
+    nuggft.xnugg = BigInt.fromString('0');
+
+    nuggft.save();
+
+    proto.genesisBlock = event.block.number;
+
+    proto.nuggftUser = nuggft.id;
+
+    proto.save();
+
+    log.info('handleGenesisNuggFT end', []);
 }
 
 export function handlePreMint(event: PreMint): void {
@@ -74,6 +95,8 @@ export function handleTransferNuggFT(event: Transfer): void {
     if (user == null) {
         user = new User(event.params.to.toHexString().toLowerCase());
         user.xnugg = BigInt.fromString('0');
+        user.ethin = BigInt.fromString('0');
+        user.ethout = BigInt.fromString('0');
         user.save();
     }
 

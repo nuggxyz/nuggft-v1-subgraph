@@ -12,7 +12,6 @@ import {
 } from '../generated/local/NuggFT/NuggFT';
 import { Nugg, Swap as SwapObject, Protocol, User, Offer as OfferObject } from '../generated/local/schema';
 import { invariant, wethToUsdc } from './uniswap';
-export { runTests } from '../../tests/protocol.test';
 
 export function handleMint(event: Mint): void {
     log.info('handleMint start', []);
@@ -31,6 +30,8 @@ export function handleMint(event: Mint): void {
     if (user == null) {
         user = new User(event.params.account.toHexString());
         user.xnugg = BigInt.fromString('0');
+        user.ethin = BigInt.fromString('0');
+        user.ethout = BigInt.fromString('0');
     }
 
     user.save();
@@ -93,6 +94,9 @@ export function handleCommit(event: Commit): void {
     if (user == null) {
         user = new User(event.params.account.toHexString());
         user.xnugg = BigInt.fromString('0');
+        user.ethin = BigInt.fromString('0');
+        user.ethout = BigInt.fromString('0');
+
         user.save();
     }
 
@@ -147,6 +151,8 @@ export function handleOffer(event: Offer): void {
     if (user == null) {
         user = new User(event.params.account.toHexString());
         user.xnugg = BigInt.fromString('0');
+        user.ethin = BigInt.fromString('0');
+        user.ethout = BigInt.fromString('0');
         user.save();
     }
 
