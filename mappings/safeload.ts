@@ -1,6 +1,32 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
 import { Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User } from '../generated/local/schema';
 
+export function safeAddNuggToProtcol(): void {
+    let loaded = safeLoadProtocol('0x42069');
+    loaded.totalNuggs = loaded.totalNuggs.plus(BigInt.fromString('1'));
+    loaded.save();
+}
+export function safeAddUserToProtcol(): void {
+    let loaded = safeLoadProtocol('0x42069');
+    loaded.totalUsers = loaded.totalUsers.plus(BigInt.fromString('1'));
+    loaded.save();
+}
+export function safeAddSwapToProtcol(): void {
+    let loaded = safeLoadProtocol('0x42069');
+    loaded.totalSwaps = loaded.totalSwaps.plus(BigInt.fromString('1'));
+    loaded.save();
+}
+export function safeAddItemToProtcol(): void {
+    let loaded = safeLoadProtocol('0x42069');
+    loaded.totalItems = loaded.totalItems.plus(BigInt.fromString('1'));
+    loaded.save();
+}
+export function safeAddItemSwapToProtcol(): void {
+    let loaded = safeLoadProtocol('0x42069');
+    loaded.totalItemSwaps = loaded.totalItemSwaps.plus(BigInt.fromString('1'));
+    loaded.save();
+}
+
 export function safeLoadProtocol(id: string): Protocol {
     let loaded = Protocol.load('' + id);
     if (loaded == null) log.critical('Protocol CANNOT BE NULL:' + id, []);
@@ -16,6 +42,7 @@ export function safeLoadNugg(id: BigInt): Nugg {
 
 export function safeNewNugg(id: BigInt): Nugg {
     let loaded = new Nugg('' + id.toString());
+    safeAddNuggToProtcol();
     return loaded;
 }
 
@@ -29,6 +56,7 @@ export function safeLoadUser(userId: Address): User {
 export function safeNewUser(userId: Address): User {
     let id = '' + userId.toHexString();
     let loaded = new User(id);
+    safeAddUserToProtcol();
     return loaded;
 }
 
@@ -51,6 +79,7 @@ export function safeLoadItemNull(id: BigInt): Item | null {
 
 export function safeNewItem(id: BigInt): Item {
     let loaded = new Item('' + id.toString());
+    safeAddItemToProtcol();
     return loaded as Item;
 }
 
@@ -80,6 +109,7 @@ export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
     let header = '';
     let id = header.concat(nugg.id).concat('-').concat(item.id.toString());
     let loaded = new NuggItem(id);
+
     return loaded;
 }
 export function safeLoadActiveSwap(nugg: Nugg): Swap {
@@ -93,6 +123,7 @@ export function safeLoadActiveSwap(nugg: Nugg): Swap {
 export function safeNewSwapHelper(tokenId: BigInt, endingEpoch: BigInt): Swap {
     let id = '' + tokenId.toString() + '-' + endingEpoch.toString();
     let swap = new Swap(id);
+    safeAddSwapToProtcol();
     return swap as Swap;
 }
 
@@ -134,6 +165,7 @@ export function safeLoadItemSwapHelperNull(sellingNuggItem: NuggItem, endingEpoc
 export function safeNewItemSwap(sellingNuggItem: NuggItem, endingEpoch: BigInt): ItemSwap {
     let header = '';
     let id = header.concat(sellingNuggItem.id).concat('-').concat(endingEpoch.toString());
+    safeAddItemSwapToProtcol();
     return new ItemSwap(id);
 }
 // export function safeLoadOffer(id: string): Offer {

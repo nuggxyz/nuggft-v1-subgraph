@@ -24,19 +24,6 @@ export function handleGenesis(event: Genesis): void {
 
     proto.priceUsdcWeth = BigInt.fromString('0');
     proto.priceWethXnugg = BigInt.fromString('0');
-
-    let xnugg = safeNewUser(event.address);
-    xnugg.xnugg = BigInt.fromString('0');
-    xnugg.nuggs = [];
-    xnugg.offers = [];
-    xnugg.save();
-
-    let nil = safeNewUser(Address.fromString('0x0000000000000000000000000000000000000000'));
-    nil.xnugg = BigInt.fromString('0');
-    nil.nuggs = [];
-    nil.offers = [];
-    nil.save();
-
     proto.totalSwaps = BigInt.fromString('0');
     proto.totalUsers = BigInt.fromString('0');
     proto.totalNuggs = BigInt.fromString('0');
@@ -47,10 +34,26 @@ export function handleGenesis(event: Genesis): void {
 
     epoch.save();
 
+    let nil = new User('0x0000000000000000000000000000000000000000');
+    nil.xnugg = BigInt.fromString('0');
+    nil.nuggs = [];
+    nil.offers = [];
+    nil.save();
+
     proto.epoch = epoch.id;
-    proto.xnuggUser = xnugg.id;
+    proto.xnuggUser = nil.id;
     proto.nuggftUser = nil.id;
     proto.nullUser = nil.id;
+
+    proto.save();
+
+    let xnugg = safeNewUser(event.address);
+    xnugg.xnugg = BigInt.fromString('0');
+    xnugg.nuggs = [];
+    xnugg.offers = [];
+    xnugg.save();
+
+    proto.xnuggUser = xnugg.id;
 
     proto.save();
 
