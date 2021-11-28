@@ -6,6 +6,7 @@ import { Transfer } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant } from './uniswap';
 import { safeNewNugg } from './safeload';
+import { initEpochs } from './epoch';
 import {
     safeNewUser,
     safeLoadNugg,
@@ -22,6 +23,8 @@ import {
 export function handleGenesis(event: Genesis): void {
     log.info('handleGenesis start', []);
 
+    initEpochs(event.block, event.block.number, BigInt.fromString('25'));
+
     let proto = safeLoadProtocol('0x42069');
 
     let nuggft = safeNewUser(event.address);
@@ -32,8 +35,6 @@ export function handleGenesis(event: Genesis): void {
     nuggft.nuggs = [];
     nuggft.offers = [];
     nuggft.save();
-
-    proto.genesisBlock = event.block.number;
 
     proto.nuggftUser = nuggft.id;
 

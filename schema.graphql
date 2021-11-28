@@ -1,6 +1,11 @@
 type Protocol @entity {
     id: ID!
 
+    init: Boolean!
+
+    lastBlock: BigInt!
+    epoch: Epoch!
+
     totalSwaps: BigInt!
     totalUsers: BigInt!
     totalNuggs: BigInt!
@@ -24,8 +29,6 @@ type Protocol @entity {
 
     tvlEth: BigInt!
     tvlUsd: BigInt!
-
-    epoch: Epoch!
 }
 
 # Waiting
@@ -48,10 +51,17 @@ type Offer @entity {
     owner: Boolean!
 }
 
+enum EpochStatus {
+    OVER
+    ACTIVE
+    PENDING
+}
+
 type Epoch @entity {
     id: ID!
-    # startblock: BigInt!
-    # endblock: BigInt!
+    startblock: BigInt!
+    endblock: BigInt!
+    status: EpochStatus!
 }
 
 type Item @entity {
@@ -96,7 +106,6 @@ type Swap @entity {
 
     offers: [Offer!]! @derivedFrom(field: "swap")
 
-    epochId: String!
     epoch: Epoch!
 
     eth: BigInt!

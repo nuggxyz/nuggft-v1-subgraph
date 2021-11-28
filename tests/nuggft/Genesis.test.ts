@@ -11,6 +11,11 @@ export function createNewGenesisEvent(): Genesis {
     return newGenesisEvent;
 }
 
+export function runGenesisNuggFT(): void {
+    let newGenesisEvent = createNewGenesisEvent();
+    handleGenesis(newGenesisEvent);
+}
+
 test('handleGenesis 0', () => {
     runGenesisxNugg();
 

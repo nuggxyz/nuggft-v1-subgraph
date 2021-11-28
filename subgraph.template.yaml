@@ -63,13 +63,16 @@ dataSources:
                 file: ../../abis/xNUGG.json
           eventHandlers:
               - event: Transfer(indexed address,indexed address,uint256)
-                handler: handleTransferxNUGG
+                handler: handleTransfer
               - event: Receive(address,uint256)
                 handler: handleReceive
               - event: Send(address,uint256)
                 handler: handleSend
               - event: Genesis()
-                handler: handleGenesisxNUGG
+                handler: handleGenesis
+          blockHandlers:
+              - handler: handleBlock
+
     - kind: ethereum/contract
       name: UniswapV3PoolUsdc
       # prettier-ignore

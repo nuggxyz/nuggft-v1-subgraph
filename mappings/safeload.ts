@@ -1,6 +1,31 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User } from '../generated/local/schema';
+import { Epoch, Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User } from '../generated/local/schema';
 
+export function safeLoadActiveEpoch(): Epoch {
+    let loaded = safeLoadProtocol('0x42069');
+
+    if (loaded.epoch == null) log.critical('Protocol.epoch CANNOT BE NULL:', []);
+
+    let epoch = Epoch.load(loaded.epoch);
+
+    if (epoch == null) log.critical('ACTIVE EPOCH CANNOT BE NULL: ' + loaded.epoch, []);
+
+    return epoch as Epoch;
+}
+
+export function safeLoadEpoch(id: BigInt): Epoch {
+    let epoch = Epoch.load(id.toString());
+
+    if (epoch == null) log.critical(' EPOCH CANNOT BE NULL: ' + id.toString(), []);
+
+    return epoch as Epoch;
+}
+
+export function safeNewEpoch(id: BigInt): Epoch {
+    let epoch = new Epoch(id.toString());
+
+    return epoch;
+}
 export function safeAddNuggToProtcol(): void {
     let loaded = safeLoadProtocol('0x42069');
     loaded.totalNuggs = loaded.totalNuggs.plus(BigInt.fromString('1'));
