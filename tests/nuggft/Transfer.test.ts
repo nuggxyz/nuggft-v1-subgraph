@@ -39,4 +39,19 @@ test('Transfer 0', () => {
     clearStore();
 });
 
+test('Transfer 0', () => {
+    runGenesisxNugg();
+    handlePreMintDummy1();
+
+    let event = createEvent('3', niladdress, address0);
+
+    handleTransfer(event);
+
+    assert.fieldEquals('Nugg', '3', 'user', address0);
+
+    assert.fieldEquals('User', address0, 'id', address0);
+    assert.fieldEquals('User', address0, 'xnugg', '0');
+    clearStore();
+});
+
 export { handleTransfer };

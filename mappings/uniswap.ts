@@ -5,7 +5,7 @@ import { Swap } from '../generated/local/UniswapV3PoolUsdc/UniswapV3Pool';
 
 export function invariant(test: boolean, error: string): void {
     if (!test) {
-        log.warning(error, []);
+        log.info(error, []);
         log.critical(error, []);
     }
 }

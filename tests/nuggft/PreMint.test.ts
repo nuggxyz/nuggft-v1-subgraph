@@ -15,6 +15,10 @@ export function handlePreMintDummy1(): void {
     handleEvent(createEvent(BigInt.fromString('3'), [BigInt.fromString('5'), BigInt.fromString('11'), BigInt.fromString('11')]));
 }
 
+export function handlePreMintDummy0(): void {
+    handleEvent(createEvent(BigInt.fromString('0'), [BigInt.fromString('5'), BigInt.fromString('11'), BigInt.fromString('11')]));
+}
+
 export function handleEvent(event: PreMint): void {
     handlePreMint(event);
 }
