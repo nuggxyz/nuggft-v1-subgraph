@@ -13,6 +13,7 @@ import {
 import { ItemOffer, ItemSwap, NuggItem } from '../generated/local/schema';
 import { Nugg, Swap as SwapObject, Protocol, User, Offer as OfferObject } from '../generated/local/schema';
 import { invariant, wethToUsdc } from './uniswap';
+export { runTests } from '../../tests/protocol.test';
 
 export function handleCommitItem(event: CommitItem): void {
     log.info('handleCommitItem start', []);

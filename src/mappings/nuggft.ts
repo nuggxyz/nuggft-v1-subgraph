@@ -17,6 +17,7 @@ import {
 import { Transfer } from '../generated/ropsten/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant } from './uniswap';
+export { runTests } from '../../tests/protocol.test';
 
 function makeNuggItemId(tokenId: string, itemId: string): string {
     return tokenId.concat('-').concat(itemId);

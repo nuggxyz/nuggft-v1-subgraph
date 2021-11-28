@@ -4,8 +4,9 @@ import { Genesis as GenesisNuggFT } from '../generated/local/NuggFT/NuggFT';
 
 import { Epoch, Protocol, User } from '../generated/local/schema';
 import { invariant } from './uniswap';
+export { runTests } from '../../tests/protocol.test';
 
-export function handleGenesisxNUGG(event: GenesisXNUGG) {
+export function handleGenesisxNUGG(event: GenesisXNUGG): void {
     log.info('handleGenesisxNUGG start', []);
 
     let proto = new Protocol('0x42069');
@@ -54,7 +55,7 @@ export function handleGenesisxNUGG(event: GenesisXNUGG) {
     log.info('handleGenesisxNUGG end', []);
 }
 
-export function handleGenesisNuggFT(event: GenesisNuggFT) {
+export function handleGenesisNuggFT(event: GenesisNuggFT): void {
     log.info('handleGenesisNuggFT start', []);
 
     let proto = Protocol.load('0x42069') as Protocol;

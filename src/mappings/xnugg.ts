@@ -2,6 +2,7 @@ import { BigInt, log } from '@graphprotocol/graph-ts';
 import { Protocol, User } from '../generated/local/schema';
 import { Transfer, Receive, Send, Genesis } from '../generated/local/xNUGG/xNUGG';
 import { invariant } from './uniswap';
+export { runTests } from '../../tests/protocol.test';
 
 export function handleTransfer(event: Transfer): void {
     log.info('xNUGG handleTransfer start', []);

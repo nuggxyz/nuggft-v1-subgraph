@@ -12,6 +12,7 @@ import {
 } from '../generated/local/NuggFT/NuggFT';
 import { Nugg, Swap as SwapObject, Protocol, User, Offer as OfferObject } from '../generated/local/schema';
 import { invariant, wethToUsdc } from './uniswap';
+export { runTests } from '../../tests/protocol.test';
 
 export function handleMint(event: Mint): void {
     log.info('handleMint start', []);
