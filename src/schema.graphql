@@ -66,6 +66,10 @@ type NuggItem @entity {
     nugg: Nugg!
 
     count: BigInt!
+
+    activeSwap: ItemSwap
+
+    swaps: [ItemSwap!]! @derivedFrom(field: "sellingNuggItem")
 }
 
 type Nugg @entity {
@@ -73,13 +77,15 @@ type Nugg @entity {
 
     user: User!
 
-    data: BigInt!
+    # data: BigInt!
 
     activeSwap: Swap
 
     swaps: [Swap!]! @derivedFrom(field: "nugg")
 
     items: [NuggItem!]! @derivedFrom(field: "nugg")
+
+    offers: [ItemOffer!]! @derivedFrom(field: "nugg")
 }
 
 type Swap @entity {
@@ -108,27 +114,36 @@ type User @entity {
     nuggs: [Nugg!]! @derivedFrom(field: "user")
 
     offers: [Offer!]! @derivedFrom(field: "user")
-
-    # trades: [Trade!]! @derivedFrom(field: "user")
 }
 
-# type Trade @entity {
-#     id: ID!
+type ItemSwap @entity {
+    id: ID!
 
-#     user: User!
+    sellingNuggItemId: String!
+    sellingNuggItem: NuggItem!
 
-#     xnugg: BigInt!
+    offers: [ItemOffer!]! @derivedFrom(field: "swap")
 
-#     blockNumber: BigInt!
-#     timestamp: BigInt!
-# }
+    epochId: String
+    epoch: Epoch
 
-# type Stake @entity {
-#     id: ID!
+    eth: BigInt!
+    ethUsd: BigInt!
 
-#     ethUsd: BigInt!
-#     eth: BigInt!
+    owner: Nugg!
+    leader: Nugg
+}
 
-#     blockNumber: BigInt!
-#     timestamp: BigInt!
-# }
+type ItemOffer @entity {
+    id: ID!
+
+    swap: ItemSwap!
+    nugg: Nugg!
+
+    eth: BigInt!
+    ethUsd: BigInt!
+
+    claimed: Boolean!
+
+    owner: Boolean!
+}

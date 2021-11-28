@@ -1,7 +1,13 @@
-import { BigInt } from '@graphprotocol/graph-ts';
+import { BigInt, log } from '@graphprotocol/graph-ts';
 
 import { Protocol } from '../generated/local/schema';
 import { Swap } from '../generated/local/UniswapV3PoolUsdc/UniswapV3Pool';
+
+export function invariant(test: boolean, error: string): void {
+    if (!test) {
+        log.critical(error, []);
+    }
+}
 
 export function handleWethUsdcUniswap(event: Swap): void {
     let proto = Protocol.load('0x42069');

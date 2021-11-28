@@ -16,6 +16,7 @@ import {
 } from '../generated/local/NuggFT/NuggFT';
 import { Transfer } from '../generated/ropsten/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
+import { invariant } from './uniswap';
 
 function makeNuggItemId(tokenId: string, itemId: string): string {
     return tokenId.concat('-').concat(itemId);
@@ -24,9 +25,9 @@ function makeNuggItemId(tokenId: string, itemId: string): string {
 export function handlePreMint(event: PreMint): void {
     log.info('handlePreMint start', []);
 
-    let proto = Protocol.load('0x42069');
+    let proto = Protocol.load('0x42069') as Protocol;
 
-    assert(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
+    invariant(proto != null, 'handlePreMint: PROTOCOL CANNOT BE NULL');
 
     let nugg = new Nugg(event.params.tokenId.toString());
 
@@ -63,11 +64,11 @@ export function handlePreMint(event: PreMint): void {
 export function handleTransferNuggFT(event: Transfer): void {
     log.info('handleTransfer start', []);
 
-    let nugg = Nugg.load(event.params.tokenId.toString());
+    let nugg = Nugg.load(event.params.tokenId.toString()) as Nugg;
 
-    assert(nugg != null, 'handleTransfer: NUGG CANNOT BE NULL');
+    invariant(nugg != null, 'handleTransfer: NUGG CANNOT BE NULL');
 
-    let user = User.load(event.params.to.toHexString().toLowerCase());
+    let user = User.load(event.params.to.toHexString().toLowerCase()) as User;
 
     if (user == null) {
         user = new User(event.params.to.toHexString().toLowerCase());
@@ -85,15 +86,15 @@ export function handleTransferNuggFT(event: Transfer): void {
 export function handlePopItem(event: PopItem): void {
     log.info('handlePopItem start', []);
 
-    let nugg = Nugg.load(event.params.tokenId.toString());
+    let nugg = Nugg.load(event.params.tokenId.toString()) as Nugg;
 
-    assert(nugg != null, 'handlePopItem: NUGG CANNOT BE NULL');
+    invariant(nugg != null, 'handlePopItem: NUGG CANNOT BE NULL');
 
-    let item = Item.load(event.params.itemId.toString());
+    let item = Item.load(event.params.itemId.toString()) as Item;
 
-    assert(item != null, 'handlePushItem: ITEM CANNOT BE NULL');
+    invariant(item != null, 'handlePushItem: ITEM CANNOT BE NULL');
 
-    let nuggItem = NuggItem.load(makeNuggItemId(nugg.id, item.id));
+    let nuggItem = NuggItem.load(makeNuggItemId(nugg.id, item.id)) as NuggItem;
 
     if (nuggItem == null) {
         nuggItem = new NuggItem(makeNuggItemId(nugg.id, item.id));
@@ -110,17 +111,17 @@ export function handlePopItem(event: PopItem): void {
 export function handlePushItem(event: PushItem): void {
     log.info('handlePushItem start', []);
 
-    let nugg = Nugg.load(event.params.tokenId.toString());
+    let nugg = Nugg.load(event.params.tokenId.toString()) as Nugg;
 
-    assert(nugg != null, 'handlePushItem: NUGG CANNOT BE NULL');
+    invariant(nugg != null, 'handlePushItem: NUGG CANNOT BE NULL');
 
-    let item = Item.load(event.params.itemId.toString());
+    let item = Item.load(event.params.itemId.toString()) as Item;
 
-    assert(item != null, 'handlePushItem: ITEM CANNOT BE NULL');
+    invariant(item != null, 'handlePushItem: ITEM CANNOT BE NULL');
 
-    let nuggItem = NuggItem.load(makeNuggItemId(nugg.id, item.id));
+    let nuggItem = NuggItem.load(makeNuggItemId(nugg.id, item.id)) as NuggItem;
 
-    assert(nuggItem != null, 'handlePushItem: NUGGITEM CANNOT BE NULL');
+    invariant(nuggItem != null, 'handlePushItem: NUGGITEM CANNOT BE NULL');
 
     nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
 

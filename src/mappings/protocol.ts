@@ -3,6 +3,7 @@ import { Genesis as GenesisXNUGG } from '../generated/local/xNUGG/xNUGG';
 import { Genesis as GenesisNuggFT } from '../generated/local/NuggFT/NuggFT';
 
 import { Epoch, Protocol, User } from '../generated/local/schema';
+import { invariant } from './uniswap';
 
 export function handleGenesisxNUGG(event: GenesisXNUGG) {
     log.info('handleGenesisxNUGG start', []);
@@ -56,9 +57,9 @@ export function handleGenesisxNUGG(event: GenesisXNUGG) {
 export function handleGenesisNuggFT(event: GenesisNuggFT) {
     log.info('handleGenesisNuggFT start', []);
 
-    let proto = Protocol.load('0x42069');
+    let proto = Protocol.load('0x42069') as Protocol;
 
-    assert(proto != null, 'handleGenesisNuggFT: PROTOCALL CANNOT BE NULL');
+    invariant(proto != null, 'handleGenesisNuggFT: PROTOCALL CANNOT BE NULL');
 
     let nuggft = new User(event.address.toHexString());
 
