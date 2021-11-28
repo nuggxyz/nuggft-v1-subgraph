@@ -1,5 +1,5 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
+import { Nugg, Protocol, User } from '../../generated/local/schema';
 import { Genesis } from '../../generated/local/xNUGG/xNUGG';
 import { handleClaim } from '../../mappings/swap';
 import { logStore } from 'matchstick-as/assembly/store';
@@ -9,6 +9,7 @@ import { runGenesisxNugg } from '../xnugg/Genesis.test';
 import { Receive } from '../../generated/local/xNUGG/xNUGG';
 import { handlePreMintDummy1, handlePreMintDummy0 } from '../nuggft/PreMint.test';
 import { handleMintDummy0 } from './Mint.test';
+import { handleSwapDummy0 } from './Swap.test';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
 
@@ -47,27 +48,43 @@ test('Claim 0 - winner', () => {
     handleEvent(createEvent(BigInt.fromString('0'), BigInt.fromString('0'), Address.fromString(address1)));
 
     assert.fieldEquals('Nugg', '0', 'activeSwap', 'null');
-    // assert.fieldEquals('Swap', '0-0', 'leader', address0);
-    // assert.fieldEquals('Swap', '0-0', 'owner', niladdress);
-    // assert.fieldEquals('Swap', '0-0', 'eth', '2000000');
-    // assert.fieldEquals('Swap', '0-0', 'ethUsd', '0');
-    // assert.fieldEquals('Swap', '0-0', 'epoch', '0');
 
-    // assert.fieldEquals('Swap', '0-0', 'id', '0-0');
-    // assert.fieldEquals('Swap', '0-0', 'leader', address0);
-    // assert.fieldEquals('Swap', '0-0', 'owner', niladdress);
-    // assert.fieldEquals('Swap', '0-0', 'eth', '2000000');
-    // assert.fieldEquals('Swap', '0-0', 'ethUsd', '0');
-    // assert.fieldEquals('Swap', '0-0', 'epoch', '0');
-    // assert.fieldEquals('Swap', '0-0', 'epochId', '0');
-
-    // assert.fieldEquals('Offer', offerId, 'id', offerId);
-    // assert.fieldEquals('Offer', offerId, 'owner', 'false');
-    // assert.fieldEquals('Offer', offerId, 'user', address0);
-    // assert.fieldEquals('Offer', offerId, 'eth', '2000000');
-    // assert.fieldEquals('Offer', offerId, 'ethUsd', '0');
     assert.fieldEquals('Offer', offerId, 'claimed', 'true');
     assert.fieldEquals('Offer', offerId, 'swap', '0-0');
+
+    clearStore();
+});
+
+test('Claim 1 - owner', () => {
+    runGenesisxNugg();
+
+    let user = new User(address1);
+    user.xnugg = BigInt.fromString('0');
+    user.ethin = BigInt.fromString('0');
+    user.ethout = BigInt.fromString('0');
+    user.nuggs = [];
+    user.offers = [];
+    user.save();
+
+    let nugg = new Nugg('420');
+    nugg.swaps = [];
+    nugg.items = [];
+    nugg.offers = [];
+    nugg.user = user.id;
+    nugg.save();
+
+    let floor = '200';
+
+    handleSwapDummy0(user, nugg, BigInt.fromString(floor));
+
+    handleEvent(createEvent(BigInt.fromString('420'), BigInt.fromString('0'), Address.fromString(user.id)));
+
+    let swapId = nugg.id + '-0';
+    let offerId = swapId + '-' + user.id;
+
+    assert.notInStore('Offer', offerId);
+    assert.notInStore('Swap', swapId);
+    assert.fieldEquals('Nugg', nugg.id, 'activeSwap', 'null');
 
     clearStore();
 });

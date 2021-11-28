@@ -1,5 +1,5 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
+import { Nugg, Protocol, User } from '../../generated/local/schema';
 import { Genesis } from '../../generated/local/xNUGG/xNUGG';
 import { handleOffer } from '../../mappings/swap';
 import { logStore } from 'matchstick-as/assembly/store';
@@ -13,6 +13,10 @@ import { handleMintDummy0 } from './Mint.test';
 let niladdress = '0x0000000000000000000000000000000000000000';
 
 let address0 = '0xa16081f360e3847006db660bae1c6d1b2eaaaaaa';
+
+export function handleOfferDummy0(user: User, nugg: Nugg, floor: BigInt): void {
+    handleEvent(createEvent(Address.fromString(user.id), BigInt.fromString(nugg.id), floor));
+}
 
 export function handleEvent(event: Offer): void {
     handleOffer(event);

@@ -88,16 +88,25 @@ export function handleCommit(event: Commit): void {
     // invariant(nugg != null, 'handleCommit: NUGG CANNOT BE NULL');
     invariant(nugg.activeSwap != null, 'handleCommit: NUGG.activeSwap CANNOT BE NULL');
     let swap = SwapObject.load(nugg.activeSwap as string) as SwapObject;
+    let owneroffer = OfferObject.load(swap.id.concat('-').concat(swap.owner)) as OfferObject;
 
-    swap.id = nugg.id.concat('-').concat(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString());
+    invariant(swap.epoch == '', 'handleCommit: SWAP.epochId MUST BE NULL');
+
+    store.remove('Swap', swap.id);
+    store.remove('Offer', owneroffer.id);
+
+    swap.epoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
+    swap.id = nugg.id.concat('-').concat(swap.epoch);
     swap.save();
+
+    owneroffer.id = swap.id.concat('-').concat(swap.owner);
+    owneroffer.save();
 
     nugg.activeSwap = swap.id;
 
     nugg.save();
 
     // invariant(swap != null, 'handleCommit: SWAP CANNOT BE NULL');
-    invariant(swap.epoch == null, 'handleCommit: SWAP.epochId MUST BE NULL');
 
     let user = User.load(event.params.account.toHexString());
 
@@ -132,7 +141,6 @@ export function handleCommit(event: Commit): void {
     swap.leader = user.id;
 
     // swap.epochId = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
-    swap.epoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
 
     offer.save();
     swap.save();
@@ -259,18 +267,22 @@ export function handleSwap(event: SwapEvent): void {
     // invariant(nugg != null, 'handleOffer: NUGG CANNOT BE NULL');
     // invariant(nugg.activeSwap == null, 'handleOffer: NUGG.activeSwap MUST BE NULL');
 
-    let swap = new SwapObject(proto.epoch.concat('-').concat('0'));
+    let swap = new SwapObject(nugg.id.concat('-').concat('0'));
 
     // swap.epochId = proto.epoch;
     // swap.epoch = proto.epoch;
     swap.eth = event.transaction.value;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = user.id;
-    swap.leader = proto.nullUser;
+    swap.leader = user.id;
+    swap.offers = [];
+    // swap.epoch =
 
     swap.save();
 
     nugg.activeSwap = swap.id;
+
+    nugg.save();
 
     let offer = new OfferObject(swap.id.concat('-').concat(user.id));
 
