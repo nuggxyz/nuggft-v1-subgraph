@@ -141,7 +141,7 @@ dataSources:
                 file: ../../abis/NuggFT.json
           eventHandlers:
               - event: Transfer(indexed address,indexed address,indexed uint256)
-                handler: handleTransferNuggFT
+                handler: handleTransfer
               - event: Claim(uint256,uint256,address)
                 handler: handleClaim
               - event: ClaimItem(uint256,uint256,uint256,uint256)

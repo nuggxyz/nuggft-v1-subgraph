@@ -101,7 +101,7 @@ type Nugg @entity {
 type Swap @entity {
     id: ID!
 
-    nuggId: String!
+    # nuggId: String!
     nugg: Nugg!
 
     offers: [Offer!]! @derivedFrom(field: "swap")
@@ -130,7 +130,7 @@ type User @entity {
 type ItemSwap @entity {
     id: ID!
 
-    sellingNuggItemId: String!
+    # sellingNuggItemId: String!
     sellingNuggItem: NuggItem!
 
     offers: [ItemOffer!]! @derivedFrom(field: "swap")

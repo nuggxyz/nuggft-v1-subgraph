@@ -168,7 +168,7 @@ export function handleSwapItem(event: SwapItem): void {
     let itemSwap = safeNewItemSwap(nuggitem, BigInt.fromString('0'));
 
     itemSwap.sellingNuggItem = nuggitem.id;
-    itemSwap.sellingNuggItemId = nuggitem.id;
+    // itemSwap.sellingNuggItemId = nuggitem.id;
     itemSwap.eth = event.transaction.value;
     itemSwap.ethUsd = wethToUsdc(itemSwap.eth);
     itemSwap.owner = sellingNugg.id;

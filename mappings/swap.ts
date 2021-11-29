@@ -45,6 +45,8 @@ export function handleMint(event: Mint): void {
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = proto.nullUser;
     swap.leader = user.id;
+    swap.nugg = nugg.id;
+
     //     swap.offers = [];
     swap.save();
 
@@ -221,6 +223,7 @@ export function handleSwap(event: SwapEvent): void {
     swap.owner = user.id;
     swap.leader = user.id;
     //     swap.offers = [];
+    swap.nugg = nugg.id;
 
     swap.save();
 
