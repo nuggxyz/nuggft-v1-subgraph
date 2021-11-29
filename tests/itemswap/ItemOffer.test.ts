@@ -53,28 +53,28 @@ test('OfferItem 0 - with value', () => {
     user.xnugg = BigInt.fromString('0');
     user.ethin = BigInt.fromString('0');
     user.ethout = BigInt.fromString('0');
-    user.nuggs = [];
-    user.offers = [];
+    //     user.nuggs = [];
+    //     user.offers = [];
     user.save();
 
     let seller = safeNewNugg(BigInt.fromString('420'));
-    seller.swaps = [];
-    seller.items = [];
-    seller.offers = [];
+    //     seller.swaps = [];
+    //     seller.items = [];
+    //     seller.offers = [];
     seller.user = user.id;
     seller.save();
 
     let buyer = safeNewNugg(BigInt.fromString('69'));
-    buyer.swaps = [];
-    buyer.items = [];
-    buyer.offers = [];
+    //     buyer.swaps = [];
+    //     buyer.items = [];
+    //     buyer.offers = [];
     buyer.user = user.id;
     buyer.save();
 
     let buyer2 = safeNewNugg(BigInt.fromString('69420'));
-    buyer2.swaps = [];
-    buyer2.items = [];
-    buyer2.offers = [];
+    //     buyer2.swaps = [];
+    //     buyer2.items = [];
+    //     buyer2.offers = [];
     buyer2.user = user.id;
     buyer2.save();
 

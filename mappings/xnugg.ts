@@ -3,6 +3,9 @@ import { Epoch, Protocol, User } from '../generated/local/schema';
 import { Transfer, Receive, Send, Genesis } from '../generated/local/xNUGG/xNUGG';
 import { invariant } from './uniswap';
 import { safeLoadProtocol, safeLoadUser, safeNewUser, safeLoadUserNull } from './safeload';
+import { handleBlock } from './epoch';
+
+export { handleBlock };
 
 export function handleGenesis(event: Genesis): void {
     log.info('handleGenesisxNUGG start', []);
@@ -41,8 +44,8 @@ export function handleGenesis(event: Genesis): void {
 
     let nil = new User('0x0000000000000000000000000000000000000000');
     nil.xnugg = BigInt.fromString('0');
-    nil.nuggs = [];
-    nil.offers = [];
+    //     nil.nuggs = [];
+    //     nil.offers = [];
     nil.save();
 
     proto.epoch = epoch.id;
@@ -54,8 +57,8 @@ export function handleGenesis(event: Genesis): void {
 
     let xnugg = safeNewUser(event.address);
     xnugg.xnugg = BigInt.fromString('0');
-    xnugg.nuggs = [];
-    xnugg.offers = [];
+    //     // xnugg.nuggs = [];
+    //     // xnugg.offers = [];
     xnugg.save();
 
     proto.xnuggUser = xnugg.id;

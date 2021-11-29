@@ -172,7 +172,7 @@ export function handleSwapItem(event: SwapItem): void {
     itemSwap.eth = event.transaction.value;
     itemSwap.ethUsd = wethToUsdc(itemSwap.eth);
     itemSwap.owner = sellingNugg.id;
-    itemSwap.offers = [];
+    //     itemSwap.offers = [];
     itemSwap.leader = sellingNugg.id;
     itemSwap.save();
 

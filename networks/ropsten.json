@@ -1,8 +1,8 @@
 {
-    "startblock": 11430000,
-    "nuggswap": "0x8E696927f4581680698C124cbE8B5143e0Cf9Dbf",
-    "xnugg": "0xEa71B205D6B29224d945a905Af7A25f9E9EF4f3A",
-    "nuggft": "0x77F5f22bAd8fE6e01f6f60309a434de0DF336521",
+    "startblock": 11514000,
+    "xnugg": "0x84500Cc78ce2fF2A9c17af6cdCa2c92ca49682Ca",
+    "nuggft": "0x8F6a8D2aDB2B9062Dcb890EbC8f6b370D73D51A6",
     "network": "ropsten",
-    "uniswapv3pool": "0xee815CDC6322031952a095C6cc6FEd036Cb1F70d"
+    "uniswapv3pool_weth_usdc": "0x5E986c0666b85bD8A8B5e414726022630D400b18",
+    "uniswapv3pool_weth_xnugg": "0x5E986c0666b85bD8A8B5e414726022630D400b18"
 }

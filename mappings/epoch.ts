@@ -1,6 +1,7 @@
 import { ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { Epoch, Protocol } from '../generated/local/schema';
 import { safeLoadActiveEpoch, safeLoadEpoch, safeLoadProtocol, safeNewEpoch } from './safeload';
+import { safeDiv } from './uniswap';
 
 export function initEpochs(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt): void {
     let proto = safeLoadProtocol('0x42069');
@@ -42,9 +43,10 @@ export function initEpochs(block: ethereum.Block, genesisBlock: BigInt, interval
 }
 
 export function handleBlock(block: ethereum.Block): void {
-    let proto = safeLoadProtocol('0x42069');
-
+    let proto = Protocol.load('0x42069');
+    if (proto == null) return;
     proto.lastBlock = block.number;
+    proto.save();
 
     let epoch = safeLoadActiveEpoch();
 
@@ -74,11 +76,11 @@ export function handleBlock(block: ethereum.Block): void {
 
 export function getCurrentEpoch(genesis: BigInt, interval: BigInt, blocknum: BigInt): BigInt {
     let diff = blocknum.minus(genesis);
-    return diff.div(interval);
+    return safeDiv(diff, interval);
 }
 
 export function getCurrentStartBlock(interval: BigInt, blocknum: BigInt): BigInt {
-    let num = blocknum.div(interval).times(interval);
+    let num = safeDiv(blocknum, interval).times(interval);
     return num;
 }
 

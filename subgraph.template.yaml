@@ -151,7 +151,7 @@ dataSources:
               - event: CommitItem(uint256,uint256,uint256,uint256)
                 handler: handleCommitItem
               - event: Genesis()
-                handler: handleGenesisNuggFT
+                handler: handleGenesis
               - event: Mint(uint256,address,uint256)
                 handler: handleMint
               - event: Offer(uint256,address,uint256)
@@ -159,12 +159,12 @@ dataSources:
               - event: OfferItem(uint256,uint256,uint256,uint256)
                 handler: handleOfferItem
               - event: Swap(uint256,address,uint256)
-                handler: handleSwapNuggFT
+                handler: handleSwap
               - event: SwapItem(uint256,uint256,uint256)
-                handler: handleSwapNuggFTItem
+                handler: handleSwapItem
               - event: PopItem(uint256,uint256)
-                handler: handleSwapNuggFTItem
+                handler: handlePopItem
               - event: PreMint(uint256,uint256[])
-                handler: handleSwapNuggFTItem
+                handler: handlePreMint
               - event: PushItem(uint256,uint256)
-                handler: handleSwapNuggFTItem
+                handler: handlePushItem

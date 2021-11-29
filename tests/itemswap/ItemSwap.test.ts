@@ -47,16 +47,16 @@ test('SwapItem 0 - no value', () => {
     user.xnugg = BigInt.fromString('0');
     user.ethin = BigInt.fromString('0');
     user.ethout = BigInt.fromString('0');
-    user.nuggs = [];
-    user.offers = [];
+    //     user.nuggs = [];
+    //     user.offers = [];
     user.save();
 
     let nugg = safeNewNugg(BigInt.fromString('420'));
     log.info('here1', []);
 
-    nugg.swaps = [];
-    nugg.items = [];
-    nugg.offers = [];
+    //     nugg.swaps = [];
+    //     nugg.items = [];
+    //     nugg.offers = [];
     nugg.user = user.id;
     nugg.save();
 

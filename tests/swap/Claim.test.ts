@@ -62,14 +62,14 @@ test('Claim 1 - owner', () => {
     user.xnugg = BigInt.fromString('0');
     user.ethin = BigInt.fromString('0');
     user.ethout = BigInt.fromString('0');
-    user.nuggs = [];
-    user.offers = [];
+    //     user.nuggs = [];
+    //     user.offers = [];
     user.save();
 
     let nugg = new Nugg('420');
-    nugg.swaps = [];
-    nugg.items = [];
-    nugg.offers = [];
+    //     nugg.swaps = [];
+    //     nugg.items = [];
+    //     nugg.offers = [];
     nugg.user = user.id;
     nugg.save();
 

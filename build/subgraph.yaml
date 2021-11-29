@@ -5,112 +5,120 @@ schema:
   file: schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: NuggSwap
-    network: ropsten
-    source:
-      address: "0x8E696927f4581680698C124cbE8B5143e0Cf9Dbf"
-      abi: NuggSwap
-      startBlock: 11430000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      file: NuggSwap/NuggSwap.wasm
-      entities:
-        - Market
-        - Auction
-        - Bid
-        - BidTransaction
-        - Token
-        - XNUGGDayData
-        - XNUGGHourData
-        - NuggFTDayData
-        - NuggFTHourData
-        - Account
-      abis:
-        - name: NuggSwap
-          file: ../abis/NuggSwap.json
-      eventHandlers:
-        - event: SubmitOffer(address,uint256,uint256,address,uint256)
-          handler: handleSubmitOffer
-        - event: SubmitClaim(address,uint256,uint256,address)
-          handler: handleSubmitClaim
-        - event: SubmitSwap(address,uint256,uint256,address,uint256,uint64)
-          handler: handleSubmitSwap
-        - event: Genesis(uint128,uint128)
-          handler: handleGenesis
-  - kind: ethereum/contract
     name: xNUGG
     network: ropsten
     source:
-      address: "0xEa71B205D6B29224d945a905Af7A25f9E9EF4f3A"
+      address: "0x84500Cc78ce2fF2A9c17af6cdCa2c92ca49682Ca"
       abi: xNUGG
-      startBlock: 11430000
+      startBlock: 11514000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: xNUGG/xNUGG.wasm
       entities:
-        - Market
-        - RewardTransfer
-        - Account
-        - XNUGGDayData
-        - XNUGGHourData
-        - NuggFTDayData
-        - NuggFTHourData
-        - Swap
+        - Protocol
+        - User
       abis:
         - name: xNUGG
           file: ../abis/xNUGG.json
       eventHandlers:
-        - event: RoyaltyAdd(indexed address,uint256)
-          handler: handleRoyaltyAdd
-        - event: ShareSub(indexed address,address,uint256)
-          handler: handleShareSub
-        - event: ShareAdd(indexed address,address,uint256)
-          handler: handleShareAdd
-        - event: Realize(indexed address,address,uint256)
-          handler: handleTokenEarn
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: Receive(address,uint256)
+          handler: handleReceive
+        - event: Send(address,uint256)
+          handler: handleSend
+        - event: Genesis()
+          handler: handleGenesis
+      blockHandlers:
+        - handler: handleBlock
   - kind: ethereum/contract
-    name: UniswapV3Pool
+    name: UniswapV3PoolUsdc
     network: ropsten
     source:
-      address: "0xee815CDC6322031952a095C6cc6FEd036Cb1F70d"
+      address: "0x5E986c0666b85bD8A8B5e414726022630D400b18"
       abi: UniswapV3Pool
-      startBlock: 11430000
+      startBlock: 11514000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
-      file: UniswapV3Pool/UniswapV3Pool.wasm
+      file: UniswapV3PoolUsdc/UniswapV3PoolUsdc.wasm
       entities:
-        - Market
+        - Protocol
       abis:
         - name: UniswapV3Pool
           file: ../abis/UniswapV3Pool.json
       eventHandlers:
         - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
-          handler: handleSwap
+          handler: handleUsdcWethUniswap
+  - kind: ethereum/contract
+    name: UniswapV3PoolXNugg
+    network: ropsten
+    source:
+      address: "0x5E986c0666b85bD8A8B5e414726022630D400b18"
+      abi: UniswapV3Pool
+      startBlock: 11514000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: UniswapV3PoolUsdc/UniswapV3PoolUsdc.wasm
+      entities:
+        - Protocol
+      abis:
+        - name: UniswapV3Pool
+          file: ../abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+          handler: handleWethXnuggUniswap
   - kind: ethereum/contract
     name: NuggFT
     network: ropsten
     source:
-      address: "0x77F5f22bAd8fE6e01f6f60309a434de0DF336521"
+      address: "0x8F6a8D2aDB2B9062Dcb890EbC8f6b370D73D51A6"
       abi: NuggFT
-      startBlock: 11430000
+      startBlock: 11514000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       file: NuggFT/NuggFT.wasm
       entities:
-        - Market
-        - Auction
-        - TokenTransfer
+        - Protocol
+        - Swap
+        - Nugg
+        - Item
       abis:
         - name: NuggFT
           file: ../abis/NuggFT.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
+          handler: handleTransferNuggFT
+        - event: Claim(uint256,uint256,address)
+          handler: handleClaim
+        - event: ClaimItem(uint256,uint256,uint256,uint256)
+          handler: handleClaimItem
+        - event: Commit(uint256,address,uint256)
+          handler: handleCommit
+        - event: CommitItem(uint256,uint256,uint256,uint256)
+          handler: handleCommitItem
+        - event: Genesis()
+          handler: handleGenesis
+        - event: Mint(uint256,address,uint256)
+          handler: handleMint
+        - event: Offer(uint256,address,uint256)
+          handler: handleOffer
+        - event: OfferItem(uint256,uint256,uint256,uint256)
+          handler: handleOfferItem
+        - event: Swap(uint256,address,uint256)
+          handler: handleSwap
+        - event: SwapItem(uint256,uint256,uint256)
+          handler: handleSwapItem
+        - event: PopItem(uint256,uint256)
+          handler: handlePopItem
+        - event: PreMint(uint256,uint256[])
+          handler: handlePreMint
+        - event: PushItem(uint256,uint256)
+          handler: handlePushItem

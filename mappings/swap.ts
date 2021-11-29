@@ -27,8 +27,8 @@ export function handleMint(event: Mint): void {
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
-        user.nuggs = [];
-        user.offers = [];
+        //         user.nuggs = [];
+        //         user.offers = [];
     }
 
     user.save();
@@ -45,7 +45,7 @@ export function handleMint(event: Mint): void {
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = proto.nullUser;
     swap.leader = user.id;
-    swap.offers = [];
+    //     swap.offers = [];
     swap.save();
 
     nugg.activeSwap = swap.id;
@@ -147,8 +147,8 @@ export function handleOffer(event: Offer): void {
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
-        user.nuggs = [];
-        user.offers = [];
+        //         user.nuggs = [];
+        //         user.offers = [];
         user.save();
     }
 
@@ -220,7 +220,7 @@ export function handleSwap(event: SwapEvent): void {
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = user.id;
     swap.leader = user.id;
-    swap.offers = [];
+    //     swap.offers = [];
 
     swap.save();
 
