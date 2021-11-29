@@ -1,5 +1,4 @@
 import { log } from '@graphprotocol/graph-ts';
-import { Item, Nugg, Protocol, User, NuggItem, Offer, Swap } from '../generated/local/schema';
 import { BigInt } from '@graphprotocol/graph-ts';
 import { PreMint, PopItem, PushItem, Genesis } from '../generated/local/NuggFT/NuggFT';
 import { Transfer } from '../generated/local/NuggFT/NuggFT';
@@ -63,9 +62,9 @@ function handleGenesis(event: Genesis): void {
 function handlePreMint(event: PreMint): void {
     log.info('handlePreMint start', []);
 
-    let proto = safeLoadProtocol('0x42069');
+    // let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeNewNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
     //     nugg.swaps = [];
     //     nugg.items = [];
     //     nugg.offers = [];
@@ -94,9 +93,9 @@ function handlePreMint(event: PreMint): void {
         nuggItem.save();
     }
 
-    nugg.user = proto.nullUser;
+    // nugg.user = proto.nullUser;
 
-    nugg.save();
+    // nugg.save();
 
     log.info('handlePreMint end', []);
 }

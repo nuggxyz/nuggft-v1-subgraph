@@ -1,9 +1,10 @@
 import { Address, BigInt, log, dataSource, ethereum } from '@graphprotocol/graph-ts';
-import { Epoch, Protocol, User } from '../generated/local/schema';
 import { Transfer, Receive, Send, Genesis } from '../generated/local/xNUGG/xNUGG';
 import { invariant } from './uniswap';
 import { safeLoadProtocol, safeLoadUser, safeNewUser, safeLoadUserNull } from './safeload';
 import { handleBlock } from './epoch';
+import { Epoch, Protocol } from '../generated/local/schema';
+import { User } from '../generated/local/schema';
 
 export { handleBlock };
 
@@ -40,12 +41,12 @@ export function handleGenesis(event: Genesis): void {
     epoch.startblock = BigInt.fromString('0');
     epoch.endblock = BigInt.fromString('0');
     epoch.status = 'PENDING';
+    epoch._activeItemSwaps = [];
+    epoch._activeSwaps = [];
     epoch.save();
 
     let nil = new User('0x0000000000000000000000000000000000000000');
     nil.xnugg = BigInt.fromString('0');
-    //     nil.nuggs = [];
-    //     nil.offers = [];
     nil.save();
 
     proto.epoch = epoch.id;
@@ -57,8 +58,6 @@ export function handleGenesis(event: Genesis): void {
 
     let xnugg = safeNewUser(event.address);
     xnugg.xnugg = BigInt.fromString('0');
-    //     // xnugg.nuggs = [];
-    //     // xnugg.offers = [];
     xnugg.save();
 
     proto.xnuggUser = xnugg.id;

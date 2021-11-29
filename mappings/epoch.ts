@@ -1,7 +1,21 @@
 import { ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { Epoch, Protocol } from '../generated/local/schema';
-import { safeLoadActiveEpoch, safeLoadEpoch, safeLoadProtocol, safeNewEpoch } from './safeload';
+import {
+    safeLoadActiveEpoch,
+    safeLoadEpoch,
+    safeLoadProtocol,
+    safeNewEpoch,
+    safeNewNugg,
+    safeNewSwapHelper,
+    safeLoadSwapHelper,
+    unsafeLoadSwap,
+    safeLoadNugg,
+    unsafeLoadItemSwap,
+    safeRemoveNuggActiveSwap,
+    safeRemoveNuggItemActiveSwap,
+} from './safeload';
 import { safeDiv } from './uniswap';
+import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
 
 export function initEpochs(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt): void {
     let proto = safeLoadProtocol('0x42069');
@@ -11,71 +25,110 @@ export function initEpochs(block: ethereum.Block, genesisBlock: BigInt, interval
     proto.init = true;
 
     let currentEpochId = getCurrentEpoch(proto.genesisBlock, proto.interval, block.number);
-    let currentEpoch = safeNewEpoch(currentEpochId);
 
-    currentEpoch.endblock = getEndBlockFromEpoch(currentEpochId, proto.genesisBlock, proto.interval);
-    currentEpoch.startblock = getStartBlockFromEpoch(currentEpochId, proto.genesisBlock, proto.interval);
-    currentEpoch.status = 'ACTIVE';
+    initEpoch(currentEpochId, proto);
 
-    currentEpoch.save();
+    activateEpoch(currentEpochId, proto);
 
-    proto.epoch = currentEpoch.id;
+    initEpoch(currentEpochId.plus(BigInt.fromString('1')), proto);
+    initEpoch(currentEpochId.plus(BigInt.fromString('2')), proto);
+}
 
+export function activateEpoch(id: BigInt, proto: Protocol): void {
+    let nextEpoch = safeLoadEpoch(id);
+    let nextNugg = safeLoadNugg(id);
+    let nextSwap = safeLoadSwapHelper(nextNugg, id);
+
+    nextEpoch.status = 'ACTIVE';
+
+    let _s = nextEpoch._activeSwaps as string[];
+    _s.push(nextSwap.id as string);
+    nextEpoch._activeSwaps = _s as string[];
+    nextEpoch.save();
+
+    safeSetNuggActiveSwap(nextNugg, nextSwap);
+
+    proto.epoch = nextEpoch.id;
+    proto.defaultActiveNugg = nextNugg.id;
     proto.save();
+}
 
-    let newEpochIdA = currentEpochId.plus(BigInt.fromString('1'));
-    let newEpochA = safeNewEpoch(newEpochIdA);
+export function initEpoch(id: BigInt, proto: Protocol): Epoch {
+    let newEpoch = safeNewEpoch(id);
 
-    newEpochA.endblock = getEndBlockFromEpoch(newEpochIdA, proto.genesisBlock, proto.interval);
-    newEpochA.startblock = getStartBlockFromEpoch(newEpochIdA, proto.genesisBlock, proto.interval);
-    newEpochA.status = 'PENDING';
+    let nugg = safeNewNugg(id);
 
-    newEpochA.save();
+    let swap = safeNewSwapHelper(nugg, id);
 
-    let newEpochIdB = currentEpochId.plus(BigInt.fromString('2'));
-    let newEpochB = safeNewEpoch(newEpochIdB);
+    nugg.user = proto.nullUser;
 
-    newEpochB.endblock = getEndBlockFromEpoch(newEpochIdB, proto.genesisBlock, proto.interval);
-    newEpochB.startblock = getStartBlockFromEpoch(newEpochIdB, proto.genesisBlock, proto.interval);
-    newEpochB.status = 'PENDING';
+    // safeSetNuggActiveSwap(nugg, swap);
 
-    newEpochB.save();
+    nugg.save();
+
+    newEpoch.endblock = getEndBlockFromEpoch(id, proto.genesisBlock, proto.interval);
+    newEpoch.startblock = getStartBlockFromEpoch(id, proto.genesisBlock, proto.interval);
+    newEpoch.status = 'PENDING';
+    newEpoch._activeItemSwaps = [];
+
+    swap.epoch = newEpoch.id;
+    swap.eth = BigInt.fromString('0');
+    swap.ethUsd = BigInt.fromString('0');
+    swap.owner = proto.nullUser;
+    swap.leader = proto.nullUser;
+    swap.nugg = nugg.id;
+
+    swap.save();
+
+    newEpoch.save();
+
+    return newEpoch;
+}
+
+export function closeEpoch(epoch: Epoch, proto: Protocol): void {
+    let swaps = epoch._activeSwaps;
+
+    for (var i = 0; i < swaps.length; i++) {
+        let s = unsafeLoadSwap(swaps[i]);
+        let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
+        safeRemoveNuggActiveSwap(nugg);
+    }
+
+    let itemswaps = epoch._activeItemSwaps;
+
+    for (var j = 0; j < itemswaps.length; j++) {
+        let s = unsafeLoadItemSwap(itemswaps[i]);
+        let nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
+        safeRemoveNuggItemActiveSwap(nuggitem);
+    }
+
+    epoch._activeItemSwaps = [];
+    epoch._activeSwaps = [];
+    epoch.status = 'OVER';
+    epoch.save();
 }
 
 export function handleBlock(block: ethereum.Block): void {
     let proto = Protocol.load('0x42069');
     if (proto == null) return;
-    proto.lastBlock = block.number;
-    proto.save();
-
-    let epoch = safeLoadActiveEpoch();
+    // proto.lastBlock = block.number;
+    // proto.save();
 
     let currentEpochId = getCurrentEpoch(proto.genesisBlock, proto.interval, block.number);
 
+    let epoch = safeLoadActiveEpoch();
+
     if (proto.init && BigInt.fromString(epoch.id).notEqual(currentEpochId)) {
-        epoch.status = 'OVER';
-        epoch.save();
+        closeEpoch(epoch, proto);
 
-        let nextEpoch = safeLoadEpoch(currentEpochId);
-        nextEpoch.status = 'ACTIVE';
-        nextEpoch.save();
+        activateEpoch(currentEpochId, proto);
 
-        proto.epoch = nextEpoch.id;
-        proto.save();
-
-        let newEpochId = currentEpochId.plus(BigInt.fromString('2'));
-        let newEpoch = safeNewEpoch(currentEpochId.plus(BigInt.fromString('2')));
-
-        newEpoch.endblock = getEndBlockFromEpoch(newEpochId, proto.genesisBlock, proto.interval);
-        newEpoch.startblock = getStartBlockFromEpoch(newEpochId, proto.genesisBlock, proto.interval);
-        newEpoch.status = 'PENDING';
-
-        newEpoch.save();
+        initEpoch(currentEpochId.plus(BigInt.fromString('2')), proto);
     }
 }
 
 export function getCurrentEpoch(genesis: BigInt, interval: BigInt, blocknum: BigInt): BigInt {
-    let diff = blocknum.minus(genesis);
+    let diff = blocknum.plus(BigInt.fromString('1')).minus(genesis);
     return safeDiv(diff, interval);
 }
 

@@ -29,6 +29,11 @@ type Protocol @entity {
 
     tvlEth: BigInt!
     tvlUsd: BigInt!
+
+    defaultActiveNugg: Nugg
+
+    activeNuggs: [Nugg!]! @derivedFrom(field: "protocol")
+    activeItems: [NuggItem!]! @derivedFrom(field: "protocol")
 }
 
 # Waiting
@@ -62,6 +67,9 @@ type Epoch @entity {
     startblock: BigInt!
     endblock: BigInt!
     status: EpochStatus!
+
+    _activeSwaps: [String!]!
+    _activeItemSwaps: [String!]!
 }
 
 type Item @entity {
@@ -77,6 +85,7 @@ type NuggItem @entity {
 
     count: BigInt!
 
+    protocol: Protocol
     activeSwap: ItemSwap
 
     swaps: [ItemSwap!]! @derivedFrom(field: "sellingNuggItem")
@@ -88,7 +97,7 @@ type Nugg @entity {
     user: User!
 
     # data: BigInt!
-
+    protocol: Protocol
     activeSwap: Swap
 
     swaps: [Swap!]! @derivedFrom(field: "nugg")
