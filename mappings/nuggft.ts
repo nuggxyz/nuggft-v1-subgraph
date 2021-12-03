@@ -5,7 +5,7 @@ import { Transfer } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant } from './uniswap';
 import { safeNewNugg } from './safeload';
-import { initEpochs } from './epoch';
+import { onEpochGenesis } from './epoch';
 import { handleMint, handleClaim, handleOffer, handleSwap } from './swap';
 import { handleClaimItem, handleOfferItem, handleSwapItem } from './itemswap';
 import {
@@ -39,7 +39,7 @@ export {
 function handleGenesis(event: Genesis): void {
     log.info('handleGenesis start', []);
 
-    initEpochs(event.block, event.block.number, BigInt.fromString('25'));
+    onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
 
     let proto = safeLoadProtocol('0x42069');
 

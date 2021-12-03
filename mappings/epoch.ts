@@ -17,7 +17,7 @@ import {
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
 
-export function initEpochs(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt): void {
+export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt): void {
     let proto = safeLoadProtocol('0x42069');
 
     proto.genesisBlock = genesisBlock;
@@ -26,15 +26,15 @@ export function initEpochs(block: ethereum.Block, genesisBlock: BigInt, interval
 
     let currentEpochId = getCurrentEpoch(proto.genesisBlock, proto.interval, block.number);
 
-    initEpoch(currentEpochId, proto);
+    onEpochInit(currentEpochId, proto);
 
-    activateEpoch(currentEpochId, proto);
+    onEpochStart(currentEpochId, proto);
 
-    initEpoch(currentEpochId.plus(BigInt.fromString('1')), proto);
-    initEpoch(currentEpochId.plus(BigInt.fromString('2')), proto);
+    onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
+    onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
 }
 
-export function activateEpoch(id: BigInt, proto: Protocol): void {
+export function onEpochStart(id: BigInt, proto: Protocol): void {
     let nextEpoch = safeLoadEpoch(id);
     let nextNugg = safeLoadNugg(id);
     let nextSwap = safeLoadSwapHelper(nextNugg, id);
@@ -53,7 +53,7 @@ export function activateEpoch(id: BigInt, proto: Protocol): void {
     proto.save();
 }
 
-export function initEpoch(id: BigInt, proto: Protocol): Epoch {
+export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     let newEpoch = safeNewEpoch(id);
 
     let nugg = safeNewNugg(id);
@@ -85,7 +85,7 @@ export function initEpoch(id: BigInt, proto: Protocol): Epoch {
     return newEpoch;
 }
 
-export function closeEpoch(epoch: Epoch, proto: Protocol): void {
+export function onEpochClose(epoch: Epoch, proto: Protocol): void {
     let swaps = epoch._activeSwaps;
 
     for (var i = 0; i < swaps.length; i++) {
@@ -111,19 +111,17 @@ export function closeEpoch(epoch: Epoch, proto: Protocol): void {
 export function handleBlock(block: ethereum.Block): void {
     let proto = Protocol.load('0x42069');
     if (proto == null) return;
-    // proto.lastBlock = block.number;
-    // proto.save();
 
     let currentEpochId = getCurrentEpoch(proto.genesisBlock, proto.interval, block.number);
 
     let epoch = safeLoadActiveEpoch();
 
     if (proto.init && BigInt.fromString(epoch.id).notEqual(currentEpochId)) {
-        closeEpoch(epoch, proto);
+        onEpochClose(epoch, proto);
 
-        activateEpoch(currentEpochId, proto);
+        onEpochStart(currentEpochId, proto);
 
-        initEpoch(currentEpochId.plus(BigInt.fromString('2')), proto);
+        onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
     }
 }
 
