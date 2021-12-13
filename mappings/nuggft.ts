@@ -1,9 +1,9 @@
 import { log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { PreMint, PopItem, PushItem, Genesis } from '../generated/local/NuggFT/NuggFT';
+import { PreMint, PopItem, PushItem, Genesis, StakeEth, UnStakeEth } from '../generated/local/NuggFT/NuggFT';
 import { Transfer } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
-import { invariant } from './uniswap';
+import { invariant, safeDiv, wethToUsdc } from './uniswap';
 import { safeNewNugg } from './safeload';
 import { onEpochGenesis } from './epoch';
 import { handleMint, handleClaim, handleOffer, handleSwap } from './swap';
@@ -20,13 +20,14 @@ import {
     safeNewItem,
     safeLoadItemNull,
 } from './safeload';
+import { Epoch, Protocol, User } from '../generated/local/schema';
+import { handleBlock } from './epoch';
 
 export {
     handleMint,
     handleTransfer,
     handleClaim,
     handleClaimItem,
-    handleGenesis,
     handleOffer,
     handleOfferItem,
     handleSwap,
@@ -34,14 +35,75 @@ export {
     handlePopItem,
     handlePreMint,
     handlePushItem,
+    handleStakeEth,
+    handleUnStakeEth,
+    handleBlock,
 };
 
-function handleGenesis(event: Genesis): void {
-    log.info('handleGenesis start', []);
+export function handleGenesis(event: Genesis): void {
+    log.info('handleGenesisNuggFT start', []);
+
+    let proto = new Protocol('0x42069');
+
+    proto.init = false;
+    proto.lastBlock = event.block.number;
+
+    proto.totalSwaps = BigInt.fromString('0');
+    proto.totalUsers = BigInt.fromString('0');
+
+    proto.genesisBlock = BigInt.fromString('0');
+    proto.interval = BigInt.fromString('0');
+
+    proto.xnuggTotalSupply = BigInt.fromString('0');
+    proto.xnuggTotalEth = BigInt.fromString('0');
+    proto.nuggftTotalEth = BigInt.fromString('0');
+
+    proto.tvlEth = BigInt.fromString('0');
+    proto.tvlUsd = BigInt.fromString('0');
+
+    proto.priceUsdcWeth = BigInt.fromString('0');
+    proto.priceWethXnugg = BigInt.fromString('0');
+    proto.totalSwaps = BigInt.fromString('0');
+    proto.totalUsers = BigInt.fromString('0');
+    proto.totalNuggs = BigInt.fromString('0');
+    proto.totalItems = BigInt.fromString('0');
+    proto.totalItemSwaps = BigInt.fromString('0');
+
+    proto.nuggftStakedEthPerShare = BigInt.fromString('0');
+    proto.nuggftStakedEth = BigInt.fromString('0');
+    proto.nuggftStakedUsd = BigInt.fromString('0');
+    proto.nuggftStakedUsdPerShare = BigInt.fromString('0');
+
+    proto.nuggftStakedShares = BigInt.fromString('0');
+
+    let epoch = new Epoch('NOTLIVE');
+    epoch.startblock = BigInt.fromString('0');
+    epoch.endblock = BigInt.fromString('0');
+    epoch.status = 'PENDING';
+    epoch._activeItemSwaps = [];
+    epoch._activeSwaps = [];
+    epoch.save();
+
+    let nil = new User('0x0000000000000000000000000000000000000000');
+    nil.xnugg = BigInt.fromString('0');
+    nil.save();
+
+    proto.epoch = epoch.id;
+    proto.xnuggUser = nil.id;
+    proto.nuggftUser = nil.id;
+    proto.nullUser = nil.id;
+
+    proto.save();
+
+    // let xnugg = safeNewUser(event.address);
+    // xnugg.xnugg = BigInt.fromString('0');
+    // xnugg.save();
+
+    // proto.xnuggUser = xnugg.id;
+
+    // proto.save();
 
     onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
-
-    let proto = safeLoadProtocol('0x42069');
 
     let nuggft = safeNewUser(event.address);
 
@@ -56,8 +118,65 @@ function handleGenesis(event: Genesis): void {
 
     proto.save();
 
-    log.info('handleGenesis end', []);
+    log.info('handleGenesisNuggFT end', []);
 }
+
+function updateStakedEthPerShare(proto: Protocol): void {
+    proto.nuggftStakedEthPerShare = safeDiv(proto.nuggftStakedEth, proto.nuggftStakedShares);
+    proto.nuggftStakedUsdPerShare = wethToUsdc(proto.nuggftStakedEthPerShare);
+
+    proto.save();
+}
+
+function handleStakeEth(event: StakeEth): void {
+    log.info('handleStake start', []);
+
+    let proto = safeLoadProtocol('0x42069');
+
+    proto.nuggftStakedEth = proto.nuggftStakedEth.plus(event.params.amount);
+    proto.nuggftStakedUsd = wethToUsdc(proto.nuggftStakedEth);
+    proto.save();
+
+    updateStakedEthPerShare(proto);
+    log.info('handleStake end', []);
+}
+
+function handleUnStakeEth(event: UnStakeEth): void {
+    log.info('handleUnStake start', []);
+
+    let proto = safeLoadProtocol('0x42069');
+
+    proto.nuggftStakedEth = proto.nuggftStakedEth.minus(event.params.amount);
+    proto.nuggftStakedUsd = wethToUsdc(proto.nuggftStakedEth);
+
+    proto.save();
+
+    updateStakedEthPerShare(proto);
+    log.info('handleUnStake end', []);
+}
+
+// function handleGenesis(event: Genesis): void {
+//     log.info('handleGenesis start', []);
+
+//     onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
+
+//     let proto = safeLoadProtocol('0x42069');
+
+//     let nuggft = safeNewUser(event.address);
+
+//     nuggft.xnugg = BigInt.fromString('0');
+//     nuggft.ethin = BigInt.fromString('0');
+//     nuggft.ethout = BigInt.fromString('0');
+//     //     nuggft.nuggs = [];
+//     //     nuggft.offers = [];
+//     nuggft.save();
+
+//     proto.nuggftUser = nuggft.id;
+
+//     proto.save();
+
+//     log.info('handleGenesis end', []);
+// }
 
 function handlePreMint(event: PreMint): void {
     log.info('handlePreMint start', []);

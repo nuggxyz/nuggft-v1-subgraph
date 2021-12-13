@@ -24,6 +24,12 @@ type Protocol @entity {
 
     nuggftTotalEth: BigInt!
 
+    nuggftStakedUsdPerShare: BigInt!
+    nuggftStakedUsd: BigInt!
+    nuggftStakedEthPerShare: BigInt!
+    nuggftStakedEth: BigInt!
+    nuggftStakedShares: BigInt!
+
     priceUsdcWeth: BigInt!
     priceWethXnugg: BigInt!
 

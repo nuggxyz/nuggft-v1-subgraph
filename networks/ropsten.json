@@ -1,8 +1,6 @@
 {
     "startblock": 11515500,
-    "xnugg": "0x84500Cc78ce2fF2A9c17af6cdCa2c92ca49682Ca",
     "nuggft": "0x8F6a8D2aDB2B9062Dcb890EbC8f6b370D73D51A6",
     "network": "ropsten",
-    "uniswapv3pool_weth_usdc": "0x5E986c0666b85bD8A8B5e414726022630D400b18",
-    "uniswapv3pool_weth_xnugg": "0x5E986c0666b85bD8A8B5e414726022630D400b18"
+    "uniswapv3pool_weth_usdc": "0x5E986c0666b85bD8A8B5e414726022630D400b18"
 }

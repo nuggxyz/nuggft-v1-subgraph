@@ -6,73 +6,6 @@ repository: https://github.com/nugg-labs/nuggft-subgraph
 schema:
     file: ../../schema.graphql
 dataSources:
-    # - kind: ethereum/contract
-    #   name: NuggSwap
-    #   # prettier-ignore
-    #   network: {{network}}
-    #   source:
-    #       address: '{{nuggswap}}'
-    #       abi: NuggSwap
-    #       # prettier-ignore
-    #       startBlock: {{startblock}}
-    #   mapping:
-    #       kind: ethereum/events
-    #       apiVersion: 0.0.5
-    #       language: wasm/assemblyscript
-    #       file: ../../mappings/nuggswap.ts
-    #       entities:
-    #           - Protocol
-    #           - Swap
-    #           - Offer
-    #           - Nugg
-    #           - User
-    #       abis:
-    #           - name: NuggSwap
-    #             file: ../../abis/NuggSwap.json
-    #       eventHandlers:
-    #           - event: Mint(address,uint256,address,uint256)
-    #             handler: handleMint
-    #           - event: Commit(address,uint256,uint256,address,uint256)
-    #             handler: handleCommit
-    #           - event: Offer(address,uint256,uint256,address,uint256)
-    #             handler: handleOffer
-    #           - event: Claim(address,uint256,uint256,address)
-    #             handler: handleClaim
-    #           - event: Swap(address,uint256,address,uint256)
-    #             handler: handleSwap
-
-    - kind: ethereum/contract
-      name: xNUGG
-      # prettier-ignore
-      network: {{network}}
-      source:
-          address: '{{xnugg}}'
-          abi: xNUGG
-          # prettier-ignore
-          startBlock: {{startblock}}
-      mapping:
-          kind: ethereum/events
-          apiVersion: 0.0.5
-          language: wasm/assemblyscript
-          file: ../../mappings/xnugg.ts
-          entities:
-              - Protocol
-              - User
-          abis:
-              - name: xNUGG
-                file: ../../abis/xNUGG.json
-          eventHandlers:
-              - event: Transfer(indexed address,indexed address,uint256)
-                handler: handleTransfer
-              - event: Receive(address,uint256)
-                handler: handleReceive
-              - event: Send(address,uint256)
-                handler: handleSend
-              - event: Genesis()
-                handler: handleGenesis
-          blockHandlers:
-              - handler: handleBlock
-
     - kind: ethereum/contract
       name: UniswapV3PoolUsdc
       # prettier-ignore
@@ -168,3 +101,11 @@ dataSources:
                 handler: handlePreMint
               - event: PushItem(uint256,uint256)
                 handler: handlePushItem
+              - event: StakeEth(uint256)
+                handler: handleStakeEth
+              - event: UnStakeEth(uint256)
+                handler: handleUnStakeEth
+              - event: Genesis()
+                handler: handleGenesis
+          blockHandlers:
+              - handler: handleBlock
