@@ -1,6 +1,6 @@
 import { log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { PreMint, PopItem, PushItem, Genesis, StakeEth, UnStakeEth } from '../generated/local/NuggFT/NuggFT';
+import { SetProof, PopItem, PushItem, Genesis, StakeEth, UnStakeEth } from '../generated/local/NuggFT/NuggFT';
 import { Transfer } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
@@ -33,7 +33,7 @@ export {
     handleSwap,
     handleSwapItem,
     handlePopItem,
-    handlePreMint,
+    handleSetProof,
     handlePushItem,
     handleStakeEth,
     handleUnStakeEth,
@@ -103,8 +103,6 @@ export function handleGenesis(event: Genesis): void {
 
     // proto.save();
 
-    onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
-
     let nuggft = safeNewUser(event.address);
 
     nuggft.xnugg = BigInt.fromString('0');
@@ -118,7 +116,9 @@ export function handleGenesis(event: Genesis): void {
 
     proto.save();
 
-    log.info('handleGenesisNuggFT end', []);
+    onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
+
+    log.info('handleGenesisNuggFT end', [proto.epoch]);
 }
 
 function updateStakedEthPerShare(proto: Protocol): void {
@@ -178,8 +178,8 @@ function handleUnStakeEth(event: UnStakeEth): void {
 //     log.info('handleGenesis end', []);
 // }
 
-function handlePreMint(event: PreMint): void {
-    log.info('handlePreMint start', []);
+function handleSetProof(event: SetProof): void {
+    log.info('handleSetProof start', []);
 
     // let proto = safeLoadProtocol('0x42069');
 
@@ -216,7 +216,7 @@ function handlePreMint(event: PreMint): void {
 
     // nugg.save();
 
-    log.info('handlePreMint end', []);
+    log.info('handleSetProof end', []);
 }
 
 function handleTransfer(event: Transfer): void {

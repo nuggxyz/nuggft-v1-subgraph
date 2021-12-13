@@ -32,6 +32,8 @@ export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, inte
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
     onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
+
+    proto.save();
 }
 
 export function onEpochStart(id: BigInt, proto: Protocol): void {

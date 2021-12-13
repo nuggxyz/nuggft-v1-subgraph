@@ -20,6 +20,9 @@ export function handleMint(event: Mint): void {
 
     let proto = safeLoadProtocol('0x42069');
 
+    if (proto.epoch != event.params.epoch.toString())
+        log.critical('handleMint: INVALID EPOCH: ' + proto.epoch + ' != ' + event.params.epoch.toString(), []);
+
     let nugg = safeLoadNugg(BigInt.fromString(proto.epoch));
 
     let user = safeLoadUserNull(event.params.account);
@@ -34,9 +37,6 @@ export function handleMint(event: Mint): void {
     }
 
     user.save();
-
-    if (proto.epoch != event.params.epoch.toString())
-        log.critical('handleMint: INVALID EPOCH: ' + proto.epoch + ' != ' + event.params.epoch.toString(), []);
 
     let swap = safeLoadActiveSwap(nugg);
 
@@ -92,6 +92,7 @@ export function handleCommit(event: Commit): void {
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
 
     swap.epoch = epoch.id;
+    swap.endingEpoch = BigInt.from(epoch.id);
     swap.id = nugg.id.concat('-').concat(swap.epoch);
     swap.save();
 

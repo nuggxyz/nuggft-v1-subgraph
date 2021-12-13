@@ -1,7 +1,7 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
 import { Protocol } from './../../generated/local/schema';
 import { Genesis, Send__Params } from './../../generated/local/xNUGG/xNUGG';
-import { handleSend } from './../../mappings/xnugg';
+import { handleSend } from '../../archive/xnugg';
 import { logStore } from 'matchstick-as/assembly/store';
 import { Send } from './../../generated/local/xNUGG/xNUGG';
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';

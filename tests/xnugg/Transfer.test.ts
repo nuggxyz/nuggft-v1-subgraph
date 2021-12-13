@@ -1,7 +1,7 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
 import { Protocol } from '../../generated/local/schema';
 import { Genesis } from '../../generated/local/xNUGG/xNUGG';
-import { handleTransfer } from '../../mappings/xnugg';
+import { handleTransfer } from '../../archive/xnugg';
 import { logStore } from 'matchstick-as/assembly/store';
 import { Transfer } from '../../generated/local/xNUGG/xNUGG';
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';

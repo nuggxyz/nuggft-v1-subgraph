@@ -70,6 +70,8 @@ enum EpochStatus {
 
 type Epoch @entity {
     id: ID!
+    idnum: BigInt!
+
     startblock: BigInt!
     endblock: BigInt!
     status: EpochStatus!
@@ -99,6 +101,7 @@ type NuggItem @entity {
 
 type Nugg @entity {
     id: ID!
+    idnum: BigInt!
 
     user: User!
 
@@ -122,6 +125,7 @@ type Swap @entity {
     offers: [Offer!]! @derivedFrom(field: "swap")
 
     epoch: Epoch!
+    endingEpoch: BigInt
 
     eth: BigInt!
     ethUsd: BigInt!
@@ -152,6 +156,7 @@ type ItemSwap @entity {
 
     epochId: String
     epoch: Epoch
+    endingEpoch: BigInt
 
     eth: BigInt!
     ethUsd: BigInt!

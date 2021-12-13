@@ -29,28 +29,6 @@ dataSources:
               - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
                 handler: handleUsdcWethUniswap
     - kind: ethereum/contract
-      name: UniswapV3PoolXNugg
-      # prettier-ignore
-      network: {{network}}
-      source:
-          address: '{{uniswapv3pool_weth_xnugg}}'
-          abi: UniswapV3Pool
-          # prettier-ignore
-          startBlock: {{startblock}}
-      mapping:
-          kind: ethereum/events
-          apiVersion: 0.0.5
-          language: wasm/assemblyscript
-          file: ../../mappings/uniswap.ts
-          entities:
-              - Protocol
-          abis:
-              - name: UniswapV3Pool
-                file: ../../abis/UniswapV3Pool.json
-          eventHandlers:
-              - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
-                handler: handleWethXnuggUniswap
-    - kind: ethereum/contract
       name: NuggFT
       # prettier-ignore
       network: {{network}}
@@ -83,8 +61,6 @@ dataSources:
                 handler: handleCommit
               - event: CommitItem(uint256,uint256,uint256,uint256)
                 handler: handleCommitItem
-              - event: Genesis()
-                handler: handleGenesis
               - event: Mint(uint256,address,uint256)
                 handler: handleMint
               - event: Offer(uint256,address,uint256)
@@ -97,8 +73,8 @@ dataSources:
                 handler: handleSwapItem
               - event: PopItem(uint256,uint256)
                 handler: handlePopItem
-              - event: PreMint(uint256,uint256[])
-                handler: handlePreMint
+              - event: SetProof(uint256,uint256[])
+                handler: handleSetProof
               - event: PushItem(uint256,uint256)
                 handler: handlePushItem
               - event: StakeEth(uint256)
