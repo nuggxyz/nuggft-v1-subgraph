@@ -36,6 +36,9 @@ export function handleMint(event: Mint): void {
         //         user.offers = [];
     }
 
+    proto.nuggftStakedShares = proto.nuggftStakedShares.plus(BigInt.fromString('1'));
+    proto.save();
+
     user.save();
 
     let swap = safeLoadActiveSwap(nugg);
