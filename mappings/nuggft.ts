@@ -256,6 +256,7 @@ function handleTransfer(event: Transfer): void {
 
     user.save();
     nugg.save();
+    sendingUser.save();
 
     log.info('handleTransfer end', []);
 }
