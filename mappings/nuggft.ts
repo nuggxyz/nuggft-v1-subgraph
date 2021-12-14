@@ -1,10 +1,10 @@
-import { log } from '@graphprotocol/graph-ts';
+import { Address, ethereum, log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
 import { SetProof, PopItem, PushItem, Genesis, StakeEth, UnStakeEth } from '../generated/local/NuggFT/NuggFT';
 import { Transfer } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
-import { safeNewNugg } from './safeload';
+import { safeLoadUser, safeNewNugg } from './safeload';
 import { onEpochGenesis } from './epoch';
 import { handleMint, handleClaim, handleOffer, handleSwap } from './swap';
 import { handleClaimItem, handleOfferItem, handleSwapItem } from './itemswap';
@@ -230,6 +230,8 @@ function handleTransfer(event: Transfer): void {
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
+    let sendingUser = safeLoadUser(Address.fromString(nugg.user));
+
     let user = safeLoadUserNull(event.params.to);
 
     if (user == null) {
@@ -241,13 +243,18 @@ function handleTransfer(event: Transfer): void {
         user.save();
     }
 
-    user.shares = user.shares.plus(BigInt.fromString('1'));
-    nugg.user = user.id;
-
+    if (sendingUser.id !== proto.nullUser) {
+        sendingUser.shares = sendingUser.shares.minus(BigInt.fromString('1'));
+    }
     if (nugg.user === proto.nullUser) {
         nugg.burned = true;
+    } else {
+        user.shares = user.shares.plus(BigInt.fromString('1'));
     }
 
+    nugg.user = user.id;
+
+    user.save();
     nugg.save();
 
     log.info('handleTransfer end', []);
