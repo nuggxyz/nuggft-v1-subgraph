@@ -86,6 +86,9 @@ export function handleGenesis(event: Genesis): void {
 
     let nil = new User('0x0000000000000000000000000000000000000000');
     nil.xnugg = BigInt.fromString('0');
+    nil.ethin = BigInt.fromString('0');
+    nil.ethout = BigInt.fromString('0');
+    nil.shares = BigInt.fromString('0');
     nil.save();
 
     proto.epoch = epoch.id;
@@ -108,6 +111,8 @@ export function handleGenesis(event: Genesis): void {
     nuggft.xnugg = BigInt.fromString('0');
     nuggft.ethin = BigInt.fromString('0');
     nuggft.ethout = BigInt.fromString('0');
+    nuggft.shares = BigInt.fromString('0');
+
     //     nuggft.nuggs = [];
     //     nuggft.offers = [];
     nuggft.save();
@@ -199,7 +204,6 @@ function handleSetProof(event: SetProof): void {
         if (nuggItem == null) {
             nuggItem = safeNewNuggItem(nugg, item);
             nuggItem.count = BigInt.fromString('0');
-            //             nuggItem.swaps = [];
         }
 
         nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
@@ -222,6 +226,8 @@ function handleSetProof(event: SetProof): void {
 function handleTransfer(event: Transfer): void {
     log.info('handleTransfer start', []);
 
+    let proto = safeLoadProtocol('0x42069');
+
     let nugg = safeLoadNugg(event.params.tokenId);
 
     let user = safeLoadUserNull(event.params.to);
@@ -231,12 +237,16 @@ function handleTransfer(event: Transfer): void {
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
-        //         user.nuggs = [];
-        //         user.offers = [];
+        user.shares = BigInt.fromString('0');
         user.save();
     }
 
+    user.shares = user.shares.plus(BigInt.fromString('1'));
     nugg.user = user.id;
+
+    if (nugg.user === proto.nullUser) {
+        nugg.burned = true;
+    }
 
     nugg.save();
 
@@ -261,7 +271,6 @@ function handlePushItem(event: PushItem): void {
     if (nuggItem == null) {
         nuggItem = safeNewNuggItem(nugg, item);
         nuggItem.count = BigInt.fromString('0');
-        //         nuggItem.swaps = [];
     }
 
     nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));

@@ -7,6 +7,7 @@ type Protocol @entity {
     epoch: Epoch!
 
     totalSwaps: BigInt!
+    totalLoans: BigInt! #update
     totalUsers: BigInt!
     totalNuggs: BigInt!
     totalItems: BigInt!
@@ -15,12 +16,12 @@ type Protocol @entity {
     genesisBlock: BigInt!
     interval: BigInt!
 
-    xnuggUser: User!
+    xnuggUser: User! @depreicated
     nuggftUser: User!
     nullUser: User!
 
-    xnuggTotalSupply: BigInt!
-    xnuggTotalEth: BigInt!
+    xnuggTotalSupply: BigInt! @depreicated
+    xnuggTotalEth: BigInt! @depreicated
 
     nuggftTotalEth: BigInt!
 
@@ -31,22 +32,16 @@ type Protocol @entity {
     nuggftStakedShares: BigInt!
 
     priceUsdcWeth: BigInt!
-    priceWethXnugg: BigInt!
+    priceWethXnugg: BigInt! @depreicated
 
-    tvlEth: BigInt!
-    tvlUsd: BigInt!
+    tvlEth: BigInt! @depreicated
+    tvlUsd: BigInt! @depreicated
 
     defaultActiveNugg: Nugg
 
     activeNuggs: [Nugg!]! @derivedFrom(field: "protocol")
     activeItems: [NuggItem!]! @derivedFrom(field: "protocol")
 }
-
-# Waiting
-# Minting
-# Selling
-# Claimable
-# Stale
 
 type Offer @entity {
     id: ID!
@@ -105,21 +100,23 @@ type Nugg @entity {
 
     user: User!
 
-    # data: BigInt!
     protocol: Protocol
     activeSwap: Swap
+    activeLoan: Loan
 
+    burned: Boolean! #update
     swaps: [Swap!]! @derivedFrom(field: "nugg")
 
     items: [NuggItem!]! @derivedFrom(field: "nugg")
 
     offers: [ItemOffer!]! @derivedFrom(field: "nugg")
+
+    loans: [Loan!]! @derivedFrom(field: "nugg")
 }
 
 type Swap @entity {
     id: ID!
 
-    # nuggId: String!
     nugg: Nugg!
 
     offers: [Offer!]! @derivedFrom(field: "swap")
@@ -134,22 +131,49 @@ type Swap @entity {
     leader: User!
 }
 
+type Loan @entity {
+    id: ID!
+
+    nugg: Nugg!
+
+    user: User!
+
+    epoch: Epoch!
+    endingEpoch: BigInt!
+
+    feeEth: BigInt!
+    feeUsd: BigInt!
+
+    protocol: Protocol
+
+    liquidated: Boolean!
+    liquidatedBy: User
+    liquidatedForEth: BigInt!
+    liquidatedForUsd: BigInt!
+
+    eth: BigInt!
+    ethUsd: BigInt!
+}
+
 type User @entity {
     id: ID!
 
-    xnugg: BigInt!
+    xnugg: BigInt! @depreicated
+
+    shares: BigInt! #update
     ethin: BigInt!
     ethout: BigInt!
 
     nuggs: [Nugg!]! @derivedFrom(field: "user")
 
     offers: [Offer!]! @derivedFrom(field: "user")
+
+    loans: [Loan!]! @derivedFrom(field: "user")
 }
 
 type ItemSwap @entity {
     id: ID!
 
-    # sellingNuggItemId: String!
     sellingNuggItem: NuggItem!
 
     offers: [ItemOffer!]! @derivedFrom(field: "swap")

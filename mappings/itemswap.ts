@@ -1,24 +1,7 @@
 import { log, BigInt, store } from '@graphprotocol/graph-ts';
-import {
-    Claim,
-    ClaimItem,
-    Commit,
-    CommitItem,
-    Swap as SwapEvent,
-    Mint,
-    Offer,
-    OfferItem,
-    SwapItem,
-} from '../generated/local/NuggFT/NuggFT';
-import { invariant, wethToUsdc } from './uniswap';
-import {
-    safeLoadItemSwapHelperNull,
-    safeNewItemSwap,
-    safeNewItemOffer,
-    safeLoadActiveItemSwap,
-    safeLoadEpoch,
-    safeSetNuggItemActiveSwap,
-} from './safeload';
+import { ClaimItem, CommitItem, OfferItem, SwapItem } from '../generated/local/NuggFT/NuggFT';
+import { wethToUsdc } from './uniswap';
+import { safeNewItemSwap, safeNewItemOffer, safeLoadActiveItemSwap, safeLoadEpoch, safeSetNuggItemActiveSwap } from './safeload';
 import {
     safeLoadProtocol,
     safeLoadNugg,
@@ -59,8 +42,6 @@ export function handleCommitItem(event: CommitItem): void {
 
     let _s = epoch._activeItemSwaps as string[];
     _s[_s.indexOf(prevswapId)] = itemswap.id;
-
-    // _s.push(itemswap.id as string);
     epoch._activeSwaps = _s as string[];
     epoch.save();
 
@@ -183,11 +164,9 @@ export function handleSwapItem(event: SwapItem): void {
     let itemSwap = safeNewItemSwap(nuggitem, BigInt.fromString('0'));
 
     itemSwap.sellingNuggItem = nuggitem.id;
-    // itemSwap.sellingNuggItemId = nuggitem.id;
     itemSwap.eth = event.transaction.value;
     itemSwap.ethUsd = wethToUsdc(itemSwap.eth);
     itemSwap.owner = sellingNugg.id;
-    //     itemSwap.offers = [];
     itemSwap.leader = sellingNugg.id;
     itemSwap.save();
 

@@ -63,7 +63,6 @@ export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     let swap = safeNewSwapHelper(nugg, id);
 
     nugg.user = proto.nullUser;
-
     // safeSetNuggActiveSwap(nugg, swap);
 
     nugg.save();

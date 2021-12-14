@@ -67,7 +67,7 @@ dataSources:
                 handler: handleOffer
               - event: OfferItem(uint256,uint256,uint256,uint256)
                 handler: handleOfferItem
-              - event: Swap(uint256,address,uint256)
+              - event: StartSwap(uint256,address,uint256)
                 handler: handleSwap
               - event: SwapItem(uint256,uint256,uint256)
                 handler: handleSwapItem
@@ -81,6 +81,12 @@ dataSources:
                 handler: handleStakeEth
               - event: UnStakeEth(uint256)
                 handler: handleUnStakeEth
+              - event: TakeLoan(uint256,address,uint256)
+                handler: handleTakeLoan
+              - event: Payoff(uint256,address,uint256)
+                handler: handleUnPayoff
+              - event: Liquidate(uint256,address,uint256)
+                handler: handleLiquidate
               - event: Genesis()
                 handler: handleGenesis
           blockHandlers:

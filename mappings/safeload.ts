@@ -1,5 +1,5 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { Epoch, Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User } from '../generated/local/schema';
+import { Epoch, Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User, Loan } from '../generated/local/schema';
 
 export function safeLoadActiveEpoch(): Epoch {
     let loaded = safeLoadProtocol('0x42069');
@@ -41,6 +41,12 @@ export function safeAddSwapToProtcol(): void {
     loaded.totalSwaps = loaded.totalSwaps.plus(BigInt.fromString('1'));
     loaded.save();
 }
+
+export function safeAddLoanToProtcol(): void {
+    let loaded = safeLoadProtocol('0x42069');
+    loaded.totalLoans = loaded.totalLoans.plus(BigInt.fromString('1'));
+    loaded.save();
+}
 export function safeAddItemToProtcol(): void {
     let loaded = safeLoadProtocol('0x42069');
     loaded.totalItems = loaded.totalItems.plus(BigInt.fromString('1'));
@@ -71,14 +77,28 @@ export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): void {
     nugg.save();
 }
 
+export function safeSetNuggActiveLoan(nugg: Nugg, loan: Loan): void {
+    nugg.activeLoan = loan.id;
+    nugg.protocol = '0x42069';
+    nugg.save();
+}
+
 export function safeRemoveNuggActiveSwap(nugg: Nugg): void {
     nugg.activeSwap = null;
     nugg.protocol = null;
     nugg.save();
 }
+
+export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
+    nugg.activeLoan = null;
+    nugg.protocol = null;
+    nugg.save();
+}
+
 export function safeNewNugg(id: BigInt): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id;
+    loaded.burned = false;
     safeAddNuggToProtcol();
     return loaded;
 }
@@ -171,6 +191,7 @@ export function safeNewSwapHelper(nugg: Nugg, endingEpoch: BigInt): Swap {
     let id = '' + nugg.id + '-' + endingEpoch.toString();
     let swap = new Swap(id);
     swap.endingEpoch = endingEpoch;
+
     safeAddSwapToProtcol();
     return swap as Swap;
 }
@@ -193,6 +214,21 @@ export function unsafeLoadSwap(id: string): Swap {
 //     let id = nuggId.concat('-').concat(itemId.toString());
 //     return safeLoadNuggItem(id);
 // }
+
+export function safeNewLoanHelper(): Loan {
+    let loaded = safeLoadProtocol('0x42069');
+    let id = loaded.totalLoans.toString();
+    let loan = new Loan(id);
+    safeAddLoanToProtcol();
+    return loan as Loan;
+}
+
+export function safeLoadLoanHelper(nugg: Nugg): Loan {
+    let id = nugg.activeLoan;
+    let loaded = Loan.load(id);
+    if (loaded == null) log.critical('Loan CANNOT BE NULL:' + id, []);
+    return loaded as Loan;
+}
 
 export function safeLoadActiveItemSwap(nuggItem: NuggItem): ItemSwap {
     if (nuggItem.activeSwap == '') log.critical('handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
