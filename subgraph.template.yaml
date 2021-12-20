@@ -51,43 +51,63 @@ dataSources:
               - name: NuggFT
                 file: ../../abis/NuggFT.json
           eventHandlers:
-              - event: Transfer(indexed address,indexed address,indexed uint256)
-                handler: handleTransfer
-              - event: Claim(uint256,uint256,address)
-                handler: handleClaim
-              - event: ClaimItem(uint256,uint256,uint256,uint256)
-                handler: handleClaimItem
-              - event: Commit(uint256,address,uint256)
-                handler: handleCommit
-              - event: CommitItem(uint256,uint256,uint256,uint256)
-                handler: handleCommitItem
-              - event: Mint(uint256,address,uint256)
-                handler: handleMint
-              - event: Offer(uint256,address,uint256)
-                handler: handleOffer
-              - event: OfferItem(uint256,uint256,uint256,uint256)
-                handler: handleOfferItem
-              - event: StartSwap(uint256,address,uint256)
-                handler: handleSwap
-              - event: SwapItem(uint256,uint256,uint256)
-                handler: handleSwapItem
-              - event: PopItem(uint256,uint256)
-                handler: handlePopItem
-              - event: SetProof(uint256,uint256[])
-                handler: handleSetProof
-              - event: PushItem(uint256,uint256)
-                handler: handlePushItem
-              - event: StakeEth(uint256)
-                handler: handleStakeEth
-              - event: UnStakeEth(uint256)
-                handler: handleUnStakeEth
-              - event: TakeLoan(uint256,address,uint256)
-                handler: handleTakeLoan
-              - event: Payoff(uint256,address,uint256)
-                handler: handleUnPayoff
-              - event: Liquidate(uint256,address,uint256)
-                handler: handleLiquidate
+              #   - event: Approval(indexed address,indexed address,indexed uint256)
+              #     handler: handleApproval
+              #   - event: ApprovalForAll(indexed address,indexed address,bool)
+              #     handler: handleApprovalForAll
+              - event: DelegateCommit(uint160,address,uint96)
+                handler: handleDelegateCommit
+              - event: DelegateMint(uint256,address,uint96)
+                handler: handleDelegateMint
+              - event: DelegateOffer(uint160,address,uint96)
+                handler: handleDelegateOffer
+              - event: DelegateCommitItem(uint160,uint16,uint160,uint96)
+                handler: handleDelegateCommitItem
+              - event: DelegateOfferItem(uint160,uint16,uint160,uint96)
+                handler: handleDelegateOfferItem
               - event: Genesis()
                 handler: handleGenesis
+              #   - event: MigrateV1Sent(address,uint160,uint256,address,uint96)
+              #     handler: handleMigrateV1Sent
+              #   - event: MigratorV1Updated(address)
+              #     handler: handleMigratorV1Updated
+              - event: Payoff(uint160,address,uint96)
+                handler: handlePayoff
+              - event: PopItem(uint160,uint256,uint16)
+                handler: handlePopItem
+              #   - event: ProtocolEthExtracted(uint96)
+              #     handler: handleProtocolEthExtracted
+              - event: PushItem(uint160,uint256,uint16)
+                handler: handlePushItem
+              - event: Rebalance(uint160,uint96,uint96)
+                handler: handleRebalance
+              - event: RotateItem(uint160,uint256,uint8)
+                handler: handleRotateItem
+              - event: SetAnchorOverrides(uint160,uint256,uint8[],uint8[])
+                handler: handleSetAnchorOverrides
+              - event: SetProof(uint160,uint256,uint8[])
+                handler: handleSetProof
+              - event: StakeEth(uint96,uint96)
+                handler: handleStakeEth
+              - event: SwapClaim(uint160,address,uint32)
+                handler: handleSwapClaim
+              - event: SwapClaimItem(uint160,uint16,uint160,uint32)
+                handler: handleSwapClaimItem
+              - event: SwapItemStart(uint160,uint16,uint96)
+                handler: handleSwapItemStart
+              - event: SwapStart(uint160,address,uint96)
+                handler: handleSwapStart
+              - event: TakeLoan(uint160,uint96)
+                handler: handleTakeLoan
+              - event: Transfer(indexed address,indexed address,indexed uint256)
+                handler: handleTransfer
+              #   - event: TrustUpdated(indexed address)
+              #     handler: handleTrustUpdated
+              #   - event: TrustedMint(indexed address,uint160)
+              #     handler: handleTrustedMint
+              - event: UnStakeEth(uint96,address)
+                handler: handleUnStakeEth
+              #   - event: UntrustedMint(indexed address,uint160)
+              #     handler: handleUntrustedMint
           blockHandlers:
               - handler: handleBlock

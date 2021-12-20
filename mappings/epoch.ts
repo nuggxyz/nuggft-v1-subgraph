@@ -1,4 +1,4 @@
-import { ethereum, BigInt } from '@graphprotocol/graph-ts';
+import { ethereum, BigInt, store } from '@graphprotocol/graph-ts';
 import { Epoch, Protocol } from '../generated/local/schema';
 import {
     safeLoadActiveEpoch,
@@ -92,7 +92,12 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
     for (var i = 0; i < swaps.length; i++) {
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
+
         safeRemoveNuggActiveSwap(nugg);
+
+        if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
+            store.remove('Nugg', nugg.id);
+        }
     }
 
     let itemswaps = epoch._activeItemSwaps;
@@ -126,9 +131,11 @@ export function handleBlock(block: ethereum.Block): void {
     }
 }
 
+let OFFSET = BigInt.fromString('3000');
+
 export function getCurrentEpoch(genesis: BigInt, interval: BigInt, blocknum: BigInt): BigInt {
     let diff = blocknum.plus(BigInt.fromString('1')).minus(genesis);
-    return safeDiv(diff, interval);
+    return safeDiv(diff, interval).plus(OFFSET);
 }
 
 export function getCurrentStartBlock(interval: BigInt, blocknum: BigInt): BigInt {
@@ -142,7 +149,7 @@ export function getCurrentEndBlock(interval: BigInt, blocknum: BigInt): BigInt {
 }
 
 export function getStartBlockFromEpoch(epoch: BigInt, genesis: BigInt, interval: BigInt): BigInt {
-    return epoch.times(interval).plus(genesis);
+    return epoch.minus(OFFSET).times(interval).plus(genesis);
 }
 
 export function getEndBlockFromEpoch(epoch: BigInt, genesis: BigInt, interval: BigInt): BigInt {

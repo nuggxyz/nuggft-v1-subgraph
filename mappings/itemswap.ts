@@ -1,5 +1,5 @@
 import { log, BigInt, store } from '@graphprotocol/graph-ts';
-import { ClaimItem, CommitItem, OfferItem, SwapItem } from '../generated/local/NuggFT/NuggFT';
+import { SwapClaimItem, DelegateCommitItem, DelegateOfferItem, SwapItemStart } from '../generated/local/NuggFT/NuggFT';
 import { wethToUsdc } from './uniswap';
 import { safeNewItemSwap, safeNewItemOffer, safeLoadActiveItemSwap, safeLoadEpoch, safeSetNuggItemActiveSwap } from './safeload';
 import {
@@ -12,14 +12,14 @@ import {
     safeLoadItemOfferHelperNull,
 } from './safeload';
 
-export function handleCommitItem(event: CommitItem): void {
-    log.info('handleCommitItem start', []);
+export function handleDelegateCommitItem(event: DelegateCommitItem): void {
+    log.info('handleDelegateCommitItem start', []);
 
     let proto = safeLoadProtocol('0x42069');
 
     let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId);
+    let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
@@ -27,7 +27,7 @@ export function handleCommitItem(event: CommitItem): void {
 
     let prevswapId = itemswap.id;
 
-    if (itemswap.epoch != null) log.critical('handleOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
+    if (itemswap.epoch != null) log.critical('handleDelegateOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
 
     let owneritemoffer = safeLoadItemOfferHelper(itemswap, sellingNugg);
 
@@ -78,15 +78,15 @@ export function handleCommitItem(event: CommitItem): void {
     itemoffer.save();
     itemswap.save();
 
-    log.info('handleCommitItem end', []);
+    log.info('handleDelegateCommitItem end', []);
 }
 
-export function handleOfferItem(event: OfferItem): void {
-    log.info('handleOfferItem start', []);
+export function handleDelegateOfferItem(event: DelegateOfferItem): void {
+    log.info('handleDelegateOfferItem start', []);
 
     let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId);
+    let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
@@ -119,16 +119,16 @@ export function handleOfferItem(event: OfferItem): void {
     log.info('handleOffer end', []);
 }
 
-export function handleClaimItem(event: ClaimItem): void {
-    log.info('handleClaimItem start', []);
+export function handleSwapClaimItem(event: SwapClaimItem): void {
+    log.info('handleSwapClaimItem start', []);
 
     let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId);
+    let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    let itemswap = safeLoadItemSwapHelper(nuggitem, event.params.endingEpoch);
+    let itemswap = safeLoadItemSwapHelper(nuggitem, event.params.epoch);
 
     let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
 
@@ -140,26 +140,26 @@ export function handleClaimItem(event: ClaimItem): void {
         // nuggitem.activeSwap = null;
         // nuggitem.save();
         if (itemswap.owner == buyingNugg.id) {
-            store.remove('OfferItem', itemoffer.id);
-            store.remove('SwapItem', itemswap.id);
+            store.remove('DelegateOfferItem', itemoffer.id);
+            store.remove('StartSwapItem', itemswap.id);
         }
     }
 
     itemoffer.save();
 
-    log.info('handleClaimItem end', []);
+    log.info('handleSwapClaimItem end', []);
 }
 
-export function handleSwapItem(event: SwapItem): void {
-    log.info('handleSwapItem start', []);
+export function handleStartSwapItem(event: SwapItemStart): void {
+    log.info('handleStartSwapItem start', []);
 
     let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
-    let item = safeLoadItem(event.params.itemId);
+    let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap != null) log.critical('handleSwapItem: nuggitem.activeSwap MUST BE NULL', []);
+    if (nuggitem.activeSwap != null) log.critical('handleStartSwapItem: nuggitem.activeSwap MUST BE NULL', []);
 
     let itemSwap = safeNewItemSwap(nuggitem, BigInt.fromString('0'));
 
@@ -185,5 +185,5 @@ export function handleSwapItem(event: SwapItem): void {
     itemoffer.swap = itemSwap.id;
     itemoffer.save();
 
-    log.info('handleSwapItem end', []);
+    log.info('handleStartSwapItem end', []);
 }

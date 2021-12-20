@@ -11,7 +11,7 @@ export function invariant(test: boolean, error: string): void {
 }
 
 export function handleWethUsdcUniswap(event: Swap): void {
-    let proto = Protocol.load('Protocol-0x42069');
+    let proto = Protocol.load('0x42069');
     if (proto != null) {
         proto.priceUsdcWeth = sqrtPriceX96(event.params.sqrtPriceX96);
         proto.save();
@@ -19,7 +19,7 @@ export function handleWethUsdcUniswap(event: Swap): void {
 }
 
 export function handleWethXNuggUniswap(event: Swap): void {
-    let proto = Protocol.load('Protocol-0x42069');
+    let proto = Protocol.load('0x42069');
     if (proto != null) {
         proto.priceWethXnugg = sqrtPriceX96(event.params.sqrtPriceX96);
         proto.save();
@@ -27,7 +27,7 @@ export function handleWethXNuggUniswap(event: Swap): void {
 }
 
 export function wethToUsdc(num: BigInt): BigInt {
-    let proto = Protocol.load('Protocol-0x42069');
+    let proto = Protocol.load('0x42069');
     if (proto == null) {
         return BigInt.fromString('0');
     }
@@ -36,7 +36,7 @@ export function wethToUsdc(num: BigInt): BigInt {
 }
 
 export function xnuggToWeth(num: BigInt): BigInt {
-    let proto = Protocol.load('Protocol-0x42069');
+    let proto = Protocol.load('0x42069');
     if (proto == null) {
         return BigInt.fromString('0');
     }

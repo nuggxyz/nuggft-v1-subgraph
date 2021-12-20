@@ -1,10 +1,11 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { Liquidate, Payoff, TakeLoan } from '../generated/local/NuggFT/NuggFT';
+import { Rebalance, Payoff, TakeLoan } from '../generated/local/NuggFT/NuggFT';
 import {
     safeLoadLoanHelper,
     safeLoadNugg,
     safeLoadProtocol,
     safeLoadUser,
+    safeLoadUserFromString,
     safeLoadUserNull,
     safeNewLoanHelper,
     safeNewUser,
@@ -17,13 +18,13 @@ export function handleTakeLoan(event: TakeLoan): void {
     log.info('handleTakeLoan start', []);
     let proto = safeLoadProtocol('0x42096');
 
-    let user = safeLoadUser(event.params.account);
-
     let nugg = safeLoadNugg(event.params.tokenId);
+
+    let user = safeLoadUserFromString(nugg.user);
 
     let loan = safeNewLoanHelper();
 
-    loan.eth = event.params.eth;
+    loan.eth = event.params.principal;
     loan.ethUsd = wethToUsdc(loan.eth);
     loan.liquidated = false;
     loan.liquidatedForEth = BigInt.fromString('0');
@@ -44,29 +45,9 @@ export function handleTakeLoan(event: TakeLoan): void {
 export function handlePayoff(event: Payoff): void {
     log.info('handlePayoff', []);
 
-    let user = safeLoadUser(event.params.account);
-
     let nugg = safeLoadNugg(event.params.tokenId);
 
     let loan = safeLoadLoanHelper(nugg);
-
-    loan.liquidated = true;
-
-    loan.liquidatedForEth = event.params.eth;
-    loan.liquidatedForUsd = wethToUsdc(loan.liquidatedForEth);
-    loan.liquidatedBy = user.id;
-    loan.feeEth = event.params.eth.minus(loan.eth);
-    loan.feeUsd = wethToUsdc(loan.feeEth);
-
-    loan.save();
-
-    safeRemoveNuggActiveLoan(nugg);
-
-    log.info('handlePayoff', []);
-}
-
-export function handleLiquidate(event: Liquidate): void {
-    log.info('handleLiquidate', []);
 
     let user = safeLoadUserNull(event.params.account);
 
@@ -79,21 +60,39 @@ export function handleLiquidate(event: Liquidate): void {
         user.save();
     }
 
-    let nugg = safeLoadNugg(event.params.tokenId);
-
-    let loan = safeLoadLoanHelper(nugg);
-
     loan.liquidated = true;
 
-    loan.liquidatedForEth = event.params.eth;
+    loan.liquidatedForEth = event.params.payoffAmount;
     loan.liquidatedForUsd = wethToUsdc(loan.liquidatedForEth);
     loan.liquidatedBy = user.id;
-    loan.feeEth = event.params.eth.minus(loan.eth);
-    loan.feeUsd = wethToUsdc(loan.feeEth);
 
     loan.save();
 
     safeRemoveNuggActiveLoan(nugg);
 
-    log.info('handleLiquidate', []);
+    log.info('handlePayoff', []);
+}
+
+export function handleRebalance(event: Rebalance): void {
+    log.info('handleRebalance', []);
+
+    let proto = safeLoadProtocol('0x42096');
+
+    let nugg = safeLoadNugg(event.params.tokenId);
+
+    let loan = safeLoadLoanHelper(nugg);
+
+    loan.feeEth = loan.feeEth.plus(event.params.fee);
+    loan.feeUsd = wethToUsdc(loan.feeEth);
+
+    loan.eth = loan.eth.plus(event.params.earned);
+    loan.ethUsd = wethToUsdc(loan.eth);
+
+    loan.endingEpoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1000'));
+
+    loan.save();
+
+    safeRemoveNuggActiveLoan(nugg);
+
+    log.info('handleRebalance', []);
 }

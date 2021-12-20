@@ -1,13 +1,12 @@
 import { Address, ethereum, log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { SetProof, PopItem, PushItem, Genesis, StakeEth, UnStakeEth } from '../generated/local/NuggFT/NuggFT';
-import { Transfer } from '../generated/local/NuggFT/NuggFT';
+import { SetProof, PopItem, PushItem, Genesis, StakeEth, UnStakeEth, Transfer } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
-import { safeLoadUser, safeNewNugg } from './safeload';
+import { safeLoadNuggNull, safeLoadUser, safeNewNugg } from './safeload';
 import { onEpochGenesis } from './epoch';
-import { handleMint, handleClaim, handleOffer, handleSwap } from './swap';
-import { handleClaimItem, handleOfferItem, handleSwapItem } from './itemswap';
+import { handleDelegateMint, handleSwapClaim, handleDelegateOffer, handleStartSwap } from './swap';
+import { handleSwapClaimItem, handleDelegateOfferItem, handleStartSwapItem } from './itemswap';
 import {
     safeNewUser,
     safeLoadNugg,
@@ -20,18 +19,18 @@ import {
     safeNewItem,
     safeLoadItemNull,
 } from './safeload';
-import { Epoch, Protocol, User } from '../generated/local/schema';
+import { Epoch, Nugg, Protocol, User } from '../generated/local/schema';
 import { handleBlock } from './epoch';
 
 export {
-    handleMint,
+    handleDelegateMint,
     handleTransfer,
-    handleClaim,
-    handleClaimItem,
-    handleOffer,
-    handleOfferItem,
-    handleSwap,
-    handleSwapItem,
+    handleSwapClaim,
+    handleSwapClaimItem,
+    handleDelegateOffer,
+    handleDelegateOfferItem,
+    handleStartSwap,
+    handleStartSwapItem,
     handlePopItem,
     handleSetProof,
     handlePushItem,
@@ -121,7 +120,7 @@ export function handleGenesis(event: Genesis): void {
 
     proto.save();
 
-    onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
+    onEpochGenesis(event.block, event.block.number, BigInt.fromString('255'));
 
     log.info('handleGenesisNuggFT end', [proto.epoch]);
 }
@@ -138,7 +137,7 @@ function handleStakeEth(event: StakeEth): void {
 
     let proto = safeLoadProtocol('0x42069');
 
-    proto.nuggftStakedEth = proto.nuggftStakedEth.plus(event.params.amount);
+    proto.nuggftStakedEth = proto.nuggftStakedEth.plus(event.params.stake);
     proto.nuggftStakedUsd = wethToUsdc(proto.nuggftStakedEth);
     proto.save();
 
@@ -151,7 +150,7 @@ function handleUnStakeEth(event: UnStakeEth): void {
 
     let proto = safeLoadProtocol('0x42069');
 
-    proto.nuggftStakedEth = proto.nuggftStakedEth.minus(event.params.amount);
+    proto.nuggftStakedEth = proto.nuggftStakedEth.minus(event.params.stake);
     proto.nuggftStakedUsd = wethToUsdc(proto.nuggftStakedEth);
 
     proto.save();
@@ -160,43 +159,25 @@ function handleUnStakeEth(event: UnStakeEth): void {
     log.info('handleUnStake end', []);
 }
 
-// function handleGenesis(event: Genesis): void {
-//     log.info('handleGenesis start', []);
-
-//     onEpochGenesis(event.block, event.block.number, BigInt.fromString('25'));
-
-//     let proto = safeLoadProtocol('0x42069');
-
-//     let nuggft = safeNewUser(event.address);
-
-//     nuggft.xnugg = BigInt.fromString('0');
-//     nuggft.ethin = BigInt.fromString('0');
-//     nuggft.ethout = BigInt.fromString('0');
-//     //     nuggft.nuggs = [];
-//     //     nuggft.offers = [];
-//     nuggft.save();
-
-//     proto.nuggftUser = nuggft.id;
-
-//     proto.save();
-
-//     log.info('handleGenesis end', []);
-// }
-
 function handleSetProof(event: SetProof): void {
     log.info('handleSetProof start', []);
+    let proto = safeLoadProtocol('0x42069');
 
-    // let proto = safeLoadProtocol('0x42069');
+    let nugg = safeLoadNuggNull(event.params.tokenId);
 
-    let nugg = safeLoadNugg(event.params.tokenId);
-    //     nugg.swaps = [];
-    //     nugg.items = [];
-    //     nugg.offers = [];
+    if (nugg == null) {
+        nugg = safeNewNugg(event.params.tokenId);
+        nugg.user = proto.nullUser;
+        nugg.save();
+        // sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
+    } else {
+        // sendingUser = safeLoadUser(Address.fromString(nugg.user));
+    }
 
     for (let i = 0; i < event.params.items.length; i++) {
-        let item = safeLoadItemNull(event.params.items[i]);
+        let item = safeLoadItemNull(BigInt.fromI32(event.params.items[i]));
         if (item == null) {
-            item = safeNewItem(event.params.items[i]);
+            item = safeNewItem(BigInt.fromI32(event.params.items[i]));
             item.count = BigInt.fromString('0');
         }
         let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
@@ -216,10 +197,6 @@ function handleSetProof(event: SetProof): void {
         nuggItem.save();
     }
 
-    // nugg.user = proto.nullUser;
-
-    // nugg.save();
-
     log.info('handleSetProof end', []);
 }
 
@@ -228,9 +205,16 @@ function handleTransfer(event: Transfer): void {
 
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNuggNull(event.params.tokenId);
 
-    let sendingUser = safeLoadUser(Address.fromString(nugg.user));
+    let sendingUser: User;
+
+    if (nugg == null) {
+        nugg = safeNewNugg(event.params.tokenId);
+        sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
+    } else {
+        sendingUser = safeLoadUser(Address.fromString(nugg.user));
+    }
 
     let user = safeLoadUserNull(event.params.to);
 
@@ -246,7 +230,7 @@ function handleTransfer(event: Transfer): void {
     if (sendingUser.id !== proto.nullUser) {
         sendingUser.shares = sendingUser.shares.minus(BigInt.fromString('1'));
     }
-    if (nugg.user === proto.nullUser) {
+    if (user.id === proto.nullUser) {
         nugg.burned = true;
     } else {
         user.shares = user.shares.plus(BigInt.fromString('1'));
@@ -266,10 +250,10 @@ function handlePushItem(event: PushItem): void {
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    let item = safeLoadItemNull(event.params.itemId);
+    let item = safeLoadItemNull(BigInt.fromI32(event.params.itemId));
 
     if (item == null) {
-        item = safeNewItem(event.params.itemId);
+        item = safeNewItem(BigInt.fromI32(event.params.itemId));
         item.count = BigInt.fromString('1');
         item.save();
     }
@@ -291,7 +275,7 @@ function handlePopItem(event: PopItem): void {
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    let item = safeLoadItem(event.params.itemId);
+    let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
     let nuggItem = safeLoadNuggItemHelper(nugg, item);
 

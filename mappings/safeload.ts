@@ -71,6 +71,12 @@ export function safeLoadNugg(id: BigInt): Nugg {
     return loaded as Nugg;
 }
 
+export function safeLoadNuggNull(id: BigInt): Nugg | null {
+    let ids = '' + id.toString();
+    let loaded = Nugg.load(ids);
+    return loaded;
+}
+
 export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): void {
     nugg.activeSwap = swap.id;
     nugg.protocol = '0x42069';
@@ -101,6 +107,13 @@ export function safeNewNugg(id: BigInt): Nugg {
     loaded.burned = false;
     safeAddNuggToProtcol();
     return loaded;
+}
+
+export function safeLoadUserFromString(userId: string): User {
+    let id = '' + userId;
+    let loaded = User.load(id);
+    if (loaded == null) log.critical('User CANNOT BE NULL:' + id, []);
+    return loaded as User;
 }
 
 export function safeLoadUser(userId: Address): User {
@@ -231,7 +244,7 @@ export function safeLoadLoanHelper(nugg: Nugg): Loan {
 }
 
 export function safeLoadActiveItemSwap(nuggItem: NuggItem): ItemSwap {
-    if (nuggItem.activeSwap == '') log.critical('handleOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
+    if (nuggItem.activeSwap == '') log.critical('handleDelegateOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
 
     let id = nuggItem.activeSwap as string;
     let loaded = ItemSwap.load(id);
