@@ -55,6 +55,8 @@ export function handleDelegateMint(event: DelegateMint): void {
 
     swap.save();
 
+    nugg.user = proto.nuggftUser;
+
     nugg.save();
 
     let offer = safeNewOfferHelper(swap, user);
