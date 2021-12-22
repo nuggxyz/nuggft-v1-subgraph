@@ -150,8 +150,8 @@ export function handleSwapClaimItem(event: SwapClaimItem): void {
     log.info('handleSwapClaimItem end', []);
 }
 
-export function handleStartSwapItem(event: SwapItemStart): void {
-    log.info('handleStartSwapItem start', []);
+export function handleSwapItemStart(event: SwapItemStart): void {
+    log.info('handleSwapItemStart start', []);
 
     let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
 
@@ -159,7 +159,7 @@ export function handleStartSwapItem(event: SwapItemStart): void {
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap != null) log.critical('handleStartSwapItem: nuggitem.activeSwap MUST BE NULL', []);
+    if (nuggitem.activeSwap != null) log.critical('handleSwapItemStart: nuggitem.activeSwap MUST BE NULL', []);
 
     let itemSwap = safeNewItemSwap(nuggitem, BigInt.fromString('0'));
 
@@ -185,5 +185,5 @@ export function handleStartSwapItem(event: SwapItemStart): void {
     itemoffer.swap = itemSwap.id;
     itemoffer.save();
 
-    log.info('handleStartSwapItem end', []);
+    log.info('handleSwapItemStart end', []);
 }

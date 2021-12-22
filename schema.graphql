@@ -169,6 +169,8 @@ type User @entity {
     offers: [Offer!]! @derivedFrom(field: "user")
 
     loans: [Loan!]! @derivedFrom(field: "user")
+
+    swaps: [Swap!]! @derivedFrom(field: "owner")
 }
 
 type ItemSwap @entity {

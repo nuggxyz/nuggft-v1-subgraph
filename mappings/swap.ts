@@ -100,7 +100,8 @@ export function handleDelegateCommit(event: DelegateCommit): void {
     swap.save();
 
     let _s = epoch._activeSwaps as string[];
-    _s[_s.indexOf(prevswapId)] = swap.id;
+    // _s[_s.indexOf(prevswapId)] = swap.id;
+    _s.push(swap.id as string);
     epoch._activeSwaps = _s as string[];
     epoch.save();
 
@@ -219,8 +220,8 @@ export function handleSwapClaim(event: SwapClaim): void {
     log.info('handleSwapClaim end', []);
 }
 
-export function handleStartSwap(event: SwapStart): void {
-    log.info('handleStartSwap start', []);
+export function handleSwapStart(event: SwapStart): void {
+    log.info('handleSwapStart start', []);
 
     let user = safeLoadUser(event.params.account);
 
@@ -249,5 +250,5 @@ export function handleStartSwap(event: SwapStart): void {
 
     offer.save();
 
-    log.info('handleStartSwap end', []);
+    log.info('handleSwapStart end', []);
 }

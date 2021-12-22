@@ -92,11 +92,11 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
     for (var i = 0; i < swaps.length; i++) {
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
-
-        safeRemoveNuggActiveSwap(nugg);
-
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
             store.remove('Nugg', nugg.id);
+            store.remove('Swap', s.id);
+        } else {
+            safeRemoveNuggActiveSwap(nugg);
         }
     }
 

@@ -5,8 +5,11 @@ import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
 import { safeLoadNuggNull, safeLoadUser, safeNewNugg } from './safeload';
 import { onEpochGenesis } from './epoch';
-import { handleDelegateMint, handleSwapClaim, handleDelegateOffer, handleStartSwap } from './swap';
-import { handleSwapClaimItem, handleDelegateOfferItem, handleStartSwapItem } from './itemswap';
+import { handleDelegateMint, handleSwapClaim, handleDelegateOffer, handleSwapStart, handleDelegateCommit } from './swap';
+import { handleSwapClaimItem, handleDelegateOfferItem, handleSwapItemStart, handleDelegateCommitItem } from './itemswap';
+
+import { handlePayoff, handleTakeLoan, handleRebalance } from './loan';
+
 import {
     safeNewUser,
     safeLoadNugg,
@@ -21,26 +24,30 @@ import {
 } from './safeload';
 import { Epoch, Nugg, Protocol, User } from '../generated/local/schema';
 import { handleBlock } from './epoch';
-
 export {
     handleDelegateMint,
+    handleDelegateCommit,
+    handleDelegateCommitItem,
     handleTransfer,
     handleSwapClaim,
     handleSwapClaimItem,
     handleDelegateOffer,
     handleDelegateOfferItem,
-    handleStartSwap,
-    handleStartSwapItem,
+    handleSwapStart,
+    handleSwapItemStart,
     handlePopItem,
     handleSetProof,
     handlePushItem,
     handleStakeEth,
     handleUnStakeEth,
     handleBlock,
+    handlePayoff,
+    handleTakeLoan,
+    handleRebalance,
 };
 
 export function handleGenesis(event: Genesis): void {
-    log.info('handleGenesisNuggFT start', []);
+    log.info('handleGenesisNuggFT start ', []);
 
     let proto = new Protocol('0x42069');
 

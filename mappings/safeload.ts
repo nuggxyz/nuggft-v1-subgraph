@@ -237,7 +237,8 @@ export function safeNewLoanHelper(): Loan {
 }
 
 export function safeLoadLoanHelper(nugg: Nugg): Loan {
-    let id = nugg.activeLoan;
+    if (nugg.activeLoan == null) log.critical('nugg.activeLoan CANNOT BE NULL:' + nugg.id, []);
+    let id = nugg.activeLoan as string;
     let loaded = Loan.load(id);
     if (loaded == null) log.critical('Loan CANNOT BE NULL:' + id, []);
     return loaded as Loan;

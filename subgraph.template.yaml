@@ -81,10 +81,10 @@ dataSources:
                 handler: handlePushItem
               - event: Rebalance(uint160,uint96,uint96)
                 handler: handleRebalance
-              - event: RotateItem(uint160,uint256,uint8)
-                handler: handleRotateItem
-              - event: SetAnchorOverrides(uint160,uint256,uint8[],uint8[])
-                handler: handleSetAnchorOverrides
+              #   - event: RotateItem(uint160,uint256,uint8)
+              #     handler: handleRotateItem
+              #   - event: SetAnchorOverrides(uint160,uint256,uint8[],uint8[])
+              #     handler: handleSetAnchorOverrides
               - event: SetProof(uint160,uint256,uint8[])
                 handler: handleSetProof
               - event: StakeEth(uint96,uint96)
