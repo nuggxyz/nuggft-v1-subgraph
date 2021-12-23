@@ -59,6 +59,7 @@ export function safeAddItemSwapToProtcol(): void {
 }
 
 export function safeLoadProtocol(id: string): Protocol {
+    if (id !== '0x42069') id = '0x42069';
     let loaded = Protocol.load('' + id);
     if (loaded == null) log.critical('Protocol CANNOT BE NULL:' + id, []);
     return loaded as Protocol;

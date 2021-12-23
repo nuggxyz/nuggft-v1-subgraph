@@ -16,7 +16,7 @@ import { wethToUsdc } from './uniswap';
 
 export function handleTakeLoan(event: TakeLoan): void {
     log.info('handleTakeLoan start', []);
-    let proto = safeLoadProtocol('0x42096');
+    let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(event.params.tokenId);
 

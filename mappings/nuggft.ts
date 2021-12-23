@@ -127,7 +127,7 @@ export function handleGenesis(event: Genesis): void {
 
     proto.save();
 
-    onEpochGenesis(event.block, event.block.number, BigInt.fromString('255'));
+    onEpochGenesis(event.block, event.block.number, BigInt.fromString('69'));
 
     log.info('handleGenesisNuggFT end', [proto.epoch]);
 }
