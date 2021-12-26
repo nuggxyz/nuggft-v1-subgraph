@@ -106,6 +106,7 @@ export function safeNewNugg(id: BigInt): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id;
     loaded.burned = false;
+    loaded.numSwaps = BigInt.fromString('0');
     safeAddNuggToProtcol();
     return loaded;
 }
@@ -190,7 +191,7 @@ export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
     let header = '';
     let id = header.concat(nugg.id).concat('-').concat(item.id.toString());
     let loaded = new NuggItem(id);
-
+    loaded.numSwaps = BigInt.fromString('0');
     return loaded;
 }
 export function safeLoadActiveSwap(nugg: Nugg): Swap {
@@ -201,11 +202,22 @@ export function safeLoadActiveSwap(nugg: Nugg): Swap {
     return loaded as Swap;
 }
 
+// export function safeNewSwapHelper(nugg: Nugg, endingEpoch: BigInt): Swap {
+//     let id = '' + nugg.id + '-' + endingEpoch.toString();
+//     let swap = new Swap(id);
+//     swap.endingEpoch = endingEpoch;
+
+//     safeAddSwapToProtcol();
+//     return swap as Swap;
+// }
+
 export function safeNewSwapHelper(nugg: Nugg, endingEpoch: BigInt): Swap {
     let id = '' + nugg.id + '-' + endingEpoch.toString();
     let swap = new Swap(id);
     swap.endingEpoch = endingEpoch;
-
+    swap.num = nugg.numSwaps;
+    nugg.numSwaps = nugg.numSwaps.plus(BigInt.fromString('1'));
+    nugg.save();
     safeAddSwapToProtcol();
     return swap as Swap;
 }
@@ -280,8 +292,10 @@ export function safeNewItemSwap(sellingNuggItem: NuggItem, endingEpoch: BigInt):
 
     safeAddItemSwapToProtcol();
     let swap = new ItemSwap(id);
+    swap.num = sellingNuggItem.numSwaps;
     swap.endingEpoch = endingEpoch;
-
+    sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(BigInt.fromString('1'));
+    sellingNuggItem.save();
     return swap;
 }
 // export function safeLoadOffer(id: string): Offer {

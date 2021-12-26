@@ -77,40 +77,54 @@ export function handleDelegateCommit(event: DelegateCommit): void {
     log.info('handleDelegateCommit start', []);
 
     let proto = safeLoadProtocol('0x42069');
+    log.info('handleDelegateCommit start 2', []);
 
     let nugg = safeLoadNugg(event.params.tokenId);
+    log.info('handleDelegateCommit start 3', []);
 
     let swap = safeLoadActiveSwap(nugg);
+    log.info('handleDelegateCommit start 4', []);
 
     let owner = safeLoadUser(Address.fromString(swap.owner));
+    log.info('handleDelegateCommit start 5', []);
 
     let owneroffer = safeLoadOfferHelper(swap, owner);
+    log.info('handleDelegateCommit start 6', [swap.epoch == null ? 'null' : (swap.epoch as string)]);
 
-    if (swap.epoch != '') log.critical('handleDelegateCommit: SWAP.epochId MUST BE NULL', []);
+    if (swap.epoch != '' && swap.epoch != null) log.critical('handleDelegateCommit: SWAP.epochId MUST BE NULL', []);
+    log.info('handleDelegateCommit start 7', []);
 
-    let prevswapId = swap.id;
     store.remove('Swap', swap.id);
     store.remove('Offer', owneroffer.id);
 
+    log.info('handleDelegateCommit start 8', []);
+
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
+    log.info('handleDelegateCommit start 9', []);
 
     swap.epoch = epoch.id;
+    swap.startingEpoch = proto.epoch;
     swap.endingEpoch = BigInt.fromString(epoch.id);
-    swap.id = nugg.id.concat('-').concat(swap.epoch);
+    swap.id = nugg.id.concat('-').concat(epoch.id);
     swap.save();
+    log.info('handleDelegateCommit start 10', []);
 
     let _s = epoch._activeSwaps as string[];
     // _s[_s.indexOf(prevswapId)] = swap.id;
     _s.push(swap.id as string);
     epoch._activeSwaps = _s as string[];
     epoch.save();
+    log.info('handleDelegateCommit start 11', []);
 
     owneroffer.id = swap.id.concat('-').concat(swap.owner);
+    owneroffer.swap = swap.id;
     owneroffer.save();
+    log.info('handleDelegateCommit start 12', []);
 
     safeSetNuggActiveSwap(nugg, swap);
 
     let user = safeLoadUserNull(event.params.account);
+    log.info('handleDelegateCommit start 13', []);
 
     if (user == null) {
         user = safeNewUser(event.params.account);
@@ -120,6 +134,7 @@ export function handleDelegateCommit(event: DelegateCommit): void {
         user.shares = BigInt.fromString('0');
         user.save();
     }
+    log.info('handleDelegateCommit start 14', []);
 
     let offer = safeLoadOfferHelperNull(swap, user);
 
@@ -229,7 +244,7 @@ export function handleSwapStart(event: SwapStart): void {
 
     let swap = safeNewSwapHelper(nugg, BigInt.fromString('0'));
 
-    swap.eth = event.transaction.value;
+    swap.eth = event.params.eth;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = user.id;
     swap.leader = user.id;
@@ -242,7 +257,7 @@ export function handleSwapStart(event: SwapStart): void {
     let offer = safeNewOfferHelper(swap, user);
 
     offer.claimed = false;
-    offer.eth = event.transaction.value;
+    offer.eth = event.params.eth;
     offer.ethUsd = wethToUsdc(offer.eth);
     offer.owner = true;
     offer.user = user.id;

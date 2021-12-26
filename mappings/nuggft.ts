@@ -1,9 +1,19 @@
 import { Address, ethereum, log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { SetProof, PopItem, PushItem, Genesis, StakeEth, UnStakeEth, Transfer } from '../generated/local/NuggFT/NuggFT';
+import {
+    SetProof,
+    PopItem,
+    PushItem,
+    Genesis,
+    StakeEth,
+    UnStakeEth,
+    Transfer,
+    TrustedMint,
+    UntrustedMint,
+} from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
-import { safeLoadNuggNull, safeLoadUser, safeNewNugg } from './safeload';
+import { safeLoadNuggNull, safeLoadUser, safeNewNugg, safeNewOfferHelper, safeNewSwapHelper, safeSetNuggActiveSwap } from './safeload';
 import { onEpochGenesis } from './epoch';
 import { handleDelegateMint, handleSwapClaim, handleDelegateOffer, handleSwapStart, handleDelegateCommit } from './swap';
 import { handleSwapClaimItem, handleDelegateOfferItem, handleSwapItemStart, handleDelegateCommitItem } from './itemswap';
@@ -44,6 +54,8 @@ export {
     handlePayoff,
     handleTakeLoan,
     handleRebalance,
+    handleTrustedMint,
+    handleUntrustedMint,
 };
 
 export function handleGenesis(event: Genesis): void {
@@ -207,6 +219,64 @@ function handleSetProof(event: SetProof): void {
     log.info('handleSetProof end', []);
 }
 
+function handleTrustedMint(event: TrustedMint): void {
+    log.info('handleTrustedMint start', []);
+    trueMintHelper(event, event.params.tokenId, event.params.to);
+    log.info('handleTrustedMint start', []);
+}
+function handleUntrustedMint(event: UntrustedMint): void {
+    log.info('handleUntrustedMint start', []);
+    trueMintHelper(event, event.params.tokenId, event.params.by);
+    log.info('handleUntrustedMint end', []);
+}
+
+function trueMintHelper(event: ethereum.Event, tokenId: BigInt, userId: Address): void {
+    log.info('trueMintHelper start', []);
+
+    let proto = safeLoadProtocol('0x42069');
+
+    let nugg = safeLoadNugg(tokenId);
+
+    let user = safeLoadUserNull(userId);
+
+    if (user == null) {
+        user = safeNewUser(userId);
+        user.xnugg = BigInt.fromString('0');
+        user.ethin = BigInt.fromString('0');
+        user.ethout = BigInt.fromString('0');
+        user.shares = BigInt.fromString('0');
+        user.save();
+    }
+
+    let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+
+    swap.eth = event.transaction.value;
+    swap.ethUsd = wethToUsdc(swap.eth);
+    swap.owner = proto.nullUser;
+    swap.leader = user.id;
+    swap.nugg = nugg.id;
+    swap.endingEpoch = BigInt.fromString(proto.epoch);
+    swap.epoch = proto.epoch;
+    swap.startingEpoch = proto.epoch;
+
+    swap.save();
+
+    safeSetNuggActiveSwap(nugg, swap);
+
+    let offer = safeNewOfferHelper(swap, user);
+
+    offer.claimed = true;
+    offer.eth = event.transaction.value;
+    offer.ethUsd = wethToUsdc(offer.eth);
+    offer.owner = false;
+    offer.user = user.id;
+    offer.swap = swap.id;
+
+    offer.save();
+
+    log.info('trueMintHelper end', []);
+}
+
 function handleTransfer(event: Transfer): void {
     log.info('handleTransfer start', []);
 
@@ -219,6 +289,12 @@ function handleTransfer(event: Transfer): void {
     if (nugg == null) {
         nugg = safeNewNugg(event.params.tokenId);
         sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
+        if (event.params.to.toHexString() != proto.nuggftUser) {
+            /// this means they are a truly minted nugg
+            nugg.numSwaps = BigInt.fromString('1');
+
+            let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+        }
     } else {
         sendingUser = safeLoadUser(Address.fromString(nugg.user));
     }

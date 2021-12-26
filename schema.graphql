@@ -86,6 +86,8 @@ type NuggItem @entity {
     item: Item!
     nugg: Nugg!
 
+    numSwaps: BigInt!
+
     count: BigInt!
 
     protocol: Protocol
@@ -104,6 +106,8 @@ type Nugg @entity {
     activeSwap: Swap
     activeLoan: Loan
 
+    numSwaps: BigInt!
+
     burned: Boolean! #update
     swaps: [Swap!]! @derivedFrom(field: "nugg")
 
@@ -121,8 +125,11 @@ type Swap @entity {
 
     offers: [Offer!]! @derivedFrom(field: "swap")
 
-    epoch: Epoch!
+    epoch: Epoch
     endingEpoch: BigInt
+    startingEpoch: Epoch
+
+    num: BigInt!
 
     eth: BigInt!
     ethUsd: BigInt!
@@ -183,6 +190,9 @@ type ItemSwap @entity {
     epochId: String
     epoch: Epoch
     endingEpoch: BigInt
+    startingEpoch: Epoch
+
+    num: BigInt!
 
     eth: BigInt!
     ethUsd: BigInt!

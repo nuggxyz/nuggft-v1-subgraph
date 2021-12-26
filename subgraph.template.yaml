@@ -103,11 +103,11 @@ dataSources:
                 handler: handleTransfer
               #   - event: TrustUpdated(indexed address)
               #     handler: handleTrustUpdated
-              #   - event: TrustedMint(indexed address,uint160)
-              #     handler: handleTrustedMint
+              - event: TrustedMint(indexed address,uint160)
+                handler: handleTrustedMint
               - event: UnStakeEth(uint96,address)
                 handler: handleUnStakeEth
-              #   - event: UntrustedMint(indexed address,uint160)
-              #     handler: handleUntrustedMint
+              - event: UntrustedMint(indexed address,uint160)
+                handler: handleUntrustedMint
           blockHandlers:
               - handler: handleBlock

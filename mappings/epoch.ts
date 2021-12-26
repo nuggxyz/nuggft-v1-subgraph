@@ -38,8 +38,26 @@ export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, inte
 
 export function onEpochStart(id: BigInt, proto: Protocol): void {
     let nextEpoch = safeLoadEpoch(id);
-    let nextNugg = safeLoadNugg(id);
-    let nextSwap = safeLoadSwapHelper(nextNugg, id);
+
+    let nextNugg = safeNewNugg(id);
+
+    let nextSwap = safeNewSwapHelper(nextNugg, id);
+
+    nextNugg.user = proto.nullUser;
+
+    nextSwap.epoch = nextEpoch.id;
+    nextSwap.startingEpoch = nextEpoch.id;
+    nextSwap.endingEpoch = BigInt.fromString(nextEpoch.id);
+    nextSwap.eth = BigInt.fromString('0');
+    nextSwap.ethUsd = BigInt.fromString('0');
+    nextSwap.owner = proto.nullUser;
+    nextSwap.leader = proto.nullUser;
+    nextSwap.nugg = nextNugg.id;
+
+    safeSetNuggActiveSwap(nextNugg, nextSwap);
+
+    nextSwap.save();
+    nextNugg.save();
 
     nextEpoch.status = 'ACTIVE';
 
@@ -47,8 +65,6 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
     _s.push(nextSwap.id as string);
     nextEpoch._activeSwaps = _s as string[];
     nextEpoch.save();
-
-    safeSetNuggActiveSwap(nextNugg, nextSwap);
 
     proto.epoch = nextEpoch.id;
     proto.defaultActiveNugg = nextNugg.id;
@@ -58,28 +74,10 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
 export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     let newEpoch = safeNewEpoch(id);
 
-    let nugg = safeNewNugg(id);
-
-    let swap = safeNewSwapHelper(nugg, id);
-
-    nugg.user = proto.nullUser;
-    // safeSetNuggActiveSwap(nugg, swap);
-
-    nugg.save();
-
     newEpoch.endblock = getEndBlockFromEpoch(id, proto.genesisBlock, proto.interval);
     newEpoch.startblock = getStartBlockFromEpoch(id, proto.genesisBlock, proto.interval);
     newEpoch.status = 'PENDING';
     newEpoch._activeItemSwaps = [];
-
-    swap.epoch = newEpoch.id;
-    swap.eth = BigInt.fromString('0');
-    swap.ethUsd = BigInt.fromString('0');
-    swap.owner = proto.nullUser;
-    swap.leader = proto.nullUser;
-    swap.nugg = nugg.id;
-
-    swap.save();
 
     newEpoch.save();
 

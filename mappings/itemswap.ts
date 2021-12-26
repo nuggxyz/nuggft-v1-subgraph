@@ -37,7 +37,9 @@ export function handleDelegateCommitItem(event: DelegateCommitItem): void {
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
 
     itemswap.epoch = epoch.id;
-    itemswap.id = nuggitem.id.concat('-').concat(itemswap.epoch as string);
+    itemswap.startingEpoch = proto.epoch;
+    itemswap.endingEpoch = BigInt.fromString(epoch.id);
+    itemswap.id = nuggitem.id.concat('-').concat(epoch.id);
     itemswap.save();
 
     let _s = epoch._activeItemSwaps as string[];
@@ -47,7 +49,6 @@ export function handleDelegateCommitItem(event: DelegateCommitItem): void {
 
     owneritemoffer.id = itemswap.id.concat('-').concat(itemswap.owner);
     owneritemoffer.swap = itemswap.id;
-
     owneritemoffer.save();
 
     safeSetNuggItemActiveSwap(nuggitem, itemswap);
