@@ -106,6 +106,8 @@ type Nugg @entity {
     activeSwap: Swap
     activeLoan: Loan
 
+    dotnuggRawCache: [BigInt!]
+
     numSwaps: BigInt!
 
     burned: Boolean! #update

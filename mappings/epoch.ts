@@ -7,7 +7,6 @@ import {
     safeNewEpoch,
     safeNewNugg,
     safeNewSwapHelper,
-    safeLoadSwapHelper,
     unsafeLoadSwap,
     safeLoadNugg,
     unsafeLoadItemSwap,

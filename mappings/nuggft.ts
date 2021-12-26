@@ -10,6 +10,7 @@ import {
     Transfer,
     TrustedMint,
     UntrustedMint,
+    NuggFT,
 } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
@@ -34,6 +35,7 @@ import {
 } from './safeload';
 import { Epoch, Nugg, Protocol, User } from '../generated/local/schema';
 import { handleBlock } from './epoch';
+import { DotnuggV1Processor } from '../generated/local/NuggFT/DotnuggV1Processor';
 export {
     handleDelegateMint,
     handleDelegateCommit,
@@ -215,6 +217,16 @@ function handleSetProof(event: SetProof): void {
         item.save();
         nuggItem.save();
     }
+
+    let dotnugg = DotnuggV1Processor.bind(Address.fromString('0x488b62261D2D5ba4d2dcB446aCc355979405953D'));
+    let callResult = dotnugg.try_dotnuggToRaw(Address.fromString(proto.nuggftUser), nugg.idnum, Address.fromString(proto.nullUser), 45, 10);
+    if (callResult.reverted) {
+        log.info('getGravatar reverted', []);
+    } else {
+        nugg.dotnuggRawCache = callResult.value;
+    }
+
+    nugg.save();
 
     log.info('handleSetProof end', []);
 }

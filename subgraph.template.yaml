@@ -28,6 +28,31 @@ dataSources:
           eventHandlers:
               - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
                 handler: handleUsdcWethUniswap
+    # - kind: ethereum/contract
+    #   name: DotnuggV1Processor
+    #   # prettier-ignore
+    #   network: {{network}}
+    #   source:
+    #       address: '{{dotnugg}}'
+    #       abi: DotnuggV1Processor
+    #       # prettier-ignore
+    #       startBlock: {{startblock}}
+    #   mapping:
+    #       kind: ethereum/calls
+    #       apiVersion: 0.0.5
+    #       language: wasm/assemblyscript
+    #       file: ../../mappings/nuggft.ts
+    #       entities:
+    #           - Protocol
+    #           - Swap
+    #           - Nugg
+    #           - Item
+    #       abis:
+    #           - name: DotnuggV1Processor
+    #             file: ../../abis/DotnuggV1Processor.json
+    #       blockHandlers:
+    #           - handler: handleBlock
+
     - kind: ethereum/contract
       name: NuggFT
       # prettier-ignore
@@ -50,6 +75,8 @@ dataSources:
           abis:
               - name: NuggFT
                 file: ../../abis/NuggFT.json
+              - name: DotnuggV1Processor
+                file: ../../abis/DotnuggV1Processor.json
           eventHandlers:
               #   - event: Approval(indexed address,indexed address,indexed uint256)
               #     handler: handleApproval
