@@ -6,11 +6,11 @@ import {
     PushItem,
     Genesis,
     StakeEth,
-    UnStakeEth,
+    UnstakeEth,
     Transfer,
-    TrustedMint,
-    UntrustedMint,
-    NuggFT,
+    RotateItem,
+    SetAnchorOverrides,
+    DotnuggV1ResolverUpdated,
 } from '../generated/local/NuggFT/NuggFT';
 import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
@@ -36,6 +36,7 @@ import {
 import { Epoch, Nugg, Protocol, User } from '../generated/local/schema';
 import { handleBlock } from './epoch';
 import { DotnuggV1Processor } from '../generated/local/NuggFT/DotnuggV1Processor';
+import { cacheDotnugg, getDotnuggUserId } from './dotnugg';
 export {
     handleDelegateMint,
     handleDelegateCommit,
@@ -51,13 +52,14 @@ export {
     handleSetProof,
     handlePushItem,
     handleStakeEth,
-    handleUnStakeEth,
+    handleUnstakeEth,
     handleBlock,
     handlePayoff,
     handleTakeLoan,
     handleRebalance,
-    handleTrustedMint,
-    handleUntrustedMint,
+    handleRotateItems,
+    handleSetAchorOverrides,
+    handleDotnuggV1ResolverUpdated,
 };
 
 export function handleGenesis(event: Genesis): void {
@@ -116,6 +118,8 @@ export function handleGenesis(event: Genesis): void {
     proto.nuggftUser = nil.id;
     proto.nullUser = nil.id;
 
+    proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
+
     proto.save();
 
     // let xnugg = safeNewUser(event.address);
@@ -166,8 +170,8 @@ function handleStakeEth(event: StakeEth): void {
     log.info('handleStake end', []);
 }
 
-function handleUnStakeEth(event: UnStakeEth): void {
-    log.info('handleUnStake start', []);
+function handleUnstakeEth(event: UnstakeEth): void {
+    log.info('handleUnstake start', []);
 
     let proto = safeLoadProtocol('0x42069');
 
@@ -187,12 +191,15 @@ function handleSetProof(event: SetProof): void {
     let nugg = safeLoadNuggNull(event.params.tokenId);
 
     if (nugg == null) {
-        nugg = safeNewNugg(event.params.tokenId);
-        nugg.user = proto.nullUser;
-        nugg.save();
+        nugg = safeNewNugg(event.params.tokenId, proto.nullUser);
+
         // sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
     } else {
         // sendingUser = safeLoadUser(Address.fromString(nugg.user));
+    }
+
+    if (nugg.dotnuggRawCache.startsWith('ERROR_WITH_DOTNUGG_CACHE')) {
+        cacheDotnugg(nugg);
     }
 
     for (let i = 0; i < event.params.items.length; i++) {
@@ -218,103 +225,95 @@ function handleSetProof(event: SetProof): void {
         nuggItem.save();
     }
 
-    let dotnugg = DotnuggV1Processor.bind(Address.fromString('0x488b62261D2D5ba4d2dcB446aCc355979405953D'));
-    let callResult = dotnugg.try_dotnuggToRaw(Address.fromString(proto.nuggftUser), nugg.idnum, Address.fromString(proto.nullUser), 45, 10);
-    if (callResult.reverted) {
-        log.info('getGravatar reverted', []);
-    } else {
-        nugg.dotnuggRawCache = callResult.value;
-    }
-
     nugg.save();
 
     log.info('handleSetProof end', []);
 }
 
-function handleTrustedMint(event: TrustedMint): void {
-    log.info('handleTrustedMint start', []);
-    trueMintHelper(event, event.params.tokenId, event.params.to);
-    log.info('handleTrustedMint start', []);
-}
-function handleUntrustedMint(event: UntrustedMint): void {
-    log.info('handleUntrustedMint start', []);
-    trueMintHelper(event, event.params.tokenId, event.params.by);
-    log.info('handleUntrustedMint end', []);
-}
+// function handleTrustedMint(event: TrustedMint): void {
+//     log.info('handleTrustedMint start', []);
+//     trueMintHelper(event, event.params.tokenId, event.params.to);
+//     log.info('handleTrustedMint start', []);
+// }
+// function handleUntrustedMint(event: UntrustedMint): void {
+//     log.info('handleUntrustedMint start', []);
+//     trueMintHelper(event, event.params.tokenId, event.params.by);
+//     log.info('handleUntrustedMint end', []);
+// }
 
-function trueMintHelper(event: ethereum.Event, tokenId: BigInt, userId: Address): void {
-    log.info('trueMintHelper start', []);
+// function trueMintHelper(event: ethereum.Event, tokenId: BigInt, userId: Address): void {
+//     log.info('trueMintHelper start', []);
 
-    let proto = safeLoadProtocol('0x42069');
+//     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(tokenId);
+//     let nugg = safeLoadNugg(tokenId);
 
-    let user = safeLoadUserNull(userId);
+//     let user = safeLoadUserNull(userId);
 
-    if (user == null) {
-        user = safeNewUser(userId);
-        user.xnugg = BigInt.fromString('0');
-        user.ethin = BigInt.fromString('0');
-        user.ethout = BigInt.fromString('0');
-        user.shares = BigInt.fromString('0');
-        user.save();
-    }
+//     if (user == null) {
+//         user = safeNewUser(userId);
+//         user.xnugg = BigInt.fromString('0');
+//         user.ethin = BigInt.fromString('0');
+//         user.ethout = BigInt.fromString('0');
+//         user.shares = BigInt.fromString('0');
+//         user.save();
+//     }
 
-    let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+//     let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
 
-    swap.eth = event.transaction.value;
-    swap.ethUsd = wethToUsdc(swap.eth);
-    swap.owner = proto.nullUser;
-    swap.leader = user.id;
-    swap.nugg = nugg.id;
-    swap.endingEpoch = BigInt.fromString(proto.epoch);
-    swap.epoch = proto.epoch;
-    swap.startingEpoch = proto.epoch;
+//     swap.eth = event.transaction.value;
+//     swap.ethUsd = wethToUsdc(swap.eth);
+//     swap.owner = proto.nullUser;
+//     swap.leader = user.id;
+//     swap.nugg = nugg.id;
+//     swap.endingEpoch = BigInt.fromString(proto.epoch);
+//     swap.epoch = proto.epoch;
+//     swap.startingEpoch = proto.epoch;
 
-    swap.save();
+//     swap.save();
 
-    safeSetNuggActiveSwap(nugg, swap);
+//     safeSetNuggActiveSwap(nugg, swap);
 
-    let offer = safeNewOfferHelper(swap, user);
+//     let offer = safeNewOfferHelper(swap, user);
 
-    offer.claimed = true;
-    offer.eth = event.transaction.value;
-    offer.ethUsd = wethToUsdc(offer.eth);
-    offer.owner = false;
-    offer.user = user.id;
-    offer.swap = swap.id;
+//     offer.claimed = true;
+//     offer.eth = event.transaction.value;
+//     offer.ethUsd = wethToUsdc(offer.eth);
+//     offer.owner = false;
+//     offer.user = user.id;
+//     offer.swap = swap.id;
 
-    offer.save();
+//     offer.save();
 
-    log.info('trueMintHelper end', []);
-}
+//     log.info('trueMintHelper end', []);
+// }
 
-function handleTransfer(event: Transfer): void {
+function handleTransfer3(event: Transfer): void {
     log.info('handleTransfer start', []);
 
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNuggNull(event.params.tokenId);
+    let nugg = safeLoadNuggNull(event.params._tokenId);
 
     let sendingUser: User;
 
     if (nugg == null) {
-        nugg = safeNewNugg(event.params.tokenId);
+        nugg = safeNewNugg(event.params._tokenId, proto.nullUser);
         sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
-        if (event.params.to.toHexString() != proto.nuggftUser) {
-            /// this means they are a truly minted nugg
-            nugg.numSwaps = BigInt.fromString('1');
+        // if (event.params.to.toHexString() != proto.nuggftUser) {
+        //     /// this means they are a truly minted nugg
+        //     nugg.numSwaps = BigInt.fromString('1');
 
-            let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
-        }
+        //     let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+        // }
     } else {
         sendingUser = safeLoadUser(Address.fromString(nugg.user));
     }
 
-    let user = safeLoadUserNull(event.params.to);
+    let user = safeLoadUserNull(event.params._to);
 
     if (user == null) {
-        user = safeNewUser(event.params.to);
+        user = safeNewUser(event.params._to);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -331,11 +330,115 @@ function handleTransfer(event: Transfer): void {
         user.shares = user.shares.plus(BigInt.fromString('1'));
     }
 
+    if (event.params._to.toHexString() !== proto.nuggftUser && event.params._from.toHexString() === proto.nullUser) {
+        let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+
+        nugg.numSwaps = BigInt.fromString('1');
+
+        nugg.save();
+
+        swap.eth = event.transaction.value;
+        swap.ethUsd = wethToUsdc(swap.eth);
+        swap.owner = proto.nullUser;
+        swap.leader = user.id;
+        swap.nugg = nugg.id;
+        swap.endingEpoch = BigInt.fromString(proto.epoch);
+        swap.epoch = proto.epoch;
+        swap.startingEpoch = proto.epoch;
+
+        swap.save();
+
+        // safeSetNuggActiveSwap(nugg, swap);
+
+        let offer = safeNewOfferHelper(swap, user);
+
+        offer.claimed = true;
+        offer.eth = event.transaction.value;
+        offer.ethUsd = wethToUsdc(offer.eth);
+        offer.owner = false;
+        offer.user = user.id;
+        offer.swap = swap.id;
+
+        offer.save();
+    }
+
     nugg.user = user.id;
 
     user.save();
     nugg.save();
     sendingUser.save();
+
+    log.info('handleTransfer end', []);
+}
+
+function handleTransfer(event: Transfer): void {
+    log.info('handleTransfer start', []);
+
+    let proto = safeLoadProtocol('0x42069');
+
+    let nugg = safeLoadNugg(event.params._tokenId);
+
+    let sender = safeLoadUser(event.params._from);
+
+    let receiver = safeLoadUserNull(event.params._to);
+
+    if (receiver == null) {
+        receiver = safeNewUser(event.params._to);
+        receiver.xnugg = BigInt.fromString('0');
+        receiver.ethin = BigInt.fromString('0');
+        receiver.ethout = BigInt.fromString('0');
+        receiver.shares = BigInt.fromString('0');
+        receiver.save();
+    }
+
+    if (sender.id != proto.nullUser) {
+        sender.shares = sender.shares.minus(BigInt.fromString('1'));
+    }
+
+    if (receiver.id == proto.nullUser) {
+        nugg.burned = true;
+    } else {
+        receiver.shares = receiver.shares.plus(BigInt.fromString('1'));
+    }
+
+    // if this is a mint
+    if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
+        let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+
+        nugg.numSwaps = BigInt.fromString('1');
+
+        nugg.save();
+
+        swap.eth = event.transaction.value;
+        swap.ethUsd = wethToUsdc(swap.eth);
+        swap.owner = proto.nullUser;
+        swap.leader = receiver.id;
+        swap.nugg = nugg.id;
+        swap.endingEpoch = BigInt.fromString(proto.epoch);
+        swap.epoch = proto.epoch;
+        swap.startingEpoch = proto.epoch;
+
+        swap.save();
+
+        // safeSetNuggActiveSwap(nugg, swap);
+
+        let offer = safeNewOfferHelper(swap, receiver);
+
+        offer.claimed = true;
+        offer.eth = event.transaction.value;
+        offer.ethUsd = wethToUsdc(offer.eth);
+        offer.owner = false;
+        offer.user = receiver.id;
+        offer.swap = swap.id;
+
+        offer.save();
+    }
+
+    nugg.user = receiver.id;
+
+    receiver.save();
+    nugg.save();
+    sender.save();
 
     log.info('handleTransfer end', []);
 }
@@ -383,4 +486,33 @@ function handlePopItem(event: PopItem): void {
     }
 
     log.info('handlePopItem end', []);
+}
+
+function handleRotateItems(event: RotateItem): void {
+    log.info('handleRotateItems start', []);
+
+    let nugg = safeLoadNugg(event.params.tokenId);
+
+    cacheDotnugg(nugg);
+
+    log.info('handleRotateItems end', []);
+}
+
+function handleSetAchorOverrides(event: SetAnchorOverrides): void {
+    log.info('handleSetAchorOverrides start', []);
+
+    let nugg = safeLoadNugg(event.params.tokenId);
+
+    cacheDotnugg(nugg);
+    log.info('handleSetAchorOverrides end', []);
+}
+
+function handleDotnuggV1ResolverUpdated(event: DotnuggV1ResolverUpdated): void {
+    log.info('handleDotnuggV1ResolverUpdated start', []);
+
+    let nugg = safeLoadNugg(event.params.tokenId);
+
+    cacheDotnugg(nugg);
+
+    log.info('handleDotnuggV1ResolverUpdated end', []);
 }

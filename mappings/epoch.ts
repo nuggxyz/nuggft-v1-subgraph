@@ -38,11 +38,9 @@ export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, inte
 export function onEpochStart(id: BigInt, proto: Protocol): void {
     let nextEpoch = safeLoadEpoch(id);
 
-    let nextNugg = safeNewNugg(id);
+    let nextNugg = safeNewNugg(id, proto.nullUser);
 
     let nextSwap = safeNewSwapHelper(nextNugg, id);
-
-    nextNugg.user = proto.nullUser;
 
     nextSwap.epoch = nextEpoch.id;
     nextSwap.startingEpoch = nextEpoch.id;
@@ -56,7 +54,6 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
     safeSetNuggActiveSwap(nextNugg, nextSwap);
 
     nextSwap.save();
-    nextNugg.save();
 
     nextEpoch.status = 'ACTIVE';
 
@@ -119,13 +116,17 @@ export function handleBlock(block: ethereum.Block): void {
 
     let epoch = safeLoadActiveEpoch();
 
-    if (proto.init && BigInt.fromString(epoch.id).notEqual(currentEpochId)) {
+    // let startblock = getCurrentStartBlock(proto.interval, block.number)
+
+    if (proto.init && epoch.idnum.notEqual(currentEpochId)) {
         onEpochClose(epoch, proto);
 
         onEpochStart(currentEpochId, proto);
 
         onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
     }
+
+    // switch()
 }
 
 let OFFSET = BigInt.fromString('3000');

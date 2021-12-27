@@ -92,7 +92,7 @@ dataSources:
                 handler: handleDelegateCommitItem
               - event: DelegateOfferItem(uint160,uint16,uint160,uint96)
                 handler: handleDelegateOfferItem
-              - event: Genesis()
+              - event: Genesis(uint256,uint32,uint32)
                 handler: handleGenesis
               #   - event: MigrateV1Sent(address,uint160,uint256,address,uint96)
               #     handler: handleMigrateV1Sent
@@ -108,10 +108,10 @@ dataSources:
                 handler: handlePushItem
               - event: Rebalance(uint160,uint96,uint96)
                 handler: handleRebalance
-              #   - event: RotateItem(uint160,uint256,uint8)
-              #     handler: handleRotateItem
-              #   - event: SetAnchorOverrides(uint160,uint256,uint8[],uint8[])
-              #     handler: handleSetAnchorOverrides
+              - event: RotateItem(uint160,uint256,uint8)
+                handler: handleRotateItem
+              - event: SetAnchorOverrides(uint160,uint256,uint8[],uint8[])
+                handler: handleSetAnchorOverrides
               - event: SetProof(uint160,uint256,uint8[])
                 handler: handleSetProof
               - event: StakeEth(uint96,uint96)
@@ -130,11 +130,13 @@ dataSources:
                 handler: handleTransfer
               #   - event: TrustUpdated(indexed address)
               #     handler: handleTrustUpdated
-              - event: TrustedMint(indexed address,uint160)
-                handler: handleTrustedMint
-              - event: UnStakeEth(uint96,address)
-                handler: handleUnStakeEth
-              - event: UntrustedMint(indexed address,uint160)
-                handler: handleUntrustedMint
+              #   - event: TrustedMint(indexed address,uint160)
+              #     handler: handleTrustedMint
+              - event: UnstakeEth(uint96,address)
+                handler: handleUnstakeEth
+              #   - event: UntrustedMint(indexed address,uint160)
+              #     handler: handleUntrustedMint
+              - event: DotnuggV1ResolverUpdated(uint256,address)
+                handler: handleDotnuggV1ResolverUpdated
           blockHandlers:
               - handler: handleBlock

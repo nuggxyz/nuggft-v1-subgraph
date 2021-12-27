@@ -17,7 +17,7 @@ export function handleDelegateCommitItem(event: DelegateCommitItem): void {
 
     let proto = safeLoadProtocol('0x42069');
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
+    let sellingNugg = safeLoadNugg(event.params.sellerTokenId);
 
     let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
@@ -53,7 +53,7 @@ export function handleDelegateCommitItem(event: DelegateCommitItem): void {
 
     safeSetNuggItemActiveSwap(nuggitem, itemswap);
 
-    let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
+    let buyingNugg = safeLoadNugg(event.params.buyerTokenId);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyingNugg);
 
@@ -85,7 +85,7 @@ export function handleDelegateCommitItem(event: DelegateCommitItem): void {
 export function handleDelegateOfferItem(event: DelegateOfferItem): void {
     log.info('handleDelegateOfferItem start', []);
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
+    let sellingNugg = safeLoadNugg(event.params.sellerTokenId);
 
     let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
@@ -93,7 +93,7 @@ export function handleDelegateOfferItem(event: DelegateOfferItem): void {
 
     let itemswap = safeLoadActiveItemSwap(nuggitem);
 
-    let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
+    let buyingNugg = safeLoadNugg(event.params.buyerTokenId);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyingNugg);
 
@@ -123,7 +123,7 @@ export function handleDelegateOfferItem(event: DelegateOfferItem): void {
 export function handleSwapClaimItem(event: SwapClaimItem): void {
     log.info('handleSwapClaimItem start', []);
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
+    let sellingNugg = safeLoadNugg(event.params.sellerTokenId);
 
     let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 
@@ -131,7 +131,7 @@ export function handleSwapClaimItem(event: SwapClaimItem): void {
 
     let itemswap = safeLoadItemSwapHelper(nuggitem, event.params.epoch);
 
-    let buyingNugg = safeLoadNugg(event.params.buyingTokenId);
+    let buyingNugg = safeLoadNugg(event.params.buyerTokenId);
 
     let itemoffer = safeLoadItemOfferHelper(itemswap, buyingNugg);
 
@@ -154,7 +154,7 @@ export function handleSwapClaimItem(event: SwapClaimItem): void {
 export function handleSwapItemStart(event: SwapItemStart): void {
     log.info('handleSwapItemStart start', []);
 
-    let sellingNugg = safeLoadNugg(event.params.sellingTokenId);
+    let sellingNugg = safeLoadNugg(event.params.sellerTokenId);
 
     let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
 

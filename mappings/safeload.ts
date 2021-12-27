@@ -1,5 +1,6 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
 import { Epoch, Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User, Loan } from '../generated/local/schema';
+import { cacheDotnugg } from './dotnugg';
 
 export function safeLoadActiveEpoch(): Epoch {
     let loaded = safeLoadProtocol('0x42069');
@@ -102,12 +103,19 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
     nugg.save();
 }
 
-export function safeNewNugg(id: BigInt): Nugg {
+export function safeNewNugg(id: BigInt, userId: string): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id;
     loaded.burned = false;
     loaded.numSwaps = BigInt.fromString('0');
+    loaded.user = userId;
+    loaded.resolver = '0x0000000000000000000000000000000000000000';
+    loaded.save();
+
     safeAddNuggToProtcol();
+
+    cacheDotnugg(loaded);
+
     return loaded;
 }
 

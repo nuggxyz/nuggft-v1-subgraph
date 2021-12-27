@@ -92,7 +92,7 @@ export function handleRebalance(event: Rebalance): void {
 
     loan.save();
 
-    safeRemoveNuggActiveLoan(nugg);
+    // safeRemoveNuggActiveLoan(nugg);
 
     log.info('handleRebalance', []);
 }
