@@ -23,7 +23,7 @@ export function cacheDotnugg(nugg: Nugg): void {
     }
 
     if (!callResult.reverted) {
-        nugg.dotnuggRawCache = callResult.value.map<string>((x: BigInt): string => x.toHexString()).join('');
+        nugg.dotnuggRawCache = callResult.value.value1.map<string>((x: BigInt): string => x.toHexString()).join('');
 
         log.info('cacheDotnugg updated dotnugg cache', []);
     } else {
