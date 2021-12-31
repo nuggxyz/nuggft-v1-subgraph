@@ -142,6 +142,17 @@ type Swap @entity {
 
     owner: User!
     leader: User!
+
+    nextDelegateType: NextDelegateType!
+}
+
+type UserActiveSwap @entity {
+    id: ID!
+
+    # user: User! #buyer
+    # nugg: Nugg!
+
+    activeId: ID!
 }
 
 type Loan @entity {
@@ -186,6 +197,12 @@ type User @entity {
     swaps: [Swap!]! @derivedFrom(field: "owner")
 }
 
+enum NextDelegateType {
+    Mint
+    Commit
+    Offer
+}
+
 type ItemSwap @entity {
     id: ID!
 
@@ -198,6 +215,8 @@ type ItemSwap @entity {
     endingEpoch: BigInt
     startingEpoch: Epoch
 
+    nextDelegateType: NextDelegateType!
+
     num: BigInt!
 
     eth: BigInt!
@@ -205,6 +224,12 @@ type ItemSwap @entity {
 
     owner: Nugg!
     leader: Nugg
+}
+
+type NuggActiveItemSwap @entity {
+    id: ID!
+
+    activeId: ID!
 }
 
 type ItemOffer @entity {

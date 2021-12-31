@@ -82,16 +82,16 @@ dataSources:
               #     handler: handleApproval
               #   - event: ApprovalForAll(indexed address,indexed address,bool)
               #     handler: handleApprovalForAll
-              - event: DelegateCommit(uint160,address,uint96)
-                handler: handleDelegateCommit
-              - event: DelegateMint(uint256,address,uint96)
-                handler: handleDelegateMint
-              - event: DelegateOffer(uint160,address,uint96)
-                handler: handleDelegateOffer
-              - event: DelegateCommitItem(uint160,uint16,uint160,uint96)
-                handler: handleDelegateCommitItem
-              - event: DelegateOfferItem(uint160,uint16,uint160,uint96)
-                handler: handleDelegateOfferItem
+              #   - event: DelegateCommit(uint160,address,uint96)
+              #     handler: handleDelegateCommit
+              #   - event: DelegateMint(uint256,address,uint96)
+              #     handler: handleDelegateMint
+              #   - event: DelegateOffer(uint160,address,uint96)
+              #     handler: handleDelegateOffer
+              #   - event: DelegateCommitItem(uint160,uint16,uint160,uint96)
+              #     handler: handleDelegateCommitItem
+              #   - event: DelegateOfferItem(uint160,uint16,uint160,uint96)
+              #     handler: handleDelegateOfferItem
               - event: Genesis(uint256,uint32,uint32)
                 handler: handleGenesis
               #   - event: MigrateV1Sent(address,uint160,uint256,address,uint96)
@@ -116,14 +116,14 @@ dataSources:
                 handler: handleSetProof
               - event: StakeEth(uint96,uint96)
                 handler: handleStakeEth
-              - event: SwapClaim(uint160,address,uint32)
-                handler: handleSwapClaim
-              - event: SwapClaimItem(uint160,uint16,uint160,uint32)
-                handler: handleSwapClaimItem
-              - event: SwapItemStart(uint160,uint16,uint96)
-                handler: handleSwapItemStart
-              - event: SwapStart(uint160,address,uint96)
-                handler: handleSwapStart
+              #   - event: SwapClaim(uint160,address,uint32)
+              #     handler: handleSwapClaim
+              #   - event: SwapClaimItem(uint160,uint16,uint160,uint32)
+              #     handler: handleSwapClaimItem
+              #   - event: SwapItemStart(uint160,uint16,uint96)
+              #     handler: handleSwapItemStart
+              #   - event: SwapStart(uint160,address,uint96)
+              #     handler: handleSwapStart
               - event: TakeLoan(uint160,uint96)
                 handler: handleTakeLoan
               - event: Transfer(indexed address,indexed address,indexed uint256)
@@ -134,9 +134,23 @@ dataSources:
               #     handler: handleTrustedMint
               - event: UnstakeEth(uint96,address)
                 handler: handleUnstakeEth
+
               #   - event: UntrustedMint(indexed address,uint160)
               #     handler: handleUntrustedMint
-              - event: DotnuggV1ResolverUpdated(uint256,address)
-                handler: handleDotnuggV1ResolverUpdated
+              #   - event: DotnuggV1ResolverUpdated(uint256,address)
+              #     handler: handleDotnuggV1ResolverUpdated
           blockHandlers:
               - handler: handleBlock
+          callHandlers:
+              - function: claim(address,uint160)
+                handler: handleCall_claim
+              - function: claimItem(uint160,uint160,uint16)
+                handler: handleCall_claimItem
+              - function: swap(uint160,uint96)
+                handler: handleCall_swap
+              - function: swapItem(uint160,uint16,uint96)
+                handler: handleCall_swapItem
+              - function: delegate(address,uint160)
+                handler: handleCall_delegate
+              - function: delegateItem(uint160,uint160,uint16)
+                handler: handleCall_delegateItem

@@ -40,7 +40,7 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
 
     let nextNugg = safeNewNugg(id, proto.nullUser);
 
-    let nextSwap = safeNewSwapHelper(nextNugg, id);
+    let nextSwap = safeNewSwapHelper(nextNugg);
 
     nextSwap.epoch = nextEpoch.id;
     nextSwap.startingEpoch = nextEpoch.id;
@@ -50,6 +50,7 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
     nextSwap.owner = proto.nullUser;
     nextSwap.leader = proto.nullUser;
     nextSwap.nugg = nextNugg.id;
+    nextSwap.nextDelegateType = 'Mint';
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
 

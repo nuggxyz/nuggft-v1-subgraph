@@ -1,5 +1,19 @@
-import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { Epoch, Item, ItemOffer, ItemSwap, Nugg, NuggItem, Offer, Protocol, Swap, User, Loan } from '../generated/local/schema';
+import { log, BigInt, ethereum, Address, store } from '@graphprotocol/graph-ts';
+import {
+    Epoch,
+    Item,
+    ItemOffer,
+    ItemSwap,
+    Nugg,
+    NuggItem,
+    Offer,
+    Protocol,
+    Swap,
+    User,
+    Loan,
+    UserActiveSwap,
+    NuggActiveItemSwap,
+} from '../generated/local/schema';
 import { cacheDotnugg } from './dotnugg';
 
 export function safeLoadActiveEpoch(): Epoch {
@@ -219,23 +233,26 @@ export function safeLoadActiveSwap(nugg: Nugg): Swap {
 //     return swap as Swap;
 // }
 
-export function safeNewSwapHelper(nugg: Nugg, endingEpoch: BigInt): Swap {
-    let id = '' + nugg.id + '-' + endingEpoch.toString();
-    let swap = new Swap(id);
-    swap.endingEpoch = endingEpoch;
-    swap.num = nugg.numSwaps;
+export function safeNewSwapHelper(nugg: Nugg): Swap {
+    let currNum = nugg.numSwaps;
     nugg.numSwaps = nugg.numSwaps.plus(BigInt.fromString('1'));
     nugg.save();
+
+    let id = '' + nugg.id + '-' + currNum.toString();
+    let swap = new Swap(id);
+    // swap.endingEpoch = endingEpoch;
+    swap.num = currNum;
+
     safeAddSwapToProtcol();
     return swap as Swap;
 }
 
-export function safeLoadSwapHelper(nugg: Nugg, endingEpoch: BigInt): Swap {
-    let id = '' + nugg.id + '-' + endingEpoch.toString();
-    let loaded = Swap.load(id);
-    if (loaded == null) log.critical('Swap CANNOT BE NULL:' + id, []);
-    return loaded as Swap;
-}
+// export function safeLoadSwapHelper(nugg: Nugg, endingEpoch: BigInt): Swap {
+//     let id = '' + nugg.id + '-' + endingEpoch.toString();
+//     let loaded = Swap.load(id);
+//     if (loaded == null) log.critical('Swap CANNOT BE NULL:' + id, []);
+//     return loaded as Swap;
+// }
 
 export function unsafeLoadSwap(id: string): Swap {
     // let id = '' + tokenId.toString() + '-' + endingEpoch.toString();
@@ -280,42 +297,155 @@ export function unsafeLoadItemSwap(id: string): ItemSwap {
     return loaded as ItemSwap;
 }
 
-export function safeLoadItemSwapHelper(sellingNuggItem: NuggItem, endingEpoch: BigInt): ItemSwap {
-    let header = '';
-    let id = header.concat(sellingNuggItem.id).concat('-').concat(endingEpoch.toString());
-    let loaded = ItemSwap.load(id);
-    if (loaded == null) log.critical('ItemSwap CANNOT BE NULL:' + id, []);
-    return loaded as ItemSwap;
-}
+// export function safeLoadItemSwapHelper(sellingNuggItem: NuggItem, endingEpoch: BigInt): ItemSwap {
+//     let header = '';
+//     let id = header.concat(sellingNuggItem.id).concat('-').concat(endingEpoch.toString());
+//     let loaded = ItemSwap.load(id);
+//     if (loaded == null) log.critical('ItemSwap CANNOT BE NULL:' + id, []);
+//     return loaded as ItemSwap;
+// }
 
-export function safeLoadItemSwapHelperNull(sellingNuggItem: NuggItem, endingEpoch: BigInt): ItemSwap | null {
-    let header = '';
-    let id = header.concat(sellingNuggItem.id).concat('-').concat(endingEpoch.toString());
-    return ItemSwap.load(id);
-}
+// export function safeLoadItemSwapHelperNull(sellingNuggItem: NuggItem, endingEpoch: BigInt): ItemSwap | null {
+//     let header = '';
+//     let id = header.concat(sellingNuggItem.id).concat('-').concat(endingEpoch.toString());
+//     return ItemSwap.load(id);
+// }
 
-export function safeNewItemSwap(sellingNuggItem: NuggItem, endingEpoch: BigInt): ItemSwap {
-    let header = '';
-    let id = header.concat(sellingNuggItem.id).concat('-').concat(endingEpoch.toString());
+export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
+    let currNum = sellingNuggItem.numSwaps;
+    sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(BigInt.fromString('1'));
+    sellingNuggItem.save();
+
+    let id = ''.concat(sellingNuggItem.id).concat('-').concat(currNum.toString());
 
     safeAddItemSwapToProtcol();
     let swap = new ItemSwap(id);
     swap.num = sellingNuggItem.numSwaps;
-    swap.endingEpoch = endingEpoch;
-    sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(BigInt.fromString('1'));
-    sellingNuggItem.save();
+    // swap.endingEpoch = endingEpoch;
+
     return swap;
 }
-// export function safeLoadOffer(id: string): Offer {
-//     let loaded = Offer.load('' + id);
-//     if (loaded == null) log.critical('Offer CANNOT BE NULL:' + id, []);
-//     return loaded as Offer;
-// }
+export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void {
+    // require user && swap
+    if (user == null) {
+        log.error('safeSetUserActiveSwap: user CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
 
-// export function safeLoadOfferNull(id: string): Offer | null {
-//     let loaded = Offer.load('' + id);
-//     return loaded;
-// }
+    if (nugg == null) {
+        log.error('safeSetUserActiveSwap: nugg CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    if (swap == null) {
+        log.error('safeSetUserActiveSwap: swap CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+    let id = user.id + '-' + nugg.id;
+    let loaded = UserActiveSwap.load(id);
+    if (loaded == null) {
+        loaded = new UserActiveSwap(id);
+        loaded.activeId = swap.id;
+        loaded.save();
+    } else {
+        if (loaded.activeId != swap.id) {
+            log.error('safeSetUserActiveSwap: new useractiveswap trying to be set when old still exists', []);
+            log.critical('', []);
+        }
+    }
+}
+
+export function safeGetAndDeleteUserActiveSwap(user: User, nugg: Nugg): Swap {
+    // require user && nugg
+
+    if (user == null) {
+        log.error('safeGetAndDeleteUserActiveSwap: user CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    if (nugg == null) {
+        log.error('safeGetAndDeleteUserActiveSwap: nugg CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    let id = user.id + '-' + nugg.id;
+    let loaded = UserActiveSwap.load(id);
+    if (loaded == null) {
+        log.error('safeGetAndDeleteUserActiveSwap: UserActiveSwap CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+    let swap = Swap.load((loaded as UserActiveSwap).activeId);
+
+    if (swap == null) {
+        log.error('safeGetAndDeleteUserActiveSwap: swap CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    store.remove('UserActiveSwap', id);
+
+    return swap as Swap;
+}
+//////////////////////////////////
+export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: ItemSwap): void {
+    // require nugg && swap
+    if (nugg == null) {
+        log.error('safeSetNuggActiveItemSwap: nugg CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    if (nuggItem == null) {
+        log.error('safeSetNuggActiveItemSwap: nuggItem CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    if (swap == null) {
+        log.error('safeSetNuggActiveItemSwap: swap CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+    let id = nugg.id + '-' + nuggItem.id;
+    let loaded = NuggActiveItemSwap.load(id);
+    if (loaded == null) {
+        loaded = new NuggActiveItemSwap(id);
+        loaded.activeId = swap.id;
+        loaded.save();
+    } else {
+        if (loaded.activeId != swap.id) {
+            log.error('safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists', []);
+            log.critical('', []);
+        }
+    }
+}
+
+export function safeGetAndDeleteNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem): ItemSwap {
+    // require nugg && nuggItem
+
+    if (nugg == null) {
+        log.error('safeGetAndDeleteNuggActiveItemSwap: nugg CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    if (nuggItem == null) {
+        log.error('safeGetAndDeleteNuggActiveItemSwap: nuggItem CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    let id = nugg.id + '-' + nuggItem.id;
+    let loaded = NuggActiveItemSwap.load(id);
+    if (loaded == null) {
+        log.error('safeGetAndDeleteNuggActiveItemSwap: NuggActiveItemSwap CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+    let swap = ItemSwap.load((loaded as NuggActiveItemSwap).activeId);
+
+    if (swap == null) {
+        log.error('safeGetAndDeleteNuggActiveItemSwap: swap CANNOT BE NULL,', []);
+        log.critical('', []);
+    }
+
+    store.remove('NuggActiveItemSwap', id);
+
+    return swap as ItemSwap;
+}
 
 export function safeLoadOfferHelperNull(swap: Swap, user: User): Offer | null {
     let loaded = Offer.load('' + swap.id + '-' + user.id);

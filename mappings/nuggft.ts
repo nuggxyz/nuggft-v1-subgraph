@@ -16,8 +16,8 @@ import { store } from '@graphprotocol/graph-ts';
 import { invariant, safeDiv, wethToUsdc } from './uniswap';
 import { safeLoadNuggNull, safeLoadUser, safeNewNugg, safeNewOfferHelper, safeNewSwapHelper, safeSetNuggActiveSwap } from './safeload';
 import { onEpochGenesis } from './epoch';
-import { handleDelegateMint, handleSwapClaim, handleDelegateOffer, handleSwapStart, handleDelegateCommit } from './swap';
-import { handleSwapClaimItem, handleDelegateOfferItem, handleSwapItemStart, handleDelegateCommitItem } from './itemswap';
+import { handleCall__delegate, handleCall__claim, handleCall__swap } from './swap';
+import { handleCall__delegateItem, handleCall__swapItem, handleCall__claimItem } from './itemswap';
 
 import { handlePayoff, handleTakeLoan, handleRebalance } from './loan';
 
@@ -33,21 +33,17 @@ import {
     safeNewItem,
     safeLoadItemNull,
 } from './safeload';
-import { Epoch, Nugg, Protocol, User } from '../generated/local/schema';
+import { Epoch, Protocol, User } from '../generated/local/schema';
 import { handleBlock } from './epoch';
-import { DotnuggV1Processor } from '../generated/local/NuggFT/DotnuggV1Processor';
 import { cacheDotnugg, getDotnuggUserId } from './dotnugg';
 export {
-    handleDelegateMint,
-    handleDelegateCommit,
-    handleDelegateCommitItem,
+    handleCall__delegateItem,
+    handleCall__swapItem,
+    handleCall__claimItem,
+    handleCall__delegate,
+    handleCall__swap,
+    handleCall__claim,
     handleTransfer,
-    handleSwapClaim,
-    handleSwapClaimItem,
-    handleDelegateOffer,
-    handleDelegateOfferItem,
-    handleSwapStart,
-    handleSwapItemStart,
     handlePopItem,
     handleSetProof,
     handlePushItem,
@@ -288,88 +284,88 @@ function handleSetProof(event: SetProof): void {
 //     log.info('trueMintHelper end', []);
 // }
 
-function handleTransfer3(event: Transfer): void {
-    log.info('handleTransfer start', []);
+// function handleTransfer3(event: Transfer): void {
+//     log.info('handleTransfer start', []);
 
-    let proto = safeLoadProtocol('0x42069');
+//     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNuggNull(event.params._tokenId);
+//     let nugg = safeLoadNuggNull(event.params._tokenId);
 
-    let sendingUser: User;
+//     let sendingUser: User;
 
-    if (nugg == null) {
-        nugg = safeNewNugg(event.params._tokenId, proto.nullUser);
-        sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
-        // if (event.params.to.toHexString() != proto.nuggftUser) {
-        //     /// this means they are a truly minted nugg
-        //     nugg.numSwaps = BigInt.fromString('1');
+//     if (nugg == null) {
+//         nugg = safeNewNugg(event.params._tokenId, proto.nullUser);
+//         sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
+//         // if (event.params.to.toHexString() != proto.nuggftUser) {
+//         //     /// this means they are a truly minted nugg
+//         //     nugg.numSwaps = BigInt.fromString('1');
 
-        //     let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
-        // }
-    } else {
-        sendingUser = safeLoadUser(Address.fromString(nugg.user));
-    }
+//         //     let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+//         // }
+//     } else {
+//         sendingUser = safeLoadUser(Address.fromString(nugg.user));
+//     }
 
-    let user = safeLoadUserNull(event.params._to);
+//     let user = safeLoadUserNull(event.params._to);
 
-    if (user == null) {
-        user = safeNewUser(event.params._to);
-        user.xnugg = BigInt.fromString('0');
-        user.ethin = BigInt.fromString('0');
-        user.ethout = BigInt.fromString('0');
-        user.shares = BigInt.fromString('0');
-        user.save();
-    }
+//     if (user == null) {
+//         user = safeNewUser(event.params._to);
+//         user.xnugg = BigInt.fromString('0');
+//         user.ethin = BigInt.fromString('0');
+//         user.ethout = BigInt.fromString('0');
+//         user.shares = BigInt.fromString('0');
+//         user.save();
+//     }
 
-    if (sendingUser.id !== proto.nullUser) {
-        sendingUser.shares = sendingUser.shares.minus(BigInt.fromString('1'));
-    }
-    if (user.id === proto.nullUser) {
-        nugg.burned = true;
-    } else {
-        user.shares = user.shares.plus(BigInt.fromString('1'));
-    }
+//     if (sendingUser.id !== proto.nullUser) {
+//         sendingUser.shares = sendingUser.shares.minus(BigInt.fromString('1'));
+//     }
+//     if (user.id === proto.nullUser) {
+//         nugg.burned = true;
+//     } else {
+//         user.shares = user.shares.plus(BigInt.fromString('1'));
+//     }
 
-    if (event.params._to.toHexString() !== proto.nuggftUser && event.params._from.toHexString() === proto.nullUser) {
-        let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+//     if (event.params._to.toHexString() !== proto.nuggftUser && event.params._from.toHexString() === proto.nullUser) {
+//         let swap = safeNewSwapHelper(nugg);
 
-        nugg.numSwaps = BigInt.fromString('1');
+//         nugg.numSwaps = BigInt.fromString('1');
 
-        nugg.save();
+//         nugg.save();
 
-        swap.eth = event.transaction.value;
-        swap.ethUsd = wethToUsdc(swap.eth);
-        swap.owner = proto.nullUser;
-        swap.leader = user.id;
-        swap.nugg = nugg.id;
-        swap.endingEpoch = BigInt.fromString(proto.epoch);
-        swap.epoch = proto.epoch;
-        swap.startingEpoch = proto.epoch;
+//         swap.eth = event.transaction.value;
+//         swap.ethUsd = wethToUsdc(swap.eth);
+//         swap.owner = proto.nullUser;
+//         swap.leader = user.id;
+//         swap.nugg = nugg.id;
+//         swap.endingEpoch = BigInt.fromString(proto.epoch);
+//         swap.epoch = proto.epoch;
+//         swap.startingEpoch = proto.epoch;
 
-        swap.save();
+//         swap.save();
 
-        // safeSetNuggActiveSwap(nugg, swap);
+//         // safeSetNuggActiveSwap(nugg, swap);
 
-        let offer = safeNewOfferHelper(swap, user);
+//         let offer = safeNewOfferHelper(swap, user);
 
-        offer.claimed = true;
-        offer.eth = event.transaction.value;
-        offer.ethUsd = wethToUsdc(offer.eth);
-        offer.owner = false;
-        offer.user = user.id;
-        offer.swap = swap.id;
+//         offer.claimed = true;
+//         offer.eth = event.transaction.value;
+//         offer.ethUsd = wethToUsdc(offer.eth);
+//         offer.owner = false;
+//         offer.user = user.id;
+//         offer.swap = swap.id;
 
-        offer.save();
-    }
+//         offer.save();
+//     }
 
-    nugg.user = user.id;
+//     nugg.user = user.id;
 
-    user.save();
-    nugg.save();
-    sendingUser.save();
+//     user.save();
+//     nugg.save();
+//     sendingUser.save();
 
-    log.info('handleTransfer end', []);
-}
+//     log.info('handleTransfer end', []);
+// }
 
 function handleTransfer(event: Transfer): void {
     log.info('handleTransfer start', []);
@@ -403,7 +399,7 @@ function handleTransfer(event: Transfer): void {
 
     // if this is a mint
     if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
-        let swap = safeNewSwapHelper(nugg, BigInt.fromString(proto.epoch));
+        let swap = safeNewSwapHelper(nugg);
 
         nugg.numSwaps = BigInt.fromString('1');
 
