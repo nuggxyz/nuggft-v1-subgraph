@@ -3,6 +3,7 @@ import { DotnuggV1Processor } from '../generated/local/NuggFT/DotnuggV1Processor
 import { NuggFT } from '../generated/local/NuggFT/NuggFT';
 import { Nugg } from '../generated/local/schema';
 import { safeLoadProtocol } from './safeload';
+import { safeDiv } from './uniswap';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
     let nuggft = NuggFT.bind(nuggftAddress);
@@ -39,3 +40,12 @@ export function cacheDotnugg(nugg: Nugg): void {
 // nuggs (first:5) {
 //     dotnuggRawCache
 //   }
+
+export function updatedStakedSharesAndEth(): void {
+    let proto = safeLoadProtocol('0x42069');
+    let nuggft = NuggFT.bind(Address.fromString(proto.nuggftUser));
+    proto.nuggftStakedEth = nuggft.stakedShares();
+    proto.nuggftStakedShares = nuggft.stakedShares();
+    proto.nuggftStakedEthPerShare = safeDiv(proto.nuggftStakedEth, proto.nuggftStakedShares);
+    proto.save();
+}

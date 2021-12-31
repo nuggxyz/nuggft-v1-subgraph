@@ -19,6 +19,7 @@ import {
     safeLoadItemOfferHelperNull,
 } from './safeload';
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/schema';
+import { updatedStakedSharesAndEth } from './dotnugg';
 
 export function handleCall__delegateItem(call: DelegateItemCall): void {
     let proto = safeLoadProtocol('0x42069');
@@ -43,6 +44,8 @@ export function handleCall__delegateItem(call: DelegateItemCall): void {
         log.error('itemswap.nextDelegateType should be Commit or Offer', [itemswap.nextDelegateType]);
         log.critical('', []);
     }
+
+    updatedStakedSharesAndEth();
 }
 
 function _delegateCommitItem(
@@ -156,6 +159,8 @@ export function handleCall__claimItem(call: ClaimItemCall): void {
     // }
 
     itemoffer.save();
+
+    updatedStakedSharesAndEth();
 }
 
 export function handleCall__swapItem(call: SwapItemCall): void {
@@ -195,4 +200,6 @@ export function handleCall__swapItem(call: SwapItemCall): void {
     itemoffer.save();
 
     log.info('handleSwapItemStart end', []);
+
+    updatedStakedSharesAndEth();
 }

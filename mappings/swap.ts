@@ -16,6 +16,7 @@ import {
 import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
+import { updatedStakedSharesAndEth } from './dotnugg';
 
 export function handleCall__delegate(call: DelegateCall): void {
     let proto = safeLoadProtocol('0x42069');
@@ -47,6 +48,8 @@ export function handleCall__delegate(call: DelegateCall): void {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
     }
+
+    updatedStakedSharesAndEth();
 }
 
 export function handleCall__swap(call: SwapCall): void {
@@ -79,6 +82,8 @@ export function handleCall__swap(call: SwapCall): void {
 
     offer.save();
 
+    updatedStakedSharesAndEth();
+
     log.info('handleSwapStart end', []);
 }
 
@@ -103,6 +108,8 @@ export function handleCall__claim(call: ClaimCall): void {
             // store.remove('Swap', swap.id);
         }
     }
+
+    updatedStakedSharesAndEth();
 
     log.info('handleSwapClaim end', []);
 }

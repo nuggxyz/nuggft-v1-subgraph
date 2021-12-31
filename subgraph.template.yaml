@@ -6,52 +6,28 @@ repository: https://github.com/nugg-labs/nuggft-subgraph
 schema:
     file: ../../schema.graphql
 dataSources:
-    - kind: ethereum/contract
-      name: UniswapV3PoolUsdc
-      # prettier-ignore
-      network: {{network}}
-      source:
-          address: '{{uniswapv3pool_weth_usdc}}'
-          abi: UniswapV3Pool
-          # prettier-ignore
-          startBlock: {{startblock}}
-      mapping:
-          kind: ethereum/events
-          apiVersion: 0.0.5
-          language: wasm/assemblyscript
-          file: ../../mappings/uniswap.ts
-          entities:
-              - Protocol
-          abis:
-              - name: UniswapV3Pool
-                file: ../../abis/UniswapV3Pool.json
-          eventHandlers:
-              - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
-                handler: handleUsdcWethUniswap
     # - kind: ethereum/contract
-    #   name: DotnuggV1Processor
+    #   name: UniswapV3PoolUsdc
     #   # prettier-ignore
     #   network: {{network}}
     #   source:
-    #       address: '{{dotnugg}}'
-    #       abi: DotnuggV1Processor
+    #       address: '{{uniswapv3pool_weth_usdc}}'
+    #       abi: UniswapV3Pool
     #       # prettier-ignore
     #       startBlock: {{startblock}}
     #   mapping:
-    #       kind: ethereum/calls
+    #       kind: ethereum/events
     #       apiVersion: 0.0.5
     #       language: wasm/assemblyscript
-    #       file: ../../mappings/nuggft.ts
+    #       file: ../../mappings/uniswap.ts
     #       entities:
     #           - Protocol
-    #           - Swap
-    #           - Nugg
-    #           - Item
     #       abis:
-    #           - name: DotnuggV1Processor
-    #             file: ../../abis/DotnuggV1Processor.json
-    #       blockHandlers:
-    #           - handler: handleBlock
+    #           - name: UniswapV3Pool
+    #             file: ../../abis/UniswapV3Pool.json
+    #       eventHandlers:
+    #           - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+    #             handler: handleUsdcWethUniswap
 
     - kind: ethereum/contract
       name: NuggFT
@@ -78,32 +54,12 @@ dataSources:
               - name: DotnuggV1Processor
                 file: ../../abis/DotnuggV1Processor.json
           eventHandlers:
-              #   - event: Approval(indexed address,indexed address,indexed uint256)
-              #     handler: handleApproval
-              #   - event: ApprovalForAll(indexed address,indexed address,bool)
-              #     handler: handleApprovalForAll
-              #   - event: DelegateCommit(uint160,address,uint96)
-              #     handler: handleDelegateCommit
-              #   - event: DelegateMint(uint256,address,uint96)
-              #     handler: handleDelegateMint
-              #   - event: DelegateOffer(uint160,address,uint96)
-              #     handler: handleDelegateOffer
-              #   - event: DelegateCommitItem(uint160,uint16,uint160,uint96)
-              #     handler: handleDelegateCommitItem
-              #   - event: DelegateOfferItem(uint160,uint16,uint160,uint96)
-              #     handler: handleDelegateOfferItem
               - event: Genesis(uint256,uint32,uint32)
                 handler: handleGenesis
-              #   - event: MigrateV1Sent(address,uint160,uint256,address,uint96)
-              #     handler: handleMigrateV1Sent
-              #   - event: MigratorV1Updated(address)
-              #     handler: handleMigratorV1Updated
               - event: Payoff(uint160,address,uint96)
                 handler: handlePayoff
               - event: PopItem(uint160,uint256,uint16)
                 handler: handlePopItem
-              #   - event: ProtocolEthExtracted(uint96)
-              #     handler: handleProtocolEthExtracted
               - event: PushItem(uint160,uint256,uint16)
                 handler: handlePushItem
               - event: Rebalance(uint160,uint96,uint96)
@@ -114,31 +70,10 @@ dataSources:
                 handler: handleSetAnchorOverrides
               - event: SetProof(uint160,uint256,uint8[])
                 handler: handleSetProof
-              - event: StakeEth(uint96,uint96)
-                handler: handleStakeEth
-              #   - event: SwapClaim(uint160,address,uint32)
-              #     handler: handleSwapClaim
-              #   - event: SwapClaimItem(uint160,uint16,uint160,uint32)
-              #     handler: handleSwapClaimItem
-              #   - event: SwapItemStart(uint160,uint16,uint96)
-              #     handler: handleSwapItemStart
-              #   - event: SwapStart(uint160,address,uint96)
-              #     handler: handleSwapStart
               - event: TakeLoan(uint160,uint96)
                 handler: handleTakeLoan
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleTransfer
-              #   - event: TrustUpdated(indexed address)
-              #     handler: handleTrustUpdated
-              #   - event: TrustedMint(indexed address,uint160)
-              #     handler: handleTrustedMint
-              - event: UnstakeEth(uint96,address)
-                handler: handleUnstakeEth
-
-              #   - event: UntrustedMint(indexed address,uint160)
-              #     handler: handleUntrustedMint
-              #   - event: DotnuggV1ResolverUpdated(uint256,address)
-              #     handler: handleDotnuggV1ResolverUpdated
           blockHandlers:
               - handler: handleBlock
           callHandlers:
