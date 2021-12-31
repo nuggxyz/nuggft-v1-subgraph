@@ -1,7 +1,6 @@
 {
-    "startblock": 11701600,
-    "nuggft": "0xb19ae2d44f25cbbbae625310f367ab9fb49cde92",
+    "startblock": 11726900,
+    "nuggft": "0xef72e5029dac5622cf92bd8f0b4b1dd6cbdeee10",
 
-    "network": "ropsten",
-    "uniswapv3pool_weth_usdc": "0x5E986c0666b85bD8A8B5e414726022630D400b18"
+    "network": "ropsten"
 }

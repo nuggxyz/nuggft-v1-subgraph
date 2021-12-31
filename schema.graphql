@@ -208,6 +208,7 @@ enum NextDelegateType {
     Mint
     Commit
     Offer
+    None
 }
 
 type ItemSwap @entity {

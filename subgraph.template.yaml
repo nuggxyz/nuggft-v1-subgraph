@@ -59,7 +59,7 @@ dataSources:
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleEvent__Transfer
           blockHandlers:
-              - handler: handleBlock__all
+              - handler: handleBlock__every
               #   - handler: handleBlock__call
               #     filter:
               #         kind: call

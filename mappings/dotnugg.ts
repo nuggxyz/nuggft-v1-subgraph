@@ -69,10 +69,12 @@ export function updateProof(nugg: Nugg): void {
 
         let items: i32[] = [];
 
-        items.push(proof.bitAnd(BigInt.fromString('3')).toI32());
+        items.push(proof.bitAnd(BigInt.fromString('7')).toI32());
+
+        proof = proof.rightShift(3);
 
         do {
-            let curr = proof.bitAnd(BigInt.fromString('11')).toI32();
+            let curr = proof.bitAnd(BigInt.fromString('2047')).toI32();
             if (curr != 0) {
                 items.push(curr);
             }

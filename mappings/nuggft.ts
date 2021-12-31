@@ -2,14 +2,14 @@ import { log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
 import { Genesis, Transfer, SetDotnuggV1ResolverCall, AnchorCall, RotateCall } from '../generated/local/NuggFT/NuggFT';
 import { wethToUsdc } from './uniswap';
-import { safeLoadUser, safeNewOfferHelper, safeNewSwapHelper } from './safeload';
+import { safeLoadNuggNull, safeLoadUser, safeNewNugg, safeNewOfferHelper, safeNewSwapHelper } from './safeload';
 import { handleBlock__every, onEpochGenesis } from './epoch';
 import { handleCall__delegate, handleCall__claim, handleCall__swap } from './swap';
 import { handleCall__delegateItem, handleCall__swapItem, handleCall__claimItem } from './itemswap';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
-import { cacheDotnugg, getDotnuggUserId } from './dotnugg';
+import { cacheDotnugg, getDotnuggUserId, updateProof } from './dotnugg';
 import { handleCall__loan, handleCall__payoff, handleCall__rebalance } from './loan';
 export {
     handleCall__delegateItem,
@@ -122,7 +122,11 @@ function handleEvent__Transfer(event: Transfer): void {
 
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(event.params._tokenId);
+    let nugg = safeLoadNuggNull(event.params._tokenId);
+
+    if (nugg == null) {
+        nugg = safeNewNugg(event.params._tokenId, proto.nullUser);
+    }
 
     let sender = safeLoadUser(event.params._from);
 
@@ -165,7 +169,7 @@ function handleEvent__Transfer(event: Transfer): void {
         swap.endingEpoch = BigInt.fromString(proto.epoch);
         swap.epoch = proto.epoch;
         swap.startingEpoch = proto.epoch;
-
+        swap.nextDelegateType = 'None';
         swap.save();
 
         // safeSetNuggActiveSwap(nugg, swap);
@@ -180,6 +184,8 @@ function handleEvent__Transfer(event: Transfer): void {
         offer.swap = swap.id;
 
         offer.save();
+
+        updateProof(nugg);
     }
 
     nugg.user = receiver.id;
