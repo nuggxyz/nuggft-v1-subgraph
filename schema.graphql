@@ -114,6 +114,8 @@ type Nugg @entity {
 
     numSwaps: BigInt!
 
+    _items: [Int!]!
+
     burned: Boolean! #update
     swaps: [Swap!]! @derivedFrom(field: "nugg")
 
@@ -165,8 +167,10 @@ type Loan @entity {
     epoch: Epoch!
     endingEpoch: BigInt!
 
-    feeEth: BigInt!
-    feeUsd: BigInt!
+    toPayoff: BigInt!
+    toRebalance: BigInt!
+    earned: BigInt!
+    epochDue: BigInt!
 
     protocol: Protocol
 
@@ -175,8 +179,11 @@ type Loan @entity {
     liquidatedForEth: BigInt!
     liquidatedForUsd: BigInt!
 
-    eth: BigInt!
-    ethUsd: BigInt!
+    feeEth: BigInt! @depreicated
+    feeUsd: BigInt! @depreicated
+
+    eth: BigInt! @depreicated
+    ethUsd: BigInt! @depreicated
 }
 
 type User @entity {

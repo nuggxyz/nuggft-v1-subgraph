@@ -1,41 +1,16 @@
-import { Address, ethereum, log } from '@graphprotocol/graph-ts';
+import { log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import {
-    SetProof,
-    PopItem,
-    PushItem,
-    Genesis,
-    StakeEth,
-    UnstakeEth,
-    Transfer,
-    RotateItem,
-    SetAnchorOverrides,
-    DotnuggV1ResolverUpdated,
-} from '../generated/local/NuggFT/NuggFT';
-import { store } from '@graphprotocol/graph-ts';
-import { invariant, safeDiv, wethToUsdc } from './uniswap';
-import { safeLoadNuggNull, safeLoadUser, safeNewNugg, safeNewOfferHelper, safeNewSwapHelper, safeSetNuggActiveSwap } from './safeload';
-import { onEpochGenesis } from './epoch';
+import { Genesis, Transfer, SetDotnuggV1ResolverCall, AnchorCall, RotateCall } from '../generated/local/NuggFT/NuggFT';
+import { wethToUsdc } from './uniswap';
+import { safeLoadUser, safeNewOfferHelper, safeNewSwapHelper } from './safeload';
+import { handleBlock__every, onEpochGenesis } from './epoch';
 import { handleCall__delegate, handleCall__claim, handleCall__swap } from './swap';
 import { handleCall__delegateItem, handleCall__swapItem, handleCall__claimItem } from './itemswap';
 
-import { handlePayoff, handleTakeLoan, handleRebalance } from './loan';
-
-import {
-    safeNewUser,
-    safeLoadNugg,
-    safeLoadUserNull,
-    safeLoadItem,
-    safeLoadNuggItemHelper,
-    safeLoadProtocol,
-    safeLoadNuggItemHelperNull,
-    safeNewNuggItem,
-    safeNewItem,
-    safeLoadItemNull,
-} from './safeload';
+import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
-import { handleBlock } from './epoch';
 import { cacheDotnugg, getDotnuggUserId } from './dotnugg';
+import { handleCall__loan, handleCall__payoff, handleCall__rebalance } from './loan';
 export {
     handleCall__delegateItem,
     handleCall__swapItem,
@@ -43,21 +18,19 @@ export {
     handleCall__delegate,
     handleCall__swap,
     handleCall__claim,
-    handleTransfer,
-    handlePopItem,
-    handleSetProof,
-    handlePushItem,
-    handleBlock,
-    handlePayoff,
-    handleTakeLoan,
-    handleRebalance,
-    handleRotateItems,
-    handleSetAchorOverrides,
-    handleDotnuggV1ResolverUpdated,
+    handleEvent__Transfer,
+    handleEvent__Genesis,
+    handleBlock__every,
+    handleCall__rebalance,
+    handleCall__loan,
+    handleCall__payoff,
+    handleCall__setDotnuggV1Resolver,
+    handleCall__anchor,
+    handleCall__rotate,
 };
 
-export function handleGenesis(event: Genesis): void {
-    log.info('handleGenesisNuggFT start ', []);
+function handleEvent__Genesis(event: Genesis): void {
+    log.info('handleEvent__Genesis start ', []);
 
     let proto = new Protocol('0x42069');
 
@@ -141,56 +114,10 @@ export function handleGenesis(event: Genesis): void {
 
     onEpochGenesis(event.block, event.block.number, BigInt.fromString('69'));
 
-    log.info('handleGenesisNuggFT end', [proto.epoch]);
+    log.info('handleEvent__Genesis end', [proto.epoch]);
 }
 
-function handleSetProof(event: SetProof): void {
-    log.info('handleSetProof start', []);
-    let proto = safeLoadProtocol('0x42069');
-
-    let nugg = safeLoadNuggNull(event.params.tokenId);
-
-    if (nugg == null) {
-        nugg = safeNewNugg(event.params.tokenId, proto.nullUser);
-
-        // sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
-    } else {
-        // sendingUser = safeLoadUser(Address.fromString(nugg.user));
-    }
-
-    if (nugg.dotnuggRawCache.startsWith('ERROR_WITH_DOTNUGG_CACHE')) {
-        cacheDotnugg(nugg);
-    }
-
-    for (let i = 0; i < event.params.items.length; i++) {
-        let item = safeLoadItemNull(BigInt.fromI32(event.params.items[i]));
-        if (item == null) {
-            item = safeNewItem(BigInt.fromI32(event.params.items[i]));
-            item.count = BigInt.fromString('0');
-        }
-        let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
-
-        if (nuggItem == null) {
-            nuggItem = safeNewNuggItem(nugg, item);
-            nuggItem.count = BigInt.fromString('0');
-        }
-
-        nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
-        item.count = item.count.plus(BigInt.fromString('1'));
-
-        nuggItem.item = item.id;
-        nuggItem.nugg = nugg.id;
-
-        item.save();
-        nuggItem.save();
-    }
-
-    nugg.save();
-
-    log.info('handleSetProof end', []);
-}
-
-function handleTransfer(event: Transfer): void {
+function handleEvent__Transfer(event: Transfer): void {
     log.info('handleTransfer start', []);
 
     let proto = safeLoadProtocol('0x42069');
@@ -222,6 +149,8 @@ function handleTransfer(event: Transfer): void {
 
     // if this is a mint
     if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
+        cacheDotnugg(nugg);
+
         let swap = safeNewSwapHelper(nugg);
 
         nugg.numSwaps = BigInt.fromString('1');
@@ -262,76 +191,142 @@ function handleTransfer(event: Transfer): void {
     log.info('handleTransfer end', []);
 }
 
-function handlePushItem(event: PushItem): void {
-    log.info('handlePushItem start', []);
-
-    let nugg = safeLoadNugg(event.params.tokenId);
-
-    let item = safeLoadItemNull(BigInt.fromI32(event.params.itemId));
-
-    if (item == null) {
-        item = safeNewItem(BigInt.fromI32(event.params.itemId));
-        item.count = BigInt.fromString('1');
-        item.save();
-    }
-
-    let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
-
-    if (nuggItem == null) {
-        nuggItem = safeNewNuggItem(nugg, item);
-        nuggItem.count = BigInt.fromString('0');
-    }
-
-    nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
-
-    nuggItem.save();
-}
-
-function handlePopItem(event: PopItem): void {
-    log.info('handlePopItem start', []);
-
-    let nugg = safeLoadNugg(event.params.tokenId);
-
-    let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
-
-    let nuggItem = safeLoadNuggItemHelper(nugg, item);
-
-    nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
-
-    if (nuggItem.count == BigInt.fromString('0')) {
-        store.remove('NuggItem', nuggItem.id);
-    } else {
-        nuggItem.save();
-    }
-
-    log.info('handlePopItem end', []);
-}
-
-function handleRotateItems(event: RotateItem): void {
-    log.info('handleRotateItems start', []);
-
-    let nugg = safeLoadNugg(event.params.tokenId);
-
-    cacheDotnugg(nugg);
-
-    log.info('handleRotateItems end', []);
-}
-
-function handleSetAchorOverrides(event: SetAnchorOverrides): void {
-    log.info('handleSetAchorOverrides start', []);
-
-    let nugg = safeLoadNugg(event.params.tokenId);
-
-    cacheDotnugg(nugg);
-    log.info('handleSetAchorOverrides end', []);
-}
-
-function handleDotnuggV1ResolverUpdated(event: DotnuggV1ResolverUpdated): void {
+function handleCall__setDotnuggV1Resolver(call: SetDotnuggV1ResolverCall): void {
     log.info('handleDotnuggV1ResolverUpdated start', []);
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(call.inputs.tokenId);
 
     cacheDotnugg(nugg);
 
     log.info('handleDotnuggV1ResolverUpdated end', []);
 }
+
+function handleCall__anchor(call: AnchorCall): void {
+    log.info('handleCall__anchor start', []);
+
+    let nugg = safeLoadNugg(call.inputs.tokenId);
+
+    cacheDotnugg(nugg);
+
+    log.info('handleCall__anchor end', []);
+}
+
+function handleCall__rotate(call: RotateCall): void {
+    log.info('handleCall__rotate start', []);
+
+    let nugg = safeLoadNugg(call.inputs.tokenId);
+
+    cacheDotnugg(nugg);
+
+    log.info('handleCall__rotate end', []);
+}
+
+// function handleSetProof(event: SetProof): void {
+//     log.info('handleSetProof start', []);
+//     let proto = safeLoadProtocol('0x42069');
+
+//     let nugg = safeLoadNuggNull(event.params.tokenId);
+
+//     if (nugg == null) {
+//         nugg = safeNewNugg(event.params.tokenId, proto.nullUser);
+
+//         // sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
+//     } else {
+//         // sendingUser = safeLoadUser(Address.fromString(nugg.user));
+//     }
+
+//     if (nugg.dotnuggRawCache.startsWith('ERROR_WITH_DOTNUGG_CACHE')) {
+//         cacheDotnugg(nugg);
+//     }
+
+//     for (let i = 0; i < event.params.items.length; i++) {
+//         let item = safeLoadItemNull(BigInt.fromI32(event.params.items[i]));
+//         if (item == null) {
+//             item = safeNewItem(BigInt.fromI32(event.params.items[i]));
+//             item.count = BigInt.fromString('0');
+//         }
+//         let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
+
+//         if (nuggItem == null) {
+//             nuggItem = safeNewNuggItem(nugg, item);
+//             nuggItem.count = BigInt.fromString('0');
+//         }
+
+//         nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
+//         item.count = item.count.plus(BigInt.fromString('1'));
+
+//         nuggItem.item = item.id;
+//         nuggItem.nugg = nugg.id;
+
+//         item.save();
+//         nuggItem.save();
+//     }
+
+//     nugg.save();
+
+//     log.info('handleSetProof end', []);
+// }
+
+// function handlePushItem(event: PushItem): void {
+//     log.info('handlePushItem start', []);
+
+//     let nugg = safeLoadNugg(event.params.tokenId);
+
+//     let item = safeLoadItemNull(BigInt.fromI32(event.params.itemId));
+
+//     if (item == null) {
+//         item = safeNewItem(BigInt.fromI32(event.params.itemId));
+//         item.count = BigInt.fromString('1');
+//         item.save();
+//     }
+
+//     let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
+
+//     if (nuggItem == null) {
+//         nuggItem = safeNewNuggItem(nugg, item);
+//         nuggItem.count = BigInt.fromString('0');
+//     }
+
+//     nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
+
+//     nuggItem.save();
+// }
+
+// function handlePopItem(event: PopItem): void {
+//     log.info('handlePopItem start', []);
+
+//     let nugg = safeLoadNugg(event.params.tokenId);
+
+//     let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
+
+//     let nuggItem = safeLoadNuggItemHelper(nugg, item);
+
+//     nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
+
+//     if (nuggItem.count == BigInt.fromString('0')) {
+//         store.remove('NuggItem', nuggItem.id);
+//     } else {
+//         nuggItem.save();
+//     }
+
+//     log.info('handlePopItem end', []);
+// }
+
+// function handleRotateItems(event: RotateItem): void {
+//     log.info('handleRotateItems start', []);
+
+//     let nugg = safeLoadNugg(event.params.tokenId);
+
+//     cacheDotnugg(nugg);
+
+//     log.info('handleRotateItems end', []);
+// }
+
+// function handleSetAchorOverrides(event: SetAnchorOverrides): void {
+//     log.info('handleSetAchorOverrides start', []);
+
+//     let nugg = safeLoadNugg(event.params.tokenId);
+
+//     cacheDotnugg(nugg);
+//     log.info('handleSetAchorOverrides end', []);
+// }

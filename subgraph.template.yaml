@@ -55,37 +55,36 @@ dataSources:
                 file: ../../abis/DotnuggV1Processor.json
           eventHandlers:
               - event: Genesis(uint256,uint32,uint32)
-                handler: handleGenesis
-              - event: Payoff(uint160,address,uint96)
-                handler: handlePayoff
-              - event: PopItem(uint160,uint256,uint16)
-                handler: handlePopItem
-              - event: PushItem(uint160,uint256,uint16)
-                handler: handlePushItem
-              - event: Rebalance(uint160,uint96,uint96)
-                handler: handleRebalance
-              - event: RotateItem(uint160,uint256,uint8)
-                handler: handleRotateItem
-              - event: SetAnchorOverrides(uint160,uint256,uint8[],uint8[])
-                handler: handleSetAnchorOverrides
-              - event: SetProof(uint160,uint256,uint8[])
-                handler: handleSetProof
-              - event: TakeLoan(uint160,uint96)
-                handler: handleTakeLoan
+                handler: handleEvent__Genesis
               - event: Transfer(indexed address,indexed address,indexed uint256)
-                handler: handleTransfer
+                handler: handleEvent__Transfer
           blockHandlers:
-              - handler: handleBlock
+              - handler: handleBlock__all
+              #   - handler: handleBlock__call
+              #     filter:
+              #         kind: call
           callHandlers:
               - function: claim(address,uint160)
-                handler: handleCall_claim
+                handler: handleCall__claim
               - function: claimItem(uint160,uint160,uint16)
-                handler: handleCall_claimItem
+                handler: handleCall__claimItem
               - function: swap(uint160,uint96)
-                handler: handleCall_swap
+                handler: handleCall__swap
               - function: swapItem(uint160,uint16,uint96)
-                handler: handleCall_swapItem
+                handler: handleCall__swapItem
               - function: delegate(address,uint160)
-                handler: handleCall_delegate
+                handler: handleCall__delegate
               - function: delegateItem(uint160,uint160,uint16)
-                handler: handleCall_delegateItem
+                handler: handleCall__delegateItem
+              - function: loan(uint160)
+                handler: handleCall__loan
+              - function: rebalance(uint160)
+                handler: handleCall__rebalance
+              - function: payoff(uint160)
+                handler: handleCall__payoff
+              - function: setDotnuggV1Resolver(uint256,address)
+                handler: handleCall__setDotnuggV1Resolver
+              - function: rotate(uint160,uint8,uint8)
+                handler: handleCall__rotate
+              - function: anchor(uint160,uint16,uint256,uint256)
+                handler: handleCall__anchor

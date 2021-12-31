@@ -109,7 +109,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
     epoch.save();
 }
 
-export function handleBlock(block: ethereum.Block): void {
+export function handleBlock__every(block: ethereum.Block): void {
     let proto = Protocol.load('0x42069');
     if (proto == null) return;
 

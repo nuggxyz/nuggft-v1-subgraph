@@ -19,7 +19,7 @@ import {
     safeLoadItemOfferHelperNull,
 } from './safeload';
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/schema';
-import { updatedStakedSharesAndEth } from './dotnugg';
+import { updatedStakedSharesAndEth, updateProof } from './dotnugg';
 
 export function handleCall__delegateItem(call: DelegateItemCall): void {
     let proto = safeLoadProtocol('0x42069');
@@ -71,7 +71,6 @@ function _delegateCommitItem(
 
     let _s = epoch._activeItemSwaps as string[];
     _s.push(itemswap.id as string);
-
     epoch._activeSwaps = _s as string[];
     epoch.save();
 
@@ -161,6 +160,8 @@ export function handleCall__claimItem(call: ClaimItemCall): void {
     itemoffer.save();
 
     updatedStakedSharesAndEth();
+
+    updateProof(buyingNugg);
 }
 
 export function handleCall__swapItem(call: SwapItemCall): void {
@@ -202,4 +203,6 @@ export function handleCall__swapItem(call: SwapItemCall): void {
     log.info('handleSwapItemStart end', []);
 
     updatedStakedSharesAndEth();
+
+    updateProof(sellingNugg);
 }
