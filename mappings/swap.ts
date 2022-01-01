@@ -53,11 +53,16 @@ export function handleCall__delegate(call: DelegateCall): void {
 }
 
 export function handleCall__swap(call: SwapCall): void {
-    log.info('handleSwapStart start', []);
+    log.info('handleCall__swap start', []);
+    let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(call.inputs.tokenId);
 
-    let user = safeLoadUser(Address.fromString(nugg.user));
+    if (nugg.user != proto.nuggftUser) {
+        log.error('handleCall__swap: nugg.user should always be proto.nuggftUser', []);
+        log.critical('', []);
+    }
+    let user = safeLoadUser(Address.fromString(nugg.lastUser));
 
     let swap = safeNewSwapHelper(nugg);
 
@@ -84,7 +89,7 @@ export function handleCall__swap(call: SwapCall): void {
 
     updatedStakedSharesAndEth();
 
-    log.info('handleSwapStart end', []);
+    log.info('handleCall__swap end', []);
 }
 
 export function handleCall__claim(call: ClaimCall): void {
@@ -137,9 +142,9 @@ export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Sw
 
     swap.save();
 
-    nugg.user = proto.nuggftUser;
+    // nugg.user = proto.nuggftUser;
 
-    nugg.save();
+    // nugg.save();
 
     let offer = safeNewOfferHelper(swap, user);
 

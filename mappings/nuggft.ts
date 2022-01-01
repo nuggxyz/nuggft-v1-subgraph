@@ -1,4 +1,4 @@
-import { log } from '@graphprotocol/graph-ts';
+import { ethereum, log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
 import { Genesis, Transfer, SetDotnuggV1ResolverCall, AnchorCall, RotateCall } from '../generated/local/NuggFT/NuggFT';
 import { wethToUsdc } from './uniswap';
@@ -9,7 +9,7 @@ import { handleCall__delegateItem, handleCall__swapItem, handleCall__claimItem }
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
-import { cacheDotnugg, getDotnuggUserId, updateProof } from './dotnugg';
+import { cacheDotnugg, getDotnuggUserId, updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { handleCall__loan, handleCall__payoff, handleCall__rebalance } from './loan';
 export {
     handleCall__delegateItem,
@@ -27,7 +27,12 @@ export {
     handleCall__setDotnuggV1Resolver,
     handleCall__anchor,
     handleCall__rotate,
+    handleBlock__call,
 };
+
+function handleBlock__call(block: ethereum.Block): void {
+    // updatedStakedSharesAndEth();
+}
 
 function handleEvent__Genesis(event: Genesis): void {
     log.info('handleEvent__Genesis start ', []);
@@ -189,10 +194,13 @@ function handleEvent__Transfer(event: Transfer): void {
     }
 
     nugg.user = receiver.id;
+    nugg.lastUser = sender.id;
 
     receiver.save();
     nugg.save();
     sender.save();
+
+    updatedStakedSharesAndEth();
 
     log.info('handleTransfer end', []);
 }

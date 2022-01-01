@@ -16,12 +16,17 @@ import {
 import { wethToUsdc } from './uniswap';
 
 export function handleCall__loan(call: LoanCall): void {
-    log.info('handleTakeLoan start', []);
+    log.info('handleCall__loan start', []);
     let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(call.inputs.tokenId);
 
-    let user = safeLoadUserFromString(nugg.user);
+    if (nugg.user != proto.nuggftUser) {
+        log.error('handleCall__loan: nugg.user should always be proto.nuggftUser', []);
+        log.critical('', []);
+    }
+
+    let user = safeLoadUser(Address.fromString(nugg.lastUser));
 
     let loan = safeNewLoanHelper();
 
@@ -52,7 +57,7 @@ export function handleCall__loan(call: LoanCall): void {
 
     safeSetNuggActiveLoan(nugg, loan);
 
-    log.info('handleTakeLoan end', []);
+    log.info('handleCall__loan end', []);
 }
 
 export function handleCall__payoff(call: PayoffCall): void {

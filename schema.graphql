@@ -102,6 +102,7 @@ type Nugg @entity {
     idnum: BigInt!
 
     user: User!
+    lastUser: User!
 
     protocol: Protocol
     activeSwap: Swap
@@ -165,7 +166,6 @@ type Loan @entity {
     user: User!
 
     epoch: Epoch!
-    endingEpoch: BigInt!
 
     toPayoff: BigInt!
     toRebalance: BigInt!
@@ -181,7 +181,7 @@ type Loan @entity {
 
     feeEth: BigInt! @depreicated
     feeUsd: BigInt! @depreicated
-
+    endingEpoch: BigInt! @depreicated
     eth: BigInt! @depreicated
     ethUsd: BigInt! @depreicated
 }

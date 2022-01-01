@@ -6,29 +6,6 @@ repository: https://github.com/nugg-labs/nuggft-subgraph
 schema:
     file: ../../schema.graphql
 dataSources:
-    # - kind: ethereum/contract
-    #   name: UniswapV3PoolUsdc
-    #   # prettier-ignore
-    #   network: {{network}}
-    #   source:
-    #       address: '{{uniswapv3pool_weth_usdc}}'
-    #       abi: UniswapV3Pool
-    #       # prettier-ignore
-    #       startBlock: {{startblock}}
-    #   mapping:
-    #       kind: ethereum/events
-    #       apiVersion: 0.0.5
-    #       language: wasm/assemblyscript
-    #       file: ../../mappings/uniswap.ts
-    #       entities:
-    #           - Protocol
-    #       abis:
-    #           - name: UniswapV3Pool
-    #             file: ../../abis/UniswapV3Pool.json
-    #       eventHandlers:
-    #           - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
-    #             handler: handleUsdcWethUniswap
-
     - kind: ethereum/contract
       name: NuggFT
       # prettier-ignore
@@ -40,7 +17,7 @@ dataSources:
           startBlock: {{startblock}}
       mapping:
           kind: ethereum/events
-          apiVersion: 0.0.5
+          apiVersion: 0.0.6
           language: wasm/assemblyscript
           file: ../../mappings/nuggft.ts
           entities:
@@ -60,9 +37,9 @@ dataSources:
                 handler: handleEvent__Transfer
           blockHandlers:
               - handler: handleBlock__every
-              #   - handler: handleBlock__call
-              #     filter:
-              #         kind: call
+              - handler: handleBlock__call
+                filter:
+                    kind: call
           callHandlers:
               - function: claim(address,uint160)
                 handler: handleCall__claim

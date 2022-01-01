@@ -123,6 +123,7 @@ export function safeNewNugg(id: BigInt, userId: string): Nugg {
     loaded.burned = false;
     loaded.numSwaps = BigInt.fromString('0');
     loaded.user = userId;
+    loaded.lastUser = userId;
     loaded.resolver = '0x0000000000000000000000000000000000000000';
     loaded.save();
 
