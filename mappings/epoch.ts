@@ -15,6 +15,7 @@ import {
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
+import { cacheDotnugg } from './dotnugg';
 
 export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt): void {
     let proto = safeLoadProtocol('0x42069');
@@ -126,6 +127,10 @@ export function handleBlock__every(block: ethereum.Block): void {
 
         onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
     }
+
+    proto.nuggsNotCached.forEach((id) => {
+        cacheDotnugg(safeLoadNugg(BigInt.fromString(id)));
+    });
 
     // switch()
 }

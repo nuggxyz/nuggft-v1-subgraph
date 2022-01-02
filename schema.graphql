@@ -40,6 +40,8 @@ type Protocol @entity {
 
     defaultActiveNugg: Nugg
 
+    nuggsNotCached: [String!]!
+
     activeNuggs: [Nugg!]! @derivedFrom(field: "protocol")
     activeItems: [NuggItem!]! @derivedFrom(field: "protocol")
 }
@@ -112,6 +114,7 @@ type Nugg @entity {
 
     # dotnuggRawCache: [BigInt!]
     dotnuggRawCache: String!
+    dotnuggSvgCache: [BigInt!]!
 
     numSwaps: BigInt!
 

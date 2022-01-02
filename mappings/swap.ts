@@ -11,6 +11,7 @@ import {
     safeNewOfferHelper,
     safeNewSwapHelper,
     safeNewUser,
+    safeRemoveNuggActiveSwap,
     safeSetUserActiveSwap,
 } from './safeload';
 import { wethToUsdc } from './uniswap';
@@ -76,6 +77,8 @@ export function handleCall__swap(call: SwapCall): void {
 
     safeSetNuggActiveSwap(nugg, swap);
 
+    safeSetUserActiveSwap(user, nugg, swap);
+
     let offer = safeNewOfferHelper(swap, user);
 
     offer.claimed = false;
@@ -93,7 +96,9 @@ export function handleCall__swap(call: SwapCall): void {
 }
 
 export function handleCall__claim(call: ClaimCall): void {
-    log.info('handleSwapClaim start', []);
+    log.info('handleCall__claim start', []);
+
+    let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(call.inputs.tokenId);
 
@@ -109,14 +114,16 @@ export function handleCall__claim(call: ClaimCall): void {
 
     if (swap.leader == user.id) {
         if (swap.owner == user.id) {
-            // store.remove('Offer', offer.id);
-            // store.remove('Swap', swap.id);
+            safeRemoveNuggActiveSwap(nugg);
+
+            swap.endingEpoch = BigInt.fromString(proto.epoch);
+            swap.save();
         }
     }
 
     updatedStakedSharesAndEth();
 
-    log.info('handleSwapClaim end', []);
+    log.info('handleCall__claim end', []);
 }
 
 export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap, eth: BigInt): void {

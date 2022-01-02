@@ -41,7 +41,7 @@ function handleEvent__Genesis(event: Genesis): void {
 
     proto.init = false;
     proto.lastBlock = event.block.number;
-
+    proto.nuggsNotCached = [];
     proto.totalSwaps = BigInt.fromString('0');
     proto.totalUsers = BigInt.fromString('0');
 
