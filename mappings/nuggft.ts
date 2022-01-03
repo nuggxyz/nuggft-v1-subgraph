@@ -202,6 +202,8 @@ function handleEvent__Transfer(event: Transfer): void {
 
     updatedStakedSharesAndEth();
 
+    cacheDotnugg(nugg);
+
     log.info('handleTransfer end', []);
 }
 

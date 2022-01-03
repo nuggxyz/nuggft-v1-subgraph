@@ -58,6 +58,7 @@ type Offer @entity {
     claimed: Boolean!
 
     owner: Boolean!
+    claimer: User
 }
 
 enum EpochStatus {
@@ -161,6 +162,10 @@ type UserActiveSwap @entity {
     activeId: ID!
 }
 
+type Subscription {
+    offerAdded(offerId: ID!): Offer
+}
+
 type Loan @entity {
     id: ID!
 
@@ -201,6 +206,8 @@ type User @entity {
     nuggs: [Nugg!]! @derivedFrom(field: "user")
 
     offers: [Offer!]! @derivedFrom(field: "user")
+
+    unclaimedOffers: [Offer!]! @derivedFrom(field: "claimer")
 
     loans: [Loan!]! @derivedFrom(field: "user")
 
