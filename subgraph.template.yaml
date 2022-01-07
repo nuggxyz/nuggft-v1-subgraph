@@ -1,5 +1,5 @@
 specVersion: 0.0.2
-description: NuggFT
+description: NuggftV1
 repository: https://github.com/nugg-labs/nuggft-subgraph
 # features:
 #     - nonFatalErrors
@@ -7,12 +7,12 @@ schema:
     file: ../../schema.graphql
 dataSources:
     - kind: ethereum/contract
-      name: NuggFT
+      name: NuggftV1
       # prettier-ignore
       network: {{network}}
       source:
           address: '{{nuggft}}'
-          abi: NuggFT
+          abi: NuggftV1
           # prettier-ignore
           startBlock: {{startblock}}
       mapping:
@@ -26,42 +26,60 @@ dataSources:
               - Nugg
               - Item
           abis:
-              - name: NuggFT
-                file: ../../abis/NuggFT.json
-              - name: DotnuggV1Processor
-                file: ../../abis/DotnuggV1Processor.json
+              - name: NuggftV1
+                file: ../../abis/NuggftV1.json
+              - name: DotnuggV1
+                file: ../../abis/DotnuggV1.json
           eventHandlers:
-              - event: Genesis(uint256,uint32,uint32)
+              - event: Genesis(uint256,uint32,uint24)
                 handler: handleEvent__Genesis
+              - event: Mint(uint160,uint96)
+                handler: handleEvent__Mint
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleEvent__Transfer
+              - event: Delegate(indexed uint160,address,uint96)
+                handler: handleEvent__Delegate
+              - event: DelegateItem(indexed uint176,uint160,uint96)
+                handler: handleEvent__DelegateItem
+              - event: Stake(uint256)
+                handler: handleEvent__Stake
+              - event: DotnuggV1ConfigUpdated(indexed uint256)
+                handler: handleEvent__DotnuggV1ConfigUpdated
+              - event: Liquidate(indexed uint160,uint96,address)
+                handler: handleEvent__Liquidate
+              - event: Loan(indexed uint160,uint96)
+                handler: handleEvent__Loan
+              - event: Swap(indexed uint160,uint96)
+                handler: handleEvent__Swap
+              - event: SwapItem(indexed uint176,uint96)
+                handler: handleEvent__SwapItem
+              - event: Claim(indexed uint160,address)
+                handler: handleEvent__Claim
+              - event: ClaimItem(indexed uint176,uint160)
+                handler: handleEvent__ClaimItem
+              - event: DotnuggV1ConfigUpdated(indexed uint256)
+                handler: handleEvent__DotnuggV1ConfigUpdated
           blockHandlers:
               - handler: handleBlock__every
-              - handler: handleBlock__call
-                filter:
-                    kind: call
-          callHandlers:
-              - function: claim(address,uint160)
-                handler: handleCall__claim
-              - function: claimItem(uint160,uint160,uint16)
-                handler: handleCall__claimItem
-              - function: swap(uint160,uint96)
-                handler: handleCall__swap
-              - function: swapItem(uint160,uint16,uint96)
-                handler: handleCall__swapItem
-              - function: delegate(address,uint160)
-                handler: handleCall__delegate
-              - function: delegateItem(uint160,uint160,uint16)
-                handler: handleCall__delegateItem
-              - function: loan(uint160)
-                handler: handleCall__loan
-              - function: rebalance(uint160)
-                handler: handleCall__rebalance
-              - function: payoff(uint160)
-                handler: handleCall__payoff
-              - function: setDotnuggV1Resolver(uint256,address)
-                handler: handleCall__setDotnuggV1Resolver
-              - function: rotate(uint160,uint8,uint8)
-                handler: handleCall__rotate
-              - function: anchor(uint160,uint16,uint256,uint256)
-                handler: handleCall__anchor
+              #   - handler: handleBlock__call
+              #     filter:
+              #         kind: call
+          #   callHandlers:
+          #   - function: claim(uint160)
+          #     handler: handleCall__claim
+          #   - function: claimItem(uint160,uint160,uint16)
+          #     handler: handleCall__claimItem
+          #   - function: swap(uint160,uint96)
+          #     handler: handleCall__swap
+          #   - function: swapItem(uint160,uint16,uint96)
+          #     handler: handleCall__swapItem
+          #   - function: delegate(uint160)
+          #     handler: handleCall__delegate
+          #   - function: delegateItem(uint160,uint160,uint16)
+          #     handler: handleCall__delegateItem
+          #   - function: loan(uint160)
+          #     handler: handleCall__loan
+          #   - function: rebalance(uint160)
+          #     handler: handleCall__rebalance
+          #   - function: liquidate(uint160)
+          #     handler: handleCall__liquidate

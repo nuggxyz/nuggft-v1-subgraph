@@ -89,19 +89,101 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "uint256",
+        "indexed": true,
+        "internalType": "uint160",
         "name": "tokenId",
-        "type": "uint256"
+        "type": "uint160"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "to",
+        "name": "user",
         "type": "address"
       }
     ],
-    "name": "DotnuggV1ResolverUpdated",
+    "name": "Claim",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint176",
+        "name": "sellingItemId",
+        "type": "uint176"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint160",
+        "name": "nugg",
+        "type": "uint160"
+      }
+    ],
+    "name": "ClaimItem",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "lead",
+        "type": "uint96"
+      }
+    ],
+    "name": "Delegate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint176",
+        "name": "sellingItemId",
+        "type": "uint176"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint160",
+        "name": "nugg",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "lead",
+        "type": "uint96"
+      }
+    ],
+    "name": "DelegateItem",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "artifactId",
+        "type": "uint256"
+      }
+    ],
+    "name": "DotnuggV1ConfigUpdated",
     "type": "event"
   },
   {
@@ -121,12 +203,56 @@
       },
       {
         "indexed": false,
-        "internalType": "uint32",
+        "internalType": "uint24",
         "name": "offset",
-        "type": "uint32"
+        "type": "uint24"
       }
     ],
     "name": "Genesis",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "value",
+        "type": "uint96"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "Liquidate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "value",
+        "type": "uint96"
+      }
+    ],
+    "name": "Loan",
     "type": "event"
   },
   {
@@ -184,12 +310,101 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "value",
+        "type": "uint96"
+      }
+    ],
+    "name": "Mint",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint96",
         "name": "eth",
         "type": "uint96"
       }
     ],
     "name": "ProtocolEthExtracted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "value",
+        "type": "uint96"
+      }
+    ],
+    "name": "Rebalance",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "stake",
+        "type": "uint256"
+      }
+    ],
+    "name": "Stake",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "floor",
+        "type": "uint96"
+      }
+    ],
+    "name": "Swap",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint176",
+        "name": "sellingItemId",
+        "type": "uint176"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint96",
+        "name": "floor",
+        "type": "uint96"
+      }
+    ],
+    "name": "SwapItem",
     "type": "event"
   },
   {
@@ -271,34 +486,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint160",
-        "name": "tokenId",
-        "type": "uint160"
-      },
-      {
-        "internalType": "uint16",
-        "name": "itemId",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "y",
-        "type": "uint256"
-      }
-    ],
-    "name": "anchor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "to",
         "type": "address"
@@ -349,11 +536,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
         "internalType": "uint160",
         "name": "tokenId",
         "type": "uint160"
@@ -390,11 +572,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
         "internalType": "uint160",
         "name": "tokenId",
         "type": "uint160"
@@ -429,6 +606,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "dotnuggV1",
+    "outputs": [
+      {
+        "internalType": "contract IDotnuggV1",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -436,40 +626,10 @@
         "type": "uint256"
       }
     ],
-    "name": "dotnuggV1Callback",
+    "name": "dotnuggV1ImplementerCallback",
     "outputs": [
       {
         "components": [
-          {
-            "internalType": "uint256",
-            "name": "version",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "renderedAt",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "desc",
-            "type": "string"
-          },
-          {
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
           {
             "internalType": "uint8[]",
             "name": "ids",
@@ -486,9 +646,34 @@
             "type": "uint8[]"
           },
           {
+            "internalType": "uint256",
+            "name": "version",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "implementer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "artifactId",
+            "type": "uint256"
+          },
+          {
             "internalType": "string[]",
             "name": "labels",
             "type": "string[]"
+          },
+          {
+            "internalType": "string[]",
+            "name": "styles",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "background",
+            "type": "string"
           },
           {
             "internalType": "bytes",
@@ -499,45 +684,6 @@
         "internalType": "struct IDotnuggV1Metadata.Memory",
         "name": "data",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "dotnuggV1DefaultWidth",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "dotnuggV1DefaultZoom",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "dotnuggV1Processor",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -564,12 +710,44 @@
   },
   {
     "inputs": [],
+    "name": "dotnuggV1StorageProxy",
+    "outputs": [
+      {
+        "internalType": "contract IDotnuggV1StorageProxy",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      }
+    ],
+    "name": "dotnuggV1TrustCallback",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "res",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "epoch",
     "outputs": [
       {
-        "internalType": "uint32",
+        "internalType": "uint24",
         "name": "res",
-        "type": "uint32"
+        "type": "uint24"
       }
     ],
     "stateMutability": "view",
@@ -697,6 +875,19 @@
         "type": "uint160"
       }
     ],
+    "name": "liquidate",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      }
+    ],
     "name": "loan",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -714,7 +905,7 @@
     "outputs": [
       {
         "internalType": "uint96",
-        "name": "toPayoff",
+        "name": "toLiquidate",
         "type": "uint96"
       },
       {
@@ -728,9 +919,9 @@
         "type": "uint96"
       },
       {
-        "internalType": "uint32",
+        "internalType": "uint24",
         "name": "epochDue",
-        "type": "uint32"
+        "type": "uint24"
       },
       {
         "internalType": "address",
@@ -833,19 +1024,6 @@
         "type": "uint160"
       }
     ],
-    "name": "payoff",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint160",
-        "name": "tokenId",
-        "type": "uint160"
-      }
-    ],
     "name": "proofOf",
     "outputs": [
       {
@@ -886,6 +1064,16 @@
         "internalType": "uint8[]",
         "name": "overys",
         "type": "uint8[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "styles",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string",
+        "name": "background",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -1012,6 +1200,52 @@
   {
     "inputs": [
       {
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "internalType": "uint16",
+        "name": "itemId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint256",
+        "name": "x",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "y",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDotnuggV1AnchorOverrides",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "internalType": "string",
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "name": "setDotnuggV1Background",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -1023,6 +1257,29 @@
       }
     ],
     "name": "setDotnuggV1Resolver",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint160",
+        "name": "tokenId",
+        "type": "uint160"
+      },
+      {
+        "internalType": "uint16",
+        "name": "itemId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "string",
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "name": "setDotnuggV1Style",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1125,7 +1382,7 @@
     "inputs": [
       {
         "internalType": "uint160",
-        "name": "sellerTokenId",
+        "name": "tokenId",
         "type": "uint160"
       },
       {
@@ -1155,6 +1412,13 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "testnet__exploit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1272,7 +1536,7 @@
         "type": "uint160"
       }
     ],
-    "name": "valueForPayoff",
+    "name": "valueForLiquidate",
     "outputs": [
       {
         "internalType": "uint96",

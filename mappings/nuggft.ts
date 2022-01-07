@@ -1,37 +1,50 @@
-import { ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { Genesis, Transfer, SetDotnuggV1ResolverCall, AnchorCall, RotateCall } from '../generated/local/NuggFT/NuggFT';
-import { wethToUsdc } from './uniswap';
-import { safeLoadNuggNull, safeLoadUser, safeNewNugg, safeNewOfferHelper, safeNewSwapHelper } from './safeload';
+import { Genesis, Mint, Stake, Transfer } from '../generated/local/NuggftV1/NuggftV1';
+import { safeDiv, wethToUsdc } from './uniswap';
+import {
+    safeLoadNuggNull,
+    safeLoadOfferHelper,
+    safeLoadUser,
+    safeNewNugg,
+    safeNewOfferHelper,
+    safeNewSwapHelper,
+    unsafeLoadSwap,
+} from './safeload';
 import { handleBlock__every, onEpochGenesis } from './epoch';
-import { handleCall__delegate, handleCall__claim, handleCall__swap } from './swap';
-import { handleCall__delegateItem, handleCall__swapItem, handleCall__claimItem } from './itemswap';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
 import { cacheDotnugg, getDotnuggUserId, updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { handleCall__loan, handleCall__payoff, handleCall__rebalance } from './loan';
+import { DotnuggV1ConfigUpdated } from '../generated/local/NuggftV1/NuggftV1';
+import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
+import { handleEvent__DelegateItem, handleEvent__ClaimItem, handleEvent__SwapItem } from './itemswap';
+import { handleEvent__Claim, handleEvent__Delegate, handleEvent__Swap } from './swap';
+
 export {
-    handleCall__delegateItem,
-    handleCall__swapItem,
-    handleCall__claimItem,
-    handleCall__delegate,
-    handleCall__swap,
-    handleCall__claim,
     handleEvent__Transfer,
     handleEvent__Genesis,
     handleBlock__every,
-    handleCall__rebalance,
-    handleCall__loan,
-    handleCall__payoff,
-    handleCall__setDotnuggV1Resolver,
-    handleCall__anchor,
-    handleCall__rotate,
-    handleBlock__call,
+    handleEvent__DotnuggV1ConfigUpdated,
+    handleEvent__Mint,
+    handleEvent__Loan,
+    handleEvent__Liquidate,
+    handleEvent__Rebalance,
+    handleEvent__Stake,
+    handleEvent__DelegateItem,
+    handleEvent__ClaimItem,
+    handleEvent__SwapItem,
+    handleEvent__Delegate,
+    handleEvent__Swap,
+    handleEvent__Claim,
 };
 
-function handleBlock__call(block: ethereum.Block): void {
-    // updatedStakedSharesAndEth();
+export let ONE = BigInt.fromString('1');
+
+function mask(bits: number): BigInt {
+    return BigInt.fromString('1')
+        .leftShift(bits as u8)
+        .minus(BigInt.fromString('1'));
 }
 
 function handleEvent__Genesis(event: Genesis): void {
@@ -41,7 +54,7 @@ function handleEvent__Genesis(event: Genesis): void {
 
     proto.init = false;
     proto.lastBlock = event.block.number;
-    proto.nuggsNotCached = [];
+    proto.nuggsNotCached = ['3000'];
     proto.totalSwaps = BigInt.fromString('0');
     proto.totalUsers = BigInt.fromString('0');
 
@@ -122,8 +135,26 @@ function handleEvent__Genesis(event: Genesis): void {
     log.info('handleEvent__Genesis end', [proto.epoch]);
 }
 
+function handleEvent__Stake(event: Stake): void {
+    log.info('handleEvent__Stake start', []);
+
+    // let protocolEth = event.params.stake.bitAnd(mask(96));
+    let eth = event.params.stake.rightShift(96).bitAnd(mask(96));
+    let shares = event.params.stake.rightShift(192);
+
+    let proto = safeLoadProtocol('0x42069');
+
+    proto.nuggftStakedEth = eth;
+    proto.nuggftStakedShares = shares;
+    proto.nuggftStakedEthPerShare = safeDiv(eth, shares);
+
+    proto.save();
+
+    log.info('handleEvent__Stake end', []);
+}
+
 function handleEvent__Transfer(event: Transfer): void {
-    log.info('handleTransfer start', []);
+    log.info('handleEvent__Transfer start', []);
 
     let proto = safeLoadProtocol('0x42069');
 
@@ -166,7 +197,7 @@ function handleEvent__Transfer(event: Transfer): void {
 
         nugg.save();
 
-        swap.eth = event.transaction.value;
+        swap.eth = BigInt.fromString('0'); // handled by Mint or Delegate
         swap.ethUsd = wethToUsdc(swap.eth);
         swap.owner = proto.nullUser;
         swap.leader = receiver.id;
@@ -182,7 +213,7 @@ function handleEvent__Transfer(event: Transfer): void {
         let offer = safeNewOfferHelper(swap, receiver);
 
         offer.claimed = true;
-        offer.eth = event.transaction.value;
+        offer.eth = BigInt.fromString('0'); // handled by Mint or Delegate
         offer.ethUsd = wethToUsdc(offer.eth);
         offer.owner = false;
         offer.user = receiver.id;
@@ -204,145 +235,36 @@ function handleEvent__Transfer(event: Transfer): void {
 
     cacheDotnugg(nugg);
 
-    log.info('handleTransfer end', []);
+    log.info('handleEvent__Transfer end', []);
 }
 
-function handleCall__setDotnuggV1Resolver(call: SetDotnuggV1ResolverCall): void {
-    log.info('handleDotnuggV1ResolverUpdated start', []);
+function handleEvent__Mint(event: Mint): void {
+    log.info('handleEvent__Mint start', []);
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
+    let swap = unsafeLoadSwap(nugg.id + '-0');
+
+    let user = safeLoadUser(Address.fromString(nugg.user));
+    let offer = safeLoadOfferHelper(swap, user);
+
+    swap.eth = event.params.value;
+    swap.ethUsd = wethToUsdc(swap.eth);
+
+    offer.eth = swap.eth;
+    offer.ethUsd = swap.ethUsd;
+
+    swap.save();
+    offer.save();
+
+    log.info('handleEvent__Mint end', []);
+}
+
+function handleEvent__DotnuggV1ConfigUpdated(event: DotnuggV1ConfigUpdated): void {
+    log.info('handleEvent__DotnuggV1ConfigUpdated start', []);
+
+    let nugg = safeLoadNugg(event.params.artifactId);
 
     cacheDotnugg(nugg);
 
-    log.info('handleDotnuggV1ResolverUpdated end', []);
+    log.info('handleEvent__DotnuggV1ConfigUpdated end', []);
 }
-
-function handleCall__anchor(call: AnchorCall): void {
-    log.info('handleCall__anchor start', []);
-
-    let nugg = safeLoadNugg(call.inputs.tokenId);
-
-    cacheDotnugg(nugg);
-
-    log.info('handleCall__anchor end', []);
-}
-
-function handleCall__rotate(call: RotateCall): void {
-    log.info('handleCall__rotate start', []);
-
-    let nugg = safeLoadNugg(call.inputs.tokenId);
-
-    cacheDotnugg(nugg);
-
-    log.info('handleCall__rotate end', []);
-}
-
-// function handleSetProof(event: SetProof): void {
-//     log.info('handleSetProof start', []);
-//     let proto = safeLoadProtocol('0x42069');
-
-//     let nugg = safeLoadNuggNull(event.params.tokenId);
-
-//     if (nugg == null) {
-//         nugg = safeNewNugg(event.params.tokenId, proto.nullUser);
-
-//         // sendingUser = safeLoadUser(Address.fromString(proto.nullUser));
-//     } else {
-//         // sendingUser = safeLoadUser(Address.fromString(nugg.user));
-//     }
-
-//     if (nugg.dotnuggRawCache.startsWith('ERROR_WITH_DOTNUGG_CACHE')) {
-//         cacheDotnugg(nugg);
-//     }
-
-//     for (let i = 0; i < event.params.items.length; i++) {
-//         let item = safeLoadItemNull(BigInt.fromI32(event.params.items[i]));
-//         if (item == null) {
-//             item = safeNewItem(BigInt.fromI32(event.params.items[i]));
-//             item.count = BigInt.fromString('0');
-//         }
-//         let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
-
-//         if (nuggItem == null) {
-//             nuggItem = safeNewNuggItem(nugg, item);
-//             nuggItem.count = BigInt.fromString('0');
-//         }
-
-//         nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
-//         item.count = item.count.plus(BigInt.fromString('1'));
-
-//         nuggItem.item = item.id;
-//         nuggItem.nugg = nugg.id;
-
-//         item.save();
-//         nuggItem.save();
-//     }
-
-//     nugg.save();
-
-//     log.info('handleSetProof end', []);
-// }
-
-// function handlePushItem(event: PushItem): void {
-//     log.info('handlePushItem start', []);
-
-//     let nugg = safeLoadNugg(event.params.tokenId);
-
-//     let item = safeLoadItemNull(BigInt.fromI32(event.params.itemId));
-
-//     if (item == null) {
-//         item = safeNewItem(BigInt.fromI32(event.params.itemId));
-//         item.count = BigInt.fromString('1');
-//         item.save();
-//     }
-
-//     let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
-
-//     if (nuggItem == null) {
-//         nuggItem = safeNewNuggItem(nugg, item);
-//         nuggItem.count = BigInt.fromString('0');
-//     }
-
-//     nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
-
-//     nuggItem.save();
-// }
-
-// function handlePopItem(event: PopItem): void {
-//     log.info('handlePopItem start', []);
-
-//     let nugg = safeLoadNugg(event.params.tokenId);
-
-//     let item = safeLoadItem(BigInt.fromI32(event.params.itemId));
-
-//     let nuggItem = safeLoadNuggItemHelper(nugg, item);
-
-//     nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
-
-//     if (nuggItem.count == BigInt.fromString('0')) {
-//         store.remove('NuggItem', nuggItem.id);
-//     } else {
-//         nuggItem.save();
-//     }
-
-//     log.info('handlePopItem end', []);
-// }
-
-// function handleRotateItems(event: RotateItem): void {
-//     log.info('handleRotateItems start', []);
-
-//     let nugg = safeLoadNugg(event.params.tokenId);
-
-//     cacheDotnugg(nugg);
-
-//     log.info('handleRotateItems end', []);
-// }
-
-// function handleSetAchorOverrides(event: SetAnchorOverrides): void {
-//     log.info('handleSetAchorOverrides start', []);
-
-//     let nugg = safeLoadNugg(event.params.tokenId);
-
-//     cacheDotnugg(nugg);
-//     log.info('handleSetAchorOverrides end', []);
-// }

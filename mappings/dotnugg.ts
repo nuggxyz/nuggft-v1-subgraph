@@ -1,6 +1,7 @@
-import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
-import { DotnuggV1Processor } from '../generated/local/NuggFT/DotnuggV1Processor';
-import { NuggFT } from '../generated/local/NuggFT/NuggFT';
+import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import { DotnuggV1 } from '../generated/local/NuggftV1/DotnuggV1';
+import { NuggftV1 } from '../generated/local/NuggftV1/NuggftV1';
+
 import { Item, Nugg, NuggItem, User } from '../generated/local/schema';
 import {
     safeLoadItem,
@@ -14,20 +15,29 @@ import {
 import { safeDiv } from './uniswap';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
-    let nuggft = NuggFT.bind(nuggftAddress);
-    let callResult = nuggft.dotnuggV1Processor();
+    let nuggft = NuggftV1.bind(nuggftAddress);
+    let callResult = nuggft.dotnuggV1();
     return callResult;
 }
 
 export function cacheDotnugg(nugg: Nugg): void {
     let proto = safeLoadProtocol('0x42069');
 
-    let dotnugg = DotnuggV1Processor.bind(Address.fromString(proto.dotnuggV1Processor));
-    let callResult = dotnugg.try_str(Address.fromString(proto.nuggftUser), nugg.idnum, Address.fromString(nugg.resolver), 63, 0);
+    let dotnugg = DotnuggV1.bind(Address.fromString(proto.dotnuggV1Processor));
+    let callResult = dotnugg.try_img(
+        Address.fromString(proto.nuggftUser),
+        nugg.idnum,
+        Address.fromString(nugg.resolver),
+        false,
+        false,
+        false,
+        true,
+        Bytes.empty(),
+    );
 
     if (!callResult.reverted) {
         // nugg.dotnuggRawCache = callResult.value.value1.map<string>((x: BigInt): string => x.toHexString()).join('');
-        nugg.dotnuggRawCache = callResult.value.value1;
+        nugg.dotnuggRawCache = callResult.value;
         // const svg = drawSvg(callResult.value.value1);
         if (proto.nuggsNotCached.includes(nugg.id)) {
             let tmp: string[] = [];
@@ -206,7 +216,7 @@ export function cacheDotnugg(nugg: Nugg): void {
 
 export function updatedStakedSharesAndEth(): void {
     let proto = safeLoadProtocol('0x42069');
-    let nuggft = NuggFT.bind(Address.fromString(proto.nuggftUser));
+    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
     proto.nuggftStakedEth = nuggft.stakedEth();
     proto.nuggftStakedShares = nuggft.stakedShares();
     proto.nuggftStakedEthPerShare = safeDiv(proto.nuggftStakedEth, proto.nuggftStakedShares);
@@ -215,14 +225,14 @@ export function updatedStakedSharesAndEth(): void {
 
 export function getCurrentUserOffer(user: User, nugg: Nugg): BigInt {
     let proto = safeLoadProtocol('0x42069');
-    let nuggft = NuggFT.bind(Address.fromString(proto.nuggftUser));
+    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
     let res = nuggft.valueForDelegate(Address.fromString(user.id), BigInt.fromString(nugg.id));
     return res.value2;
 }
 
 export function updateProof(nugg: Nugg): void {
     let proto = safeLoadProtocol('0x42069');
-    let nuggft = NuggFT.bind(Address.fromString(proto.nuggftUser));
+    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
     let res = nuggft.try_proofToDotnuggMetadata(nugg.idnum);
 

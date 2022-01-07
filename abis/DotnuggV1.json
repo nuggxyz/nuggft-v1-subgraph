@@ -1,0 +1,333 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "artifactId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "comp",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256[]",
+            "name": "file",
+            "type": "uint256[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint8[]",
+                "name": "ids",
+                "type": "uint8[]"
+              },
+              {
+                "internalType": "uint8[]",
+                "name": "xovers",
+                "type": "uint8[]"
+              },
+              {
+                "internalType": "uint8[]",
+                "name": "yovers",
+                "type": "uint8[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "version",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "implementer",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "artifactId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string[]",
+                "name": "labels",
+                "type": "string[]"
+              },
+              {
+                "internalType": "string[]",
+                "name": "styles",
+                "type": "string[]"
+              },
+              {
+                "internalType": "string",
+                "name": "background",
+                "type": "string"
+              },
+              {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct IDotnuggV1Metadata.Memory",
+            "name": "metadata",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct IDotnuggV1File.Compressed",
+        "name": "res",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "artifactId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "desc",
+        "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "base64",
+        "type": "bool"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "dat",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "res",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "rekt",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "background",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "base64",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "stats",
+        "type": "bool"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "img",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "res",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "artifactId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "resolver",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "proc",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256[]",
+            "name": "file",
+            "type": "uint256[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint8[]",
+                "name": "ids",
+                "type": "uint8[]"
+              },
+              {
+                "internalType": "uint8[]",
+                "name": "xovers",
+                "type": "uint8[]"
+              },
+              {
+                "internalType": "uint8[]",
+                "name": "yovers",
+                "type": "uint8[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "version",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "implementer",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "artifactId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string[]",
+                "name": "labels",
+                "type": "string[]"
+              },
+              {
+                "internalType": "string[]",
+                "name": "styles",
+                "type": "string[]"
+              },
+              {
+                "internalType": "string",
+                "name": "background",
+                "type": "string"
+              },
+              {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct IDotnuggV1Metadata.Memory",
+            "name": "metadata",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct IDotnuggV1File.Processed",
+        "name": "res",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementer",
+        "type": "address"
+      }
+    ],
+    "name": "proxyOf",
+    "outputs": [
+      {
+        "internalType": "contract IDotnuggV1StorageProxy",
+        "name": "proxy",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "register",
+    "outputs": [
+      {
+        "internalType": "contract IDotnuggV1StorageProxy",
+        "name": "proxy",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

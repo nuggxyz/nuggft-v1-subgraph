@@ -1,5 +1,4 @@
 import { log, BigInt, store, Address } from '@graphprotocol/graph-ts';
-import { DelegateCall, SwapCall, ClaimCall } from '../generated/local/NuggFT/NuggFT';
 import {
     safeGetAndDeleteUserActiveSwap,
     safeLoadActiveSwap,
@@ -18,16 +17,17 @@ import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
 import { getCurrentUserOffer, updatedStakedSharesAndEth } from './dotnugg';
+import { Claim, Delegate, Swap as SwapEvent } from '../generated/local/NuggftV1/NuggftV1';
 
-export function handleCall__delegate(call: DelegateCall): void {
+export function handleEvent__Delegate(event: Delegate): void {
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
-    let user = safeLoadUserNull(call.inputs.sender);
+    let user = safeLoadUserNull(event.params.user);
 
     if (user == null) {
-        user = safeNewUser(call.inputs.sender);
+        user = safeNewUser(event.params.user);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -40,11 +40,11 @@ export function handleCall__delegate(call: DelegateCall): void {
     safeSetUserActiveSwap(user, nugg, swap);
 
     if (swap.nextDelegateType == 'Commit') {
-        __delegateCommit(proto, user, nugg, swap);
+        __delegateCommit(proto, user, nugg, swap, event.params.lead);
     } else if (swap.nextDelegateType == 'Offer') {
-        __delegateOffer(proto, user, nugg, swap);
+        __delegateOffer(proto, user, nugg, swap, event.params.lead);
     } else if (swap.nextDelegateType == 'Mint') {
-        __delegateMint(proto, user, nugg, swap);
+        __delegateMint(proto, user, nugg, swap, event.params.lead);
     } else {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
@@ -53,21 +53,21 @@ export function handleCall__delegate(call: DelegateCall): void {
     updatedStakedSharesAndEth();
 }
 
-export function handleCall__swap(call: SwapCall): void {
-    log.info('handleCall__swap start', []);
+export function handleEvent__Swap(event: SwapEvent): void {
+    log.info('handleEvent__Swap start', []);
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
     if (nugg.user != proto.nuggftUser) {
-        log.error('handleCall__swap: nugg.user should always be proto.nuggftUser', []);
+        log.error('handleEvent__Swap: nugg.user should always be proto.nuggftUser', []);
         log.critical('', []);
     }
     let user = safeLoadUser(Address.fromString(nugg.lastUser));
 
     let swap = safeNewSwapHelper(nugg);
 
-    swap.eth = call.inputs.floor;
+    swap.eth = event.params.floor;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = user.id;
     swap.leader = user.id;
@@ -82,7 +82,7 @@ export function handleCall__swap(call: SwapCall): void {
     let offer = safeNewOfferHelper(swap, user);
 
     offer.claimed = false;
-    offer.eth = call.inputs.floor;
+    offer.eth = event.params.floor;
     offer.ethUsd = wethToUsdc(offer.eth);
     offer.owner = true;
     offer.user = user.id;
@@ -93,17 +93,17 @@ export function handleCall__swap(call: SwapCall): void {
 
     updatedStakedSharesAndEth();
 
-    log.info('handleCall__swap end', []);
+    log.info('handleEvent__Swap end', []);
 }
 
-export function handleCall__claim(call: ClaimCall): void {
-    log.info('handleCall__claim start', []);
+export function handleEvent__Claim(event: Claim): void {
+    log.info('handleEvent__Claim start', []);
 
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
-    let user = safeLoadUser(call.inputs.sender);
+    let user = safeLoadUser(event.params.user);
 
     let swap = safeGetAndDeleteUserActiveSwap(user, nugg);
 
@@ -124,10 +124,10 @@ export function handleCall__claim(call: ClaimCall): void {
 
     updatedStakedSharesAndEth();
 
-    log.info('handleCall__claim end', []);
+    log.info('handleEvent__Claim end', []);
 }
 
-export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap): void {
+export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
     log.info('__delegateMint start', []);
 
     // let proto = safeLoadProtocol('0x42069');
@@ -143,7 +143,8 @@ export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Sw
     proto.nuggftStakedShares = proto.nuggftStakedShares.plus(BigInt.fromString('1'));
     proto.save();
 
-    swap.eth = getCurrentUserOffer(user, nugg);
+    // swap.eth = getCurrentUserOffer(user, nugg);
+    swap.eth = lead;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.leader = user.id;
     swap.nextDelegateType = 'Offer';
@@ -168,7 +169,7 @@ export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Sw
     log.info('__delegateMint end', []);
 }
 
-export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swap): void {
+export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
     log.info('__delegateCommit start', []);
 
     // let owner = safeLoadUser(Address.fromString(swap.owner));
@@ -218,7 +219,8 @@ export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: 
         offer.save();
     }
 
-    offer.eth = getCurrentUserOffer(user, nugg);
+    // offer.eth = getCurrentUserOffer(user, nugg);
+    offer.eth = lead;
     offer.ethUsd = wethToUsdc(offer.eth);
     swap.eth = offer.eth;
     swap.ethUsd = offer.ethUsd;
@@ -233,7 +235,7 @@ export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: 
     log.info('__delegateCommit end', []);
 }
 
-export function __delegateOffer(proto: Protocol, user: User, nugg: Nugg, swap: Swap): void {
+export function __delegateOffer(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
     log.info('__delegateOffer start', []);
 
     let offer = safeLoadOfferHelperNull(swap, user);
@@ -251,7 +253,8 @@ export function __delegateOffer(proto: Protocol, user: User, nugg: Nugg, swap: S
         offer.save();
     }
 
-    offer.eth = getCurrentUserOffer(user, nugg);
+    // offer.eth = getCurrentUserOffer(user, nugg);
+    offer.eth = lead;
     offer.ethUsd = wethToUsdc(offer.eth);
     swap.eth = offer.eth;
     swap.ethUsd = offer.ethUsd;

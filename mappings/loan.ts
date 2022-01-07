@@ -1,6 +1,8 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { LoanCall, PayoffCall, RebalanceCall, NuggFT } from '../generated/local/NuggFT/NuggFT';
+import { Liquidate, Loan as LoanEvent, NuggftV1, Rebalance } from '../generated/local/NuggftV1/NuggftV1';
+
 import { Loan } from '../generated/local/schema';
+
 import {
     safeLoadLoanHelper,
     safeLoadNugg,
@@ -15,14 +17,14 @@ import {
 } from './safeload';
 import { wethToUsdc } from './uniswap';
 
-export function handleCall__loan(call: LoanCall): void {
-    log.info('handleCall__loan start', []);
+export function handleEvent__Loan(event: LoanEvent): void {
+    log.info('handleEvent__Loan start', []);
     let proto = safeLoadProtocol('0x42069');
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
     if (nugg.user != proto.nuggftUser) {
-        log.error('handleCall__loan: nugg.user should always be proto.nuggftUser', []);
+        log.error('handleEvent__Loan: nugg.user should always be proto.nuggftUser', []);
         log.critical('', []);
     }
 
@@ -57,20 +59,20 @@ export function handleCall__loan(call: LoanCall): void {
 
     safeSetNuggActiveLoan(nugg, loan);
 
-    log.info('handleCall__loan end', []);
+    log.info('handleEvent__Loan end', []);
 }
 
-export function handleCall__payoff(call: PayoffCall): void {
+export function handleEvent__Liquidate(event: Liquidate): void {
     log.info('handlePayoff', []);
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
     let loan = safeLoadLoanHelper(nugg);
 
-    let user = safeLoadUserNull(call.transaction.from);
+    let user = safeLoadUserNull(event.params.user);
 
     if (user == null) {
-        user = safeNewUser(call.transaction.from);
+        user = safeNewUser(event.params.user);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -80,7 +82,7 @@ export function handleCall__payoff(call: PayoffCall): void {
 
     loan.liquidated = true;
 
-    loan.liquidatedForEth = call.transaction.value;
+    loan.liquidatedForEth = event.transaction.value;
     loan.liquidatedForUsd = wethToUsdc(loan.liquidatedForEth);
     loan.liquidatedBy = user.id;
 
@@ -91,10 +93,10 @@ export function handleCall__payoff(call: PayoffCall): void {
     log.info('handlePayoff', []);
 }
 
-export function handleCall__rebalance(call: RebalanceCall): void {
+export function handleEvent__Rebalance(event: Rebalance): void {
     log.info('handleRebalance', []);
 
-    let nugg = safeLoadNugg(call.inputs.tokenId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
     let loan = safeLoadLoanHelper(nugg);
 
@@ -105,7 +107,7 @@ export function handleCall__rebalance(call: RebalanceCall): void {
 
 function updateLoanFromChain(loan: Loan): void {
     let proto = safeLoadProtocol('0x42069');
-    let nuggft = NuggFT.bind(Address.fromString(proto.nuggftUser));
+    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
     let nuggid = BigInt.fromString(loan.nugg);
     let tmp = nuggft.try_loanInfo(BigInt.fromString(loan.nugg));
@@ -114,7 +116,7 @@ function updateLoanFromChain(loan: Loan): void {
         loan.toPayoff = tmp.value.value0;
         loan.toRebalance = tmp.value.value1;
         loan.earned = tmp.value.value2;
-        loan.epochDue = tmp.value.value3;
+        loan.epochDue = BigInt.fromI32(tmp.value.value3);
     } else {
         log.error('LOAN INFO REVERTED UNEXPECTEDLY', [nuggid.toString()]);
         log.critical('', []);
