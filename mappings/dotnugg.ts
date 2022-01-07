@@ -23,13 +23,7 @@ export function cacheDotnugg(nugg: Nugg): void {
     let proto = safeLoadProtocol('0x42069');
 
     let dotnugg = DotnuggV1Processor.bind(Address.fromString(proto.dotnuggV1Processor));
-    let callResult = dotnugg.try_dotnuggToString(
-        Address.fromString(proto.nuggftUser),
-        nugg.idnum,
-        Address.fromString(nugg.resolver),
-        63,
-        0,
-    );
+    let callResult = dotnugg.try_str(Address.fromString(proto.nuggftUser), nugg.idnum, Address.fromString(nugg.resolver), 63, 0);
 
     if (!callResult.reverted) {
         // nugg.dotnuggRawCache = callResult.value.value1.map<string>((x: BigInt): string => x.toHexString()).join('');
@@ -223,7 +217,7 @@ export function getCurrentUserOffer(user: User, nugg: Nugg): BigInt {
     let proto = safeLoadProtocol('0x42069');
     let nuggft = NuggFT.bind(Address.fromString(proto.nuggftUser));
     let res = nuggft.valueForDelegate(Address.fromString(user.id), BigInt.fromString(nugg.id));
-    return res.value1;
+    return res.value2;
 }
 
 export function updateProof(nugg: Nugg): void {

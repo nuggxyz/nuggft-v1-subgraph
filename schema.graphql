@@ -162,10 +162,6 @@ type UserActiveSwap @entity {
     activeId: ID!
 }
 
-type Subscription {
-    offerAdded(offerId: ID!): Offer
-}
-
 type Loan @entity {
     id: ID!
 

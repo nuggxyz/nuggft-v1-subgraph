@@ -40,6 +40,9 @@
         "graph:compile:local:lite": "yarn graph:prepare:local && graph codegen --output-dir generated/local generated/local/subgraph.yaml && graph build generated/local/subgraph.yaml --output-dir generated/local/build",
         "graph:prepare:ropsten": "mustache networks/ropsten.json subgraph.template.yaml > generated/ropsten/subgraph.yaml",
         "graph:compile:ropsten": "rm -rf generated/ropsten && mkdir generated/ropsten && yarn graph:prepare:ropsten && graph codegen --output-dir generated/ropsten generated/ropsten/subgraph.yaml && graph build generated/ropsten/subgraph.yaml --output-dir generated/ropsten/build",
-        "graph:deploy:ropsten": "yarn graph:compile:ropsten &&  graph auth https://api.thegraph.com/deploy/ 92c86fdaab064b86baa7721f2c32bcff && graph deploy   --debug --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ nugglabs/nuggftropsten  generated/ropsten/subgraph.yaml"
+        "graph:deploy:ropsten": "yarn graph:compile:ropsten &&  graph auth https://api.thegraph.com/deploy/ 92c86fdaab064b86baa7721f2c32bcff && graph deploy   --debug --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ nugglabs/nuggftropsten  generated/ropsten/subgraph.yaml",
+        "graph:prepare:goerli": "mustache networks/goerli.json subgraph.template.yaml > generated/goerli/subgraph.yaml",
+        "graph:compile:goerli": "rm -rf generated/goerli && mkdir generated/goerli && yarn graph:prepare:goerli && graph codegen --output-dir generated/goerli generated/goerli/subgraph.yaml && graph build generated/goerli/subgraph.yaml --output-dir generated/goerli/build",
+        "graph:deploy:goerli": "yarn graph:compile:goerli &&  graph auth https://api.thegraph.com/deploy/ f77cde46f12940e59dcc273e17f23590 && graph deploy   --debug --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ nugglabs/nuggftgoerli  generated/goerli/subgraph.yaml"
     }
 }
