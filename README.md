@@ -6,6 +6,7 @@
 
 ## [4] rinkeby
 
+-
 -   NuggftV1 - `0x53de977e6A3bF8D972d9Dbd84533274A10450c7b`
 -   DotnuggV1 - `0x6adffE28e703be151A7157D425B680E74166bC15` (same as goerli)
 -   endpoint - `https://api.thegraph.com/subgraphs/name/nuggxyz/nuggftv1-rinkeby`

@@ -1,4 +1,4 @@
-import { ethereum, BigInt, store } from '@graphprotocol/graph-ts';
+import { ethereum, BigInt, store, log } from '@graphprotocol/graph-ts';
 import { Epoch, Protocol } from '../generated/local/schema';
 import {
     safeLoadActiveEpoch,
@@ -88,12 +88,14 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
     for (var i = 0; i < swaps.length; i++) {
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
+        log.error('wut', [nugg.user]);
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
             store.remove('Nugg', nugg.id);
             store.remove('Swap', s.id);
         } else {
             safeRemoveNuggActiveSwap(nugg);
         }
+        log.error('nope', [nugg.user]);
     }
 
     let itemswaps = epoch._activeItemSwaps;

@@ -62,9 +62,9 @@ export function cacheDotnugg(nugg: Nugg): void {
             nugg.dotnuggRawCache = 'ERROR_WITH_DOTNUGG_CACHE: try getting data on chain';
             nugg.dotnuggSvgCache = [];
             let tmp = proto.nuggsNotCached;
-            tmp.push(nugg.id);
-            proto.nuggsNotCached = tmp;
-            proto.save();
+            // tmp.push(nugg.id);
+            // proto.nuggsNotCached = tmp;
+            // proto.save();
         }
 
         log.info('cacheDotnugg reverted with default resolver', []);
