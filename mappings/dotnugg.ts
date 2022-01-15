@@ -35,9 +35,35 @@ export function cacheDotnugg(nugg: Nugg): void {
         Bytes.empty(),
     );
 
+    let arr: string[] = [];
+
+    if (callResult.reverted) {
+        for (var i = 0; i < 2; i++) {
+            log.warning('trying chunk for nugg: ' + nugg.id, [i.toString()]);
+            callResult = dotnugg.try_chunk(
+                Address.fromString(proto.nuggftUser),
+                nugg.idnum,
+                Address.fromString(nugg.resolver),
+                false,
+                false,
+                false,
+                true,
+                Bytes.empty(),
+                2,
+                i,
+            );
+
+            if (callResult.reverted) break;
+
+            arr.push(callResult.value);
+        }
+    } else {
+        arr.push(callResult.value);
+    }
+
     if (!callResult.reverted) {
         // nugg.dotnuggRawCache = callResult.value.value1.map<string>((x: BigInt): string => x.toHexString()).join('');
-        nugg.dotnuggRawCache = callResult.value;
+        nugg.dotnuggRawCache = '';
         // const svg = drawSvg(callResult.value.value1);
         if (proto.nuggsNotCached.includes(nugg.id)) {
             let tmp: string[] = [];
@@ -50,9 +76,16 @@ export function cacheDotnugg(nugg: Nugg): void {
             proto.save();
         }
 
-        // log.info('ABCD2 ' + svg.length.toString(), []);
-
+        nugg.dotnuggRawCache = arr.join('');
         nugg.dotnuggSvgCache = [];
+        // log.info('ABCD2 ' + svg.length.toString(), []);
+        // if (arr.length == 1) {
+        //     nugg.dotnuggRawCache = callResult.value;
+        //     nugg.dotnuggSvgCache = [];
+        // } else {
+        //     nugg.dotnuggRawCache = '';
+        //     nugg.dotnuggSvgCache = arr;
+        // }
 
         // log.info('ABCD3 ' + svg.length.toString(), []);
 

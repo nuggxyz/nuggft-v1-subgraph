@@ -114,8 +114,8 @@ type Nugg @entity {
     resolver: String!
 
     # dotnuggRawCache: [BigInt!]
-    dotnuggRawCache: String!
-    dotnuggSvgCache: [BigInt!]!
+    dotnuggRawCache: String! @depreicated
+    dotnuggSvgCache: [String!]!
 
     numSwaps: BigInt!
 

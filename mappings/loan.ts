@@ -50,7 +50,7 @@ export function handleEvent__Loan(event: LoanEvent): void {
     loan.ethUsd = wethToUsdc(loan.eth);
     loan.feeEth = BigInt.fromString('0');
     loan.feeUsd = BigInt.fromString('0');
-    loan.endingEpoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1000'));
+    loan.endingEpoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('69'));
 
     // loan.save();
 
