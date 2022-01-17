@@ -250,8 +250,8 @@ export function cacheDotnugg(nugg: Nugg): void {
 export function updatedStakedSharesAndEth(): void {
     let proto = safeLoadProtocol('0x42069');
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
-    proto.nuggftStakedEth = nuggft.stakedEth();
-    proto.nuggftStakedShares = nuggft.stakedShares();
+    proto.nuggftStakedEth = nuggft.staked();
+    proto.nuggftStakedShares = nuggft.shares();
     proto.nuggftStakedEthPerShare = safeDiv(proto.nuggftStakedEth, proto.nuggftStakedShares);
     proto.save();
 }

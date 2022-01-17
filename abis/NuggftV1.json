@@ -755,7 +755,7 @@
   },
   {
     "inputs": [],
-    "name": "ethPerShare",
+    "name": "eps",
     "outputs": [
       {
         "internalType": "uint96",
@@ -960,7 +960,7 @@
   },
   {
     "inputs": [],
-    "name": "minSharePrice",
+    "name": "msp",
     "outputs": [
       {
         "internalType": "uint96",
@@ -1317,7 +1317,7 @@
   },
   {
     "inputs": [],
-    "name": "stakedEth",
+    "name": "staked",
     "outputs": [
       {
         "internalType": "uint96",
@@ -1330,7 +1330,7 @@
   },
   {
     "inputs": [],
-    "name": "stakedShares",
+    "name": "shares",
     "outputs": [
       {
         "internalType": "uint64",
