@@ -19,12 +19,12 @@ import {
 } from './safeload';
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/schema';
 import { updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { ClaimItem, DelegateItem, SwapItem } from '../generated/local/NuggftV1/NuggftV1';
+import { ClaimItem, OfferItem, SellItem } from '../generated/local/NuggftV1/NuggftV1';
 
 // const ONE = BigInt.fromString('1');
 const MAX_UINT160 = BigInt.fromString('1').leftShift(160).minus(BigInt.fromString('1'));
 
-export function handleEvent__DelegateItem(event: DelegateItem): void {
+export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol('0x42069');
 
     let sellingNuggId = event.params.sellingItemId.bitAnd(MAX_UINT160);
@@ -44,9 +44,9 @@ export function handleEvent__DelegateItem(event: DelegateItem): void {
     safeSetNuggActiveItemSwap(buyingNugg, nuggitem, itemswap);
 
     if (itemswap.nextDelegateType == 'Commit') {
-        _delegateCommitItem(proto, buyingNugg, sellingNugg, item, nuggitem, itemswap, event.transaction.value);
-    } else if (itemswap.nextDelegateType == 'Offer') {
-        _delegateOfferItem(proto, buyingNugg, sellingNugg, item, nuggitem, itemswap, event.transaction.value);
+        _offerCommitItem(proto, buyingNugg, sellingNugg, item, nuggitem, itemswap, event.transaction.value);
+    } else if (itemswap.nextDelegateType == 'Carry') {
+        _offerOfferItem(proto, buyingNugg, sellingNugg, item, nuggitem, itemswap, event.transaction.value);
     } else {
         log.error('itemswap.nextDelegateType should be Commit or Offer', [itemswap.nextDelegateType]);
         log.critical('', []);
@@ -55,7 +55,7 @@ export function handleEvent__DelegateItem(event: DelegateItem): void {
     updatedStakedSharesAndEth();
 }
 
-function _delegateCommitItem(
+function _offerCommitItem(
     proto: Protocol,
     buyerNugg: Nugg,
     sellerNugg: Nugg,
@@ -64,9 +64,9 @@ function _delegateCommitItem(
     itemswap: ItemSwap,
     eth: BigInt,
 ): void {
-    log.info('_delegateCommitItem start', []);
+    log.info('_offerCommitItem start', []);
 
-    if (itemswap.epoch != null) log.critical('_delegateOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
+    if (itemswap.epoch != null) log.critical('_offerOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
 
@@ -101,10 +101,10 @@ function _delegateCommitItem(
 
     itemswap.save();
 
-    log.info('_delegateCommitItem end', []);
+    log.info('_offerCommitItem end', []);
 }
 
-function _delegateOfferItem(
+function _offerOfferItem(
     proto: Protocol,
     buyerNugg: Nugg,
     sellerNugg: Nugg,
@@ -113,7 +113,7 @@ function _delegateOfferItem(
     itemswap: ItemSwap,
     eth: BigInt,
 ): void {
-    log.info('_delegateOfferItem start', []);
+    log.info('_offerOfferItem start', []);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
 
@@ -163,8 +163,8 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
     //     // nuggitem.activeSwap = null;
     //     // nuggitem.save();
     //     // if (itemswap.owner == buyingNugg.id) {
-    //     //     store.remove('DelegateOfferItem', itemoffer.id);
-    //     //     store.remove('StartSwapItem', itemswap.id);
+    //     //     store.remove('OfferOfferItem', itemoffer.id);
+    //     //     store.remove('StartSellItem', itemswap.id);
     //     // }
     // }
 
@@ -175,8 +175,8 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
     updateProof(buyingNugg);
 }
 
-export function handleEvent__SwapItem(event: SwapItem): void {
-    log.info('handleEvent__SwapItem start', []);
+export function handleEvent__SellItem(event: SellItem): void {
+    log.info('handleEvent__SellItem start', []);
 
     let sellingNuggId = event.params.sellingItemId.bitAnd(MAX_UINT160);
 
@@ -188,7 +188,7 @@ export function handleEvent__SwapItem(event: SwapItem): void {
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap != null) log.critical('handleEvent__SwapItem: nuggitem.activeSwap MUST BE NULL', []);
+    if (nuggitem.activeSwap != null) log.critical('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL', []);
 
     let itemSwap = safeNewItemSwap(nuggitem);
 
@@ -215,7 +215,7 @@ export function handleEvent__SwapItem(event: SwapItem): void {
     itemoffer.swap = itemSwap.id;
     itemoffer.save();
 
-    log.info('handleEvent__SwapItem end', []);
+    log.info('handleEvent__SellItem end', []);
 
     updatedStakedSharesAndEth();
 

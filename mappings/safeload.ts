@@ -284,7 +284,7 @@ export function safeLoadLoanHelper(nugg: Nugg): Loan {
 }
 
 export function safeLoadActiveItemSwap(nuggItem: NuggItem): ItemSwap {
-    if (nuggItem.activeSwap == '') log.critical('handleDelegateOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
+    if (nuggItem.activeSwap == '') log.critical('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
 
     let id = nuggItem.activeSwap as string;
     let loaded = ItemSwap.load(id);

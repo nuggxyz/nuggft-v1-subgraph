@@ -18,8 +18,8 @@ import { Epoch, Protocol, User } from '../generated/local/schema';
 import { cacheDotnugg, getDotnuggUserId, updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { DotnuggV1ConfigUpdated } from '../generated/local/NuggftV1/NuggftV1';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
-import { handleEvent__DelegateItem, handleEvent__ClaimItem, handleEvent__SwapItem } from './itemswap';
-import { handleEvent__Claim, handleEvent__Delegate, handleEvent__Swap } from './swap';
+import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
+import { handleEvent__Claim, handleEvent__Offer, handleEvent__Sell } from './swap';
 
 export {
     handleEvent__Transfer,
@@ -31,11 +31,11 @@ export {
     handleEvent__Liquidate,
     handleEvent__Rebalance,
     handleEvent__Stake,
-    handleEvent__DelegateItem,
+    handleEvent__OfferItem,
     handleEvent__ClaimItem,
-    handleEvent__SwapItem,
-    handleEvent__Delegate,
-    handleEvent__Swap,
+    handleEvent__SellItem,
+    handleEvent__Offer,
+    handleEvent__Sell,
     handleEvent__Claim,
 };
 
@@ -197,7 +197,7 @@ function handleEvent__Transfer(event: Transfer): void {
 
         nugg.save();
 
-        swap.eth = BigInt.fromString('0'); // handled by Mint or Delegate
+        swap.eth = BigInt.fromString('0'); // handled by Mint or Offer
         swap.ethUsd = wethToUsdc(swap.eth);
         swap.owner = proto.nullUser;
         swap.leader = receiver.id;
@@ -213,7 +213,7 @@ function handleEvent__Transfer(event: Transfer): void {
         let offer = safeNewOfferHelper(swap, receiver);
 
         offer.claimed = true;
-        offer.eth = BigInt.fromString('0'); // handled by Mint or Delegate
+        offer.eth = BigInt.fromString('0'); // handled by Mint or Offer
         offer.ethUsd = wethToUsdc(offer.eth);
         offer.owner = false;
         offer.user = receiver.id;

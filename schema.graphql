@@ -150,7 +150,7 @@ type Swap @entity {
     owner: User!
     leader: User!
 
-    nextDelegateType: NextDelegateType!
+    nextDelegateType: NextOfferType!
 }
 
 type UserActiveSwap @entity {
@@ -210,10 +210,10 @@ type User @entity {
     swaps: [Swap!]! @derivedFrom(field: "owner")
 }
 
-enum NextDelegateType {
+enum NextOfferType {
     Mint
     Commit
-    Offer
+    Carry
     None
 }
 
@@ -229,7 +229,7 @@ type ItemSwap @entity {
     endingEpoch: BigInt
     startingEpoch: Epoch
 
-    nextDelegateType: NextDelegateType!
+    nextDelegateType: NextOfferType!
 
     num: BigInt!
 

@@ -17,9 +17,9 @@ import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
 import { getCurrentUserOffer, updatedStakedSharesAndEth } from './dotnugg';
-import { Claim, Delegate, Swap as SwapEvent } from '../generated/local/NuggftV1/NuggftV1';
+import { Claim, Offer, Sell } from '../generated/local/NuggftV1/NuggftV1';
 
-export function handleEvent__Delegate(event: Delegate): void {
+export function handleEvent__Offer(event: Offer): void {
     let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(event.params.tokenId);
@@ -40,11 +40,11 @@ export function handleEvent__Delegate(event: Delegate): void {
     safeSetUserActiveSwap(user, nugg, swap);
 
     if (swap.nextDelegateType == 'Commit') {
-        __delegateCommit(proto, user, nugg, swap, event.params.lead);
-    } else if (swap.nextDelegateType == 'Offer') {
-        __delegateOffer(proto, user, nugg, swap, event.params.lead);
+        __offerCommit(proto, user, nugg, swap, event.params.lead);
+    } else if (swap.nextDelegateType == 'Carry') {
+        __offerCarry(proto, user, nugg, swap, event.params.lead);
     } else if (swap.nextDelegateType == 'Mint') {
-        __delegateMint(proto, user, nugg, swap, event.params.lead);
+        __offerMint(proto, user, nugg, swap, event.params.lead);
     } else {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
@@ -53,14 +53,14 @@ export function handleEvent__Delegate(event: Delegate): void {
     updatedStakedSharesAndEth();
 }
 
-export function handleEvent__Swap(event: SwapEvent): void {
-    log.info('handleEvent__Swap start', []);
+export function handleEvent__Sell(event: Sell): void {
+    log.info('handleEvent__Sell start', []);
     let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
     if (nugg.user != proto.nuggftUser) {
-        log.error('handleEvent__Swap: nugg.user should always be proto.nuggftUser', []);
+        log.error('handleEvent__Sell: nugg.user should always be proto.nuggftUser', []);
         log.critical('', []);
     }
     let user = safeLoadUser(Address.fromString(nugg.lastUser));
@@ -93,7 +93,7 @@ export function handleEvent__Swap(event: SwapEvent): void {
 
     updatedStakedSharesAndEth();
 
-    log.info('handleEvent__Swap end', []);
+    log.info('handleEvent__Sell end', []);
 }
 
 export function handleEvent__Claim(event: Claim): void {
@@ -127,17 +127,17 @@ export function handleEvent__Claim(event: Claim): void {
     log.info('handleEvent__Claim end', []);
 }
 
-export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
-    log.info('__delegateMint start', []);
+export function __offerMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
+    log.info('__offerMint start', []);
 
     // let proto = safeLoadProtocol('0x42069');
 
-    log.info('__delegateMint start 2', []);
+    log.info('__offerMint start 2', []);
 
     if (proto.epoch != nugg.id) {
-        log.info('__delegateMint start 3', []);
+        log.info('__offerMint start 3', []);
 
-        log.critical('__delegateMint: INVALID EPOCH: ' + proto.epoch + ' != ' + nugg.id.toString(), []);
+        log.critical('__offerMint: INVALID EPOCH: ' + proto.epoch + ' != ' + nugg.id.toString(), []);
     }
 
     proto.nuggftStakedShares = proto.nuggftStakedShares.plus(BigInt.fromString('1'));
@@ -147,7 +147,7 @@ export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Sw
     swap.eth = lead;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.leader = user.id;
-    swap.nextDelegateType = 'Offer';
+    swap.nextDelegateType = 'Carry';
 
     swap.save();
 
@@ -166,35 +166,35 @@ export function __delegateMint(proto: Protocol, user: User, nugg: Nugg, swap: Sw
     offer.claimer = user.id;
     offer.save();
 
-    log.info('__delegateMint end', []);
+    log.info('__offerMint end', []);
 }
 
-export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
-    log.info('__delegateCommit start', []);
+export function __offerCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
+    log.info('__offerCommit start', []);
 
     // let owner = safeLoadUser(Address.fromString(swap.owner));
-    // log.info('__delegateCommit start 5', []);
+    // log.info('__offerCommit start 5', []);
 
     // let owneroffer = safeLoadOfferHelper(swap, owner);
-    // log.info('__delegateCommit start 6', [swap.epoch == null ? 'null' : (swap.epoch as string)]);
+    // log.info('__offerCommit start 6', [swap.epoch == null ? 'null' : (swap.epoch as string)]);
 
-    if (swap.epoch != '' && swap.epoch != null) log.critical('__delegateCommit: SWAP.epochId MUST BE NULL', []);
-    // log.info('__delegateCommit start 7', []);
+    if (swap.epoch != '' && swap.epoch != null) log.critical('__offerCommit: SWAP.epochId MUST BE NULL', []);
+    // log.info('__offerCommit start 7', []);
 
     // store.remove('Swap', swap.id);
-    // store.remove('Offer', owneroffer.id);
+    // store.remove('Carry', owneroffer.id);
 
-    // log.info('__delegateCommit start 8', []);
+    // log.info('__offerCommit start 8', []);
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
-    // log.info('__delegateCommit start 9', []);
+    // log.info('__offerCommit start 9', []);
 
     swap.epoch = epoch.id;
     swap.startingEpoch = proto.epoch;
     swap.endingEpoch = BigInt.fromString(epoch.id);
     // swap.id = nugg.id.concat('-').concat(epoch.id);
     swap.save();
-    log.info('__delegateCommit start 10', []);
+    log.info('__offerCommit start 10', []);
 
     let _s = epoch._activeSwaps as string[];
     // _s[_s.indexOf(prevswapId)] = swap.id;
@@ -224,7 +224,7 @@ export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: 
     offer.ethUsd = wethToUsdc(offer.eth);
     swap.eth = offer.eth;
     swap.ethUsd = offer.ethUsd;
-    swap.nextDelegateType = 'Offer';
+    swap.nextDelegateType = 'Carry';
     swap.leader = user.id;
 
     // swap.epochId = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
@@ -232,11 +232,11 @@ export function __delegateCommit(proto: Protocol, user: User, nugg: Nugg, swap: 
     offer.save();
     swap.save();
 
-    log.info('__delegateCommit end', []);
+    log.info('__offerCommit end', []);
 }
 
-export function __delegateOffer(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
-    log.info('__delegateOffer start', []);
+export function __offerCarry(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
+    log.info('__offerCarry start', []);
 
     let offer = safeLoadOfferHelperNull(swap, user);
 
@@ -264,5 +264,5 @@ export function __delegateOffer(proto: Protocol, user: User, nugg: Nugg, swap: S
     offer.save();
     swap.save();
 
-    log.info('__delegateOffer end', []);
+    log.info('__offerCarry end', []);
 }

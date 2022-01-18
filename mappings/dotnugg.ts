@@ -259,7 +259,7 @@ export function updatedStakedSharesAndEth(): void {
 export function getCurrentUserOffer(user: User, nugg: Nugg): BigInt {
     let proto = safeLoadProtocol('0x42069');
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
-    let res = nuggft.valueForDelegate(Address.fromString(user.id), BigInt.fromString(nugg.id));
+    let res = nuggft.valueForOffer(Address.fromString(user.id), BigInt.fromString(nugg.id));
     return res.value2;
 }
 
