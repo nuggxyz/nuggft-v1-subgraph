@@ -37,26 +37,28 @@ dataSources:
                 handler: handleEvent__Mint
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleEvent__Transfer
-              - event: Offer(indexed uint160,address,uint96)
+              - event: Offer(indexed uint160,bytes32)
                 handler: handleEvent__Offer
-              - event: OfferItem(indexed uint176,uint160,uint96)
+              - event: OfferItem(indexed uint160,indexed bytes2,bytes32)
                 handler: handleEvent__OfferItem
-              - event: Stake(uint256)
+              - event: Stake(bytes32)
                 handler: handleEvent__Stake
               - event: DotnuggV1ConfigUpdated(indexed uint256)
                 handler: handleEvent__DotnuggV1ConfigUpdated
-              - event: Liquidate(indexed uint160,uint96,address)
+              - event: Liquidate(indexed uint160,bytes32)
                 handler: handleEvent__Liquidate
-              - event: Loan(indexed uint160,uint96)
+              - event: Loan(indexed uint160,bytes32)
                 handler: handleEvent__Loan
-              - event: Sell(indexed uint160,uint96)
+              - event: Sell(indexed uint160,bytes32)
                 handler: handleEvent__Sell
-              - event: SellItem(indexed uint176,uint96)
+              - event: SellItem(indexed uint160,indexed bytes2,bytes32)
                 handler: handleEvent__SellItem
-              - event: Claim(indexed uint160,address)
+              - event: Claim(indexed uint160,indexed address)
                 handler: handleEvent__Claim
-              - event: ClaimItem(indexed uint176,uint160)
+              - event: ClaimItem(indexed uint160,indexed bytes2,indexed uint160)
                 handler: handleEvent__ClaimItem
+              - event: Rebalance(indexed uint160,bytes32)
+                handler: handleEvent__RebalanceItem
               #   - event: DotnuggV1ConfigUpdated(indexed uint256)
               #     handler: handleEvent__DotnuggV1ConfigUpdated
           blockHandlers:

@@ -20,6 +20,7 @@ import { DotnuggV1ConfigUpdated } from '../generated/local/NuggftV1/NuggftV1';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
 import { handleEvent__Claim, handleEvent__Offer, handleEvent__Sell } from './swap';
+import { bigb, bigi } from './utils';
 
 export {
     handleEvent__Transfer,
@@ -130,7 +131,7 @@ function handleEvent__Genesis(event: Genesis): void {
 
     proto.save();
 
-    onEpochGenesis(event.block, event.block.number, BigInt.fromString('69'));
+    onEpochGenesis(event.block, event.params.blocknum, event.params.interval, bigi(event.params.offset));
 
     log.info('handleEvent__Genesis end', [proto.epoch]);
 }
@@ -139,8 +140,8 @@ function handleEvent__Stake(event: Stake): void {
     log.info('handleEvent__Stake start', []);
 
     // let protocolEth = event.params.stake.bitAnd(mask(96));
-    let eth = event.params.stake.rightShift(96).bitAnd(mask(96));
-    let shares = event.params.stake.rightShift(192);
+    let eth = bigb(event.params.cache).rightShift(96).bitAnd(mask(96));
+    let shares = bigb(event.params.cache).rightShift(192);
 
     let proto = safeLoadProtocol('0x42069');
 
@@ -189,7 +190,7 @@ function handleEvent__Transfer(event: Transfer): void {
 
     // if this is a mint
     if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
-        cacheDotnugg(nugg);
+        // cacheDotnugg(nugg);
 
         let swap = safeNewSwapHelper(nugg);
 
@@ -268,3 +269,6 @@ function handleEvent__DotnuggV1ConfigUpdated(event: DotnuggV1ConfigUpdated): voi
 
     log.info('handleEvent__DotnuggV1ConfigUpdated end', []);
 }
+
+// 6286335;
+// 6286336;

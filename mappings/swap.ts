@@ -16,18 +16,35 @@ import {
 import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
-import { getCurrentUserOffer, updatedStakedSharesAndEth } from './dotnugg';
+import { updatedStakedSharesAndEth } from './dotnugg';
 import { Claim, Offer, Sell } from '../generated/local/NuggftV1/NuggftV1';
+import { addr_b, addr_i, bigi, MAX_UINT160 } from './utils';
 
 export function handleEvent__Offer(event: Offer): void {
+    log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
+    log.debug('event.params.agency - b - ' + event.params.agency.toHexString(), []);
+
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+
+    log.debug('agency - a - ' + agency.toHex(), []);
+    log.debug('agency - b - ' + agency.toHexString(), []);
+
+    let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
     let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    let user = safeLoadUserNull(event.params.user);
+    let user = safeLoadUserNull(agency__account);
 
     if (user == null) {
-        user = safeNewUser(event.params.user);
+        user = safeNewUser(agency__account);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -40,11 +57,11 @@ export function handleEvent__Offer(event: Offer): void {
     safeSetUserActiveSwap(user, nugg, swap);
 
     if (swap.nextDelegateType == 'Commit') {
-        __offerCommit(proto, user, nugg, swap, event.params.lead);
+        __offerCommit(proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Carry') {
-        __offerCarry(proto, user, nugg, swap, event.params.lead);
+        __offerCarry(proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Mint') {
-        __offerMint(proto, user, nugg, swap, event.params.lead);
+        __offerMint(proto, user, nugg, swap, agency__eth);
     } else {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
@@ -55,19 +72,31 @@ export function handleEvent__Offer(event: Offer): void {
 
 export function handleEvent__Sell(event: Sell): void {
     log.info('handleEvent__Sell start', []);
+
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+
+    // let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
     let proto = safeLoadProtocol('0x42069');
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    if (nugg.user != proto.nuggftUser) {
-        log.error('handleEvent__Sell: nugg.user should always be proto.nuggftUser', []);
-        log.critical('', []);
-    }
-    let user = safeLoadUser(Address.fromString(nugg.lastUser));
+    // if (nugg.user != proto.nuggftUser) {
+    //     log.error('handleEvent__Sell: nugg.user should always be proto.nuggftUser', []);
+    //     log.critical('', []);
+    // }
+
+    let user = safeLoadUser(Address.fromString(nugg.user));
 
     let swap = safeNewSwapHelper(nugg);
 
-    swap.eth = event.params.floor;
+    swap.eth = agency__eth;
     swap.ethUsd = wethToUsdc(swap.eth);
     swap.owner = user.id;
     swap.leader = user.id;
@@ -82,7 +111,7 @@ export function handleEvent__Sell(event: Sell): void {
     let offer = safeNewOfferHelper(swap, user);
 
     offer.claimed = false;
-    offer.eth = event.params.floor;
+    offer.eth = agency__eth;
     offer.ethUsd = wethToUsdc(offer.eth);
     offer.owner = true;
     offer.user = user.id;
@@ -103,7 +132,7 @@ export function handleEvent__Claim(event: Claim): void {
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    let user = safeLoadUser(event.params.user);
+    let user = safeLoadUser(event.params.account);
 
     let swap = safeGetAndDeleteUserActiveSwap(user, nugg);
 

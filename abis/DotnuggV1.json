@@ -1,9 +1,5 @@
 [
   {
-    "type": "constructor",
-    "inputs": []
-  },
-  {
     "type": "function",
     "name": "chunk",
     "inputs": [
@@ -14,7 +10,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "artifactId",
+        "name": "id",
         "type": "uint256"
       },
       {
@@ -29,7 +25,7 @@
       },
       {
         "internalType": "bool",
-        "name": "back",
+        "name": "background",
         "type": "bool"
       },
       {
@@ -201,7 +197,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "artifactId",
+        "name": "id",
         "type": "uint256"
       },
       {
@@ -216,7 +212,7 @@
       },
       {
         "internalType": "bool",
-        "name": "back",
+        "name": "background",
         "type": "bool"
       },
       {
@@ -240,19 +236,6 @@
         "internalType": "string",
         "name": "res",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "lib",
-    "inputs": [],
-    "outputs": [
-      {
-        "internalType": "contract DotnuggV1Lib",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view"
@@ -362,18 +345,5 @@
       }
     ],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "template",
-    "inputs": [],
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view"
   }
 ]

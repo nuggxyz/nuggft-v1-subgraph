@@ -38,7 +38,7 @@ export function cacheDotnugg(nugg: Nugg): void {
     let arr: string[] = [];
 
     if (callResult.reverted) {
-        for (var i = 0; i < 2; i++) {
+        for (var i = 0; i < 5; i++) {
             log.warning('trying chunk for nugg: ' + nugg.id, [i.toString()]);
             callResult = dotnugg.try_chunk(
                 Address.fromString(proto.nuggftUser),
@@ -49,7 +49,7 @@ export function cacheDotnugg(nugg: Nugg): void {
                 false,
                 true,
                 Bytes.empty(),
-                2,
+                5,
                 i,
             );
 
@@ -256,12 +256,12 @@ export function updatedStakedSharesAndEth(): void {
     proto.save();
 }
 
-export function getCurrentUserOffer(user: User, nugg: Nugg): BigInt {
-    let proto = safeLoadProtocol('0x42069');
-    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
-    let res = nuggft.valueForOffer(Address.fromString(user.id), BigInt.fromString(nugg.id));
-    return res.value2;
-}
+// export function getCurrentUserOffer(user: User, nugg: Nugg): BigInt {
+//     let proto = safeLoadProtocol('0x42069');
+//     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
+//     let res = nuggft.check(Address.fromString(user.id), BigInt.fromString(nugg.id));
+//     return res.value2;
+// }
 
 export function updateProof(nugg: Nugg): void {
     let proto = safeLoadProtocol('0x42069');

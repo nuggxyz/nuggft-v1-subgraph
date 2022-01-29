@@ -15,6 +15,7 @@ type Protocol @entity {
 
     genesisBlock: BigInt!
     interval: BigInt!
+    epochOffset: BigInt!
 
     xnuggUser: User! @depreicated
     nuggftUser: User!

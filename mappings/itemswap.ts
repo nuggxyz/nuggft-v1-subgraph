@@ -1,4 +1,4 @@
-import { log, BigInt, store } from '@graphprotocol/graph-ts';
+import { log, BigInt, store, Bytes } from '@graphprotocol/graph-ts';
 import { wethToUsdc } from './uniswap';
 import {
     safeNewItemSwap,
@@ -20,22 +20,32 @@ import {
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/schema';
 import { updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { ClaimItem, OfferItem, SellItem } from '../generated/local/NuggftV1/NuggftV1';
+import { bigb, bigi, MAX_UINT160 } from './utils';
 
 // const ONE = BigInt.fromString('1');
-const MAX_UINT160 = BigInt.fromString('1').leftShift(160).minus(BigInt.fromString('1'));
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol('0x42069');
 
-    let sellingNuggId = event.params.sellingItemId.bitAnd(MAX_UINT160);
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
 
-    let sellingItemId = event.params.sellingItemId.rightShift(160);
+    let agency__account = agency.bitAnd(MAX_UINT160);
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
+    let sellingNuggId = event.params.sellingTokenId;
+
+    let sellingItemId = bigb(event.params.itemId);
 
     let sellingNugg = safeLoadNugg(sellingNuggId);
 
     let item = safeLoadItem(sellingItemId);
 
-    let buyingNugg = safeLoadNugg(event.params.nugg);
+    let buyingNugg = safeLoadNugg(agency__account);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
@@ -141,15 +151,15 @@ function _offerOfferItem(
 }
 
 export function handleEvent__ClaimItem(event: ClaimItem): void {
-    let sellingNuggId = event.params.sellingItemId.bitAnd(MAX_UINT160);
+    let sellingNuggId = event.params.sellingTokenId;
 
-    let sellingItemId = event.params.sellingItemId.rightShift(160);
+    let sellingItemId = bigb(event.params.itemId);
 
     let sellingNugg = safeLoadNugg(sellingNuggId);
 
     let item = safeLoadItem(sellingItemId);
 
-    let buyingNugg = safeLoadNugg(event.params.nugg);
+    let buyingNugg = safeLoadNugg(event.params.buyerTokenId);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
@@ -178,9 +188,19 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 export function handleEvent__SellItem(event: SellItem): void {
     log.info('handleEvent__SellItem start', []);
 
-    let sellingNuggId = event.params.sellingItemId.bitAnd(MAX_UINT160);
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
 
-    let sellingItemId = event.params.sellingItemId.rightShift(160);
+    let agency__account = agency.bitAnd(MAX_UINT160);
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
+    let sellingNuggId = event.params.sellingTokenId;
+
+    let sellingItemId = bigb(event.params.itemId);
 
     let sellingNugg = safeLoadNugg(sellingNuggId);
 
@@ -193,8 +213,8 @@ export function handleEvent__SellItem(event: SellItem): void {
     let itemSwap = safeNewItemSwap(nuggitem);
 
     itemSwap.sellingNuggItem = nuggitem.id;
-    itemSwap.eth = event.params.floor;
-    itemSwap.ethUsd = wethToUsdc(event.params.floor);
+    itemSwap.eth = agency__eth;
+    itemSwap.ethUsd = wethToUsdc(agency__eth);
     itemSwap.owner = sellingNugg.id;
     itemSwap.leader = sellingNugg.id;
     itemSwap.nextDelegateType = 'Commit';
@@ -208,8 +228,8 @@ export function handleEvent__SellItem(event: SellItem): void {
     let itemoffer = safeNewItemOffer(itemSwap, sellingNugg);
 
     itemoffer.claimed = false;
-    itemoffer.eth = event.params.floor;
-    itemoffer.ethUsd = wethToUsdc(event.params.floor);
+    itemoffer.eth = agency__eth;
+    itemoffer.ethUsd = wethToUsdc(agency__eth);
     itemoffer.owner = true;
     itemoffer.nugg = sellingNugg.id;
     itemoffer.swap = itemSwap.id;

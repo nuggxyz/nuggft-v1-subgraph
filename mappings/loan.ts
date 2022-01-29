@@ -2,6 +2,7 @@ import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
 import { Liquidate, Loan as LoanEvent, NuggftV1, Rebalance } from '../generated/local/NuggftV1/NuggftV1';
 
 import { Loan } from '../generated/local/schema';
+import { LIQUDATION_PERIOD } from './constants';
 
 import {
     safeLoadLoanHelper,
@@ -16,6 +17,7 @@ import {
     safeSetNuggActiveLoan,
 } from './safeload';
 import { wethToUsdc } from './uniswap';
+import { addr_b, addr_i, bigi, MAX_UINT160 } from './utils';
 
 export function handleEvent__Loan(event: LoanEvent): void {
     log.info('handleEvent__Loan start', []);
@@ -23,12 +25,17 @@ export function handleEvent__Loan(event: LoanEvent): void {
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    if (nugg.user != proto.nuggftUser) {
-        log.error('handleEvent__Loan: nugg.user should always be proto.nuggftUser', []);
-        log.critical('', []);
-    }
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
 
-    let user = safeLoadUser(Address.fromString(nugg.lastUser));
+    let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
+    let user = safeLoadUser(Address.fromString(nugg.user));
 
     let loan = safeNewLoanHelper();
 
@@ -46,16 +53,21 @@ export function handleEvent__Loan(event: LoanEvent): void {
     loan.epochDue = BigInt.fromString('0');
 
     // dep
-    loan.eth = proto.nuggftStakedEthPerShare;
+    loan.eth = agency__eth;
     loan.ethUsd = wethToUsdc(loan.eth);
     loan.feeEth = BigInt.fromString('0');
     loan.feeUsd = BigInt.fromString('0');
-    loan.endingEpoch = BigInt.fromString(proto.epoch).plus(BigInt.fromString('69'));
+    loan.endingEpoch = agency__epoch.plus(LIQUDATION_PERIOD);
 
     // loan.save();
 
     // saves
-    updateLoanFromChain(loan);
+    // updateLoanFromChain(loan);
+
+    // loan.toPayoff = tmp.value.value1;
+    // loan.toRebalance = tmp.value.value2;
+    // loan.earned = tmp.value.value3;
+    // loan.epochDue = BigInt.fromI32(tmp.value.value4);
 
     safeSetNuggActiveLoan(nugg, loan);
 
@@ -65,14 +77,24 @@ export function handleEvent__Loan(event: LoanEvent): void {
 export function handleEvent__Liquidate(event: Liquidate): void {
     log.info('handlePayoff', []);
 
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+
+    let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
     let nugg = safeLoadNugg(event.params.tokenId);
 
     let loan = safeLoadLoanHelper(nugg);
 
-    let user = safeLoadUserNull(event.params.user);
+    let user = safeLoadUserNull(agency__account);
 
     if (user == null) {
-        user = safeNewUser(event.params.user);
+        user = safeNewUser(agency__account);
         user.xnugg = BigInt.fromString('0');
         user.ethin = BigInt.fromString('0');
         user.ethout = BigInt.fromString('0');
@@ -100,27 +122,40 @@ export function handleEvent__Rebalance(event: Rebalance): void {
 
     let loan = safeLoadLoanHelper(nugg);
 
-    updateLoanFromChain(loan);
+    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+
+    let agency__account = Address.fromBigInt(agency.bitAnd(MAX_UINT160));
+
+    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+
+    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+
+    let agency__flag = agency.rightShift(254);
+
+    loan.eth = agency__eth;
+    loan.endingEpoch = agency__epoch.plus(LIQUDATION_PERIOD);
+
+    loan.save();
 
     log.info('handleRebalance', []);
 }
 
-function updateLoanFromChain(loan: Loan): void {
-    let proto = safeLoadProtocol('0x42069');
-    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
+// function updateLoanFromChain(loan: Loan): void {
+//     let proto = safeLoadProtocol('0x42069');
+//     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
-    let nuggid = BigInt.fromString(loan.nugg);
-    let tmp = nuggft.try_loanInfo(BigInt.fromString(loan.nugg));
+//     // let nuggid = BigInt.fromString(loan.nugg);
+//     // let tmp = nuggft.try_loanInfo(BigInt.fromString(loan.nugg));
 
-    if (!tmp.reverted) {
-        loan.toPayoff = tmp.value.value0;
-        loan.toRebalance = tmp.value.value1;
-        loan.earned = tmp.value.value2;
-        loan.epochDue = BigInt.fromI32(tmp.value.value3);
-    } else {
-        log.error('LOAN INFO REVERTED UNEXPECTEDLY', [nuggid.toString()]);
-        log.critical('', []);
-    }
+//     if (!tmp.reverted) {
+//         loan.toPayoff = tmp.value.value1;
+//         loan.toRebalance = tmp.value.value2;
+//         loan.earned = tmp.value.value3;
+//         loan.epochDue = BigInt.fromI32(tmp.value.value4);
+//     } else {
+//         log.error('LOAN INFO REVERTED UNEXPECTEDLY', [nuggid.toString()]);
+//         log.critical('', []);
+//     }
 
-    loan.save();
-}
+//     loan.save();
+// }
