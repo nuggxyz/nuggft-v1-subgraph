@@ -1,4 +1,4 @@
-import { log, BigInt, store, Address } from '@graphprotocol/graph-ts';
+import { log, BigInt, store, Address, Bytes } from '@graphprotocol/graph-ts';
 import {
     safeGetAndDeleteUserActiveSwap,
     safeLoadActiveSwap,
@@ -18,15 +18,16 @@ import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './saf
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
 import { updatedStakedSharesAndEth } from './dotnugg';
 import { Claim, Offer, Sell } from '../generated/local/NuggftV1/NuggftV1';
-import { addr_b, addr_i, bigi, MAX_UINT160 } from './utils';
+import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 
 export function handleEvent__Offer(event: Offer): void {
-    log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
+    // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
     log.debug('event.params.agency - b - ' + event.params.agency.toHexString(), []);
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    // transform bytes to Big-Endian
+    let agency = b32toBigEndian(event.params.agency);
 
-    log.debug('agency - a - ' + agency.toHex(), []);
+    // log.debug('agency - a - ' + agency.toHex(), []);
     log.debug('agency - b - ' + agency.toHexString(), []);
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
@@ -73,7 +74,7 @@ export function handleEvent__Offer(event: Offer): void {
 export function handleEvent__Sell(event: Sell): void {
     log.info('handleEvent__Sell start', []);
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    let agency = b32toBigEndian(event.params.agency);
 
     // let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 

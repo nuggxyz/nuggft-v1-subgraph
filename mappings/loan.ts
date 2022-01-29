@@ -17,7 +17,7 @@ import {
     safeSetNuggActiveLoan,
 } from './safeload';
 import { wethToUsdc } from './uniswap';
-import { addr_b, addr_i, bigi, MAX_UINT160 } from './utils';
+import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 
 export function handleEvent__Loan(event: LoanEvent): void {
     log.info('handleEvent__Loan start', []);
@@ -25,7 +25,7 @@ export function handleEvent__Loan(event: LoanEvent): void {
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 

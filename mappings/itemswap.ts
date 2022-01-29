@@ -20,14 +20,14 @@ import {
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/schema';
 import { updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { ClaimItem, OfferItem, SellItem } from '../generated/local/NuggftV1/NuggftV1';
-import { bigb, bigi, MAX_UINT160 } from './utils';
+import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
 
 // const ONE = BigInt.fromString('1');
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol('0x42069');
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = agency.bitAnd(MAX_UINT160);
 
@@ -188,7 +188,7 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 export function handleEvent__SellItem(event: SellItem): void {
     log.info('handleEvent__SellItem start', []);
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = agency.bitAnd(MAX_UINT160);
 
