@@ -18,7 +18,7 @@ import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
 import { cacheDotnugg } from './dotnugg';
 
 export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt, offset: BigInt): void {
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     proto.genesisBlock = genesisBlock;
     proto.interval = interval;

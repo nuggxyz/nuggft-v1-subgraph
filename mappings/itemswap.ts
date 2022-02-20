@@ -21,19 +21,20 @@ import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/sch
 import { updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { ClaimItem, OfferItem, SellItem } from '../generated/local/NuggftV1/NuggftV1';
 import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
+import { mask } from './nuggft';
 
 // const ONE = BigInt.fromString('1');
 
 export function handleEvent__OfferItem(event: OfferItem): void {
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = agency.bitAnd(MAX_UINT160);
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 
@@ -192,9 +193,9 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     let agency__account = agency.bitAnd(MAX_UINT160);
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 

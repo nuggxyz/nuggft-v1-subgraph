@@ -15,8 +15,8 @@ import { handleBlock__every, onEpochGenesis } from './epoch';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
-import { cacheDotnugg, getDotnuggUserId, updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { DotnuggV1ConfigUpdated } from '../generated/local/NuggftV1/NuggftV1';
+import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
+import { Rotate } from '../generated/local/NuggftV1/NuggftV1';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
 import { handleEvent__Claim, handleEvent__Offer, handleEvent__Sell } from './swap';
@@ -26,7 +26,7 @@ export {
     handleEvent__Transfer,
     handleEvent__Genesis,
     handleBlock__every,
-    handleEvent__DotnuggV1ConfigUpdated,
+    handleEvent__Rotate,
     handleEvent__Mint,
     handleEvent__Loan,
     handleEvent__Liquidate,
@@ -42,7 +42,7 @@ export {
 
 export let ONE = BigInt.fromString('1');
 
-function mask(bits: number): BigInt {
+export function mask(bits: number): BigInt {
     return BigInt.fromString('1')
         .leftShift(bits as u8)
         .minus(BigInt.fromString('1'));
@@ -104,17 +104,9 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.nuggftUser = nil.id;
     proto.nullUser = nil.id;
 
-    proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
+    proto.dotnuggV1Processor = '0x0000000000000000000000000000000000000000';
 
     proto.save();
-
-    // let xnugg = safeNewUser(event.address);
-    // xnugg.xnugg = BigInt.fromString('0');
-    // xnugg.save();
-
-    // proto.xnuggUser = xnugg.id;
-
-    // proto.save();
 
     let nuggft = safeNewUser(event.address);
 
@@ -143,7 +135,7 @@ function handleEvent__Stake(event: Stake): void {
     let eth = bigb(event.params.cache).rightShift(96).bitAnd(mask(96));
     let shares = bigb(event.params.cache).rightShift(192);
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     proto.nuggftStakedEth = eth;
     proto.nuggftStakedShares = shares;
@@ -157,7 +149,7 @@ function handleEvent__Stake(event: Stake): void {
 function handleEvent__Transfer(event: Transfer): void {
     log.info('handleEvent__Transfer start', []);
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     let nugg = safeLoadNuggNull(event.params._tokenId);
 
@@ -260,14 +252,14 @@ function handleEvent__Mint(event: Mint): void {
     log.info('handleEvent__Mint end', []);
 }
 
-function handleEvent__DotnuggV1ConfigUpdated(event: DotnuggV1ConfigUpdated): void {
-    log.info('handleEvent__DotnuggV1ConfigUpdated start', []);
+function handleEvent__Rotate(event: Rotate): void {
+    log.info('handleEvent__Rotate start', []);
 
-    let nugg = safeLoadNugg(event.params.artifactId);
+    let nugg = safeLoadNugg(event.params.tokenId);
 
     cacheDotnugg(nugg);
 
-    log.info('handleEvent__DotnuggV1ConfigUpdated end', []);
+    log.info('handleEvent__Rotate end', []);
 }
 
 // 6286335;

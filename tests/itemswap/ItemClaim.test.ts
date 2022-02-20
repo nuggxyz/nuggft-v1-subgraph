@@ -106,7 +106,7 @@ test('ClaimItem 1 - owner', () => {
 
     handleOfferItemDummy0(sellerItem11, buyer2, BigInt.fromString(buyamount2));
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
     let epoch = new Epoch('1');
     epoch.save();
 

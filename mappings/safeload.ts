@@ -17,7 +17,7 @@ import {
 import { cacheDotnugg } from './dotnugg';
 
 export function safeLoadActiveEpoch(): Epoch {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
 
     if (loaded.epoch == null) log.critical('Protocol.epoch CANNOT BE NULL:', []);
 
@@ -42,41 +42,40 @@ export function safeNewEpoch(id: BigInt): Epoch {
     return epoch;
 }
 export function safeAddNuggToProtcol(): void {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     loaded.totalNuggs = loaded.totalNuggs.plus(BigInt.fromString('1'));
     loaded.save();
 }
 export function safeAddUserToProtcol(): void {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     loaded.totalUsers = loaded.totalUsers.plus(BigInt.fromString('1'));
     loaded.save();
 }
 export function safeAddSwapToProtcol(): void {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     loaded.totalSwaps = loaded.totalSwaps.plus(BigInt.fromString('1'));
     loaded.save();
 }
 
 export function safeAddLoanToProtcol(): void {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     loaded.totalLoans = loaded.totalLoans.plus(BigInt.fromString('1'));
     loaded.save();
 }
 export function safeAddItemToProtcol(): void {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     loaded.totalItems = loaded.totalItems.plus(BigInt.fromString('1'));
     loaded.save();
 }
 export function safeAddItemSwapToProtcol(): void {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     loaded.totalItemSwaps = loaded.totalItemSwaps.plus(BigInt.fromString('1'));
     loaded.save();
 }
 
-export function safeLoadProtocol(id: string): Protocol {
-    if (id !== '0x42069') id = '0x42069';
-    let loaded = Protocol.load('' + id);
-    if (loaded == null) log.critical('Protocol CANNOT BE NULL:' + id, []);
+export function safeLoadProtocol(): Protocol {
+    let loaded = Protocol.load('' + '0x42069');
+    if (loaded == null) log.critical('Protocol CANNOT BE NULL:', []);
     return loaded as Protocol;
 }
 
@@ -268,7 +267,7 @@ export function unsafeLoadSwap(id: string): Swap {
 // }
 
 export function safeNewLoanHelper(): Loan {
-    let loaded = safeLoadProtocol('0x42069');
+    let loaded = safeLoadProtocol();
     let id = loaded.totalLoans.toString();
     let loan = new Loan(id);
     safeAddLoanToProtcol();

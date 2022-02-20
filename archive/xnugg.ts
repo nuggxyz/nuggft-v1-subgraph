@@ -69,7 +69,7 @@ export { handleBlock };
 // export function handleTransfer(event: Transfer): void {
 //     log.info('xNUGG handleTransfer start', []);
 
-//     let proto = safeLoadProtocol('0x42069');
+//     let proto = safeLoadProtocol();
 
 //     if (event.params.to.toHexString() == proto.nullUser) {
 //         proto.xnuggTotalSupply = proto.xnuggTotalSupply.minus(event.params.value);
@@ -104,7 +104,7 @@ export { handleBlock };
 // export function handleReceive(event: Receive): void {
 //     log.info('xNUGG handleReceive start', []);
 
-//     let proto = safeLoadProtocol('0x42069');
+//     let proto = safeLoadProtocol();
 
 //     let user = safeLoadUserNull(event.params.sender);
 //     if (user == null) {
@@ -126,7 +126,7 @@ export { handleBlock };
 // export function handleSend(event: Send): void {
 //     log.info('xNUGG handleSend start', []);
 
-//     let proto = safeLoadProtocol('0x42069');
+//     let proto = safeLoadProtocol();
 
 //     let user = safeLoadUserNull(event.params.receiver);
 

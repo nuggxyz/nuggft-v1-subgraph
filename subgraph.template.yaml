@@ -28,10 +28,8 @@ dataSources:
           abis:
               - name: NuggftV1
                 file: ../../abis/NuggftV1.json
-              - name: DotnuggV1
-                file: ../../abis/DotnuggV1.json
           eventHandlers:
-              - event: Genesis(uint256,uint32,uint24)
+              - event: Genesis(uint256,uint32,uint24,uint8)
                 handler: handleEvent__Genesis
               - event: Mint(uint160,uint96)
                 handler: handleEvent__Mint
@@ -43,8 +41,8 @@ dataSources:
                 handler: handleEvent__OfferItem
               - event: Stake(bytes32)
                 handler: handleEvent__Stake
-              - event: DotnuggV1ConfigUpdated(indexed uint256)
-                handler: handleEvent__DotnuggV1ConfigUpdated
+              - event: Rotate(indexed uint160,bytes32)
+                handler: handleEvent__Rotate
               - event: Liquidate(indexed uint160,bytes32)
                 handler: handleEvent__Liquidate
               - event: Loan(indexed uint160,bytes32)

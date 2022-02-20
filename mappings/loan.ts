@@ -3,6 +3,7 @@ import { Liquidate, Loan as LoanEvent, NuggftV1, Rebalance } from '../generated/
 
 import { Loan } from '../generated/local/schema';
 import { LIQUDATION_PERIOD } from './constants';
+import { mask } from './nuggft';
 
 import {
     safeLoadLoanHelper,
@@ -21,7 +22,7 @@ import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 
 export function handleEvent__Loan(event: LoanEvent): void {
     log.info('handleEvent__Loan start', []);
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
@@ -29,9 +30,9 @@ export function handleEvent__Loan(event: LoanEvent): void {
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 
@@ -81,9 +82,9 @@ export function handleEvent__Liquidate(event: Liquidate): void {
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 
@@ -126,9 +127,9 @@ export function handleEvent__Rebalance(event: Rebalance): void {
 
     let agency__account = Address.fromBigInt(agency.bitAnd(MAX_UINT160));
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 
@@ -141,7 +142,7 @@ export function handleEvent__Rebalance(event: Rebalance): void {
 }
 
 // function updateLoanFromChain(loan: Loan): void {
-//     let proto = safeLoadProtocol('0x42069');
+//     let proto = safeLoadProtocol();
 //     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
 //     // let nuggid = BigInt.fromString(loan.nugg);

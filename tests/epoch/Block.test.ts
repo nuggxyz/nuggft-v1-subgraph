@@ -21,7 +21,7 @@ test('handleGenesis 0', () => {
 
     handleBlock(block);
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     logStore();
 

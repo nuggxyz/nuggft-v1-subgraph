@@ -19,6 +19,7 @@ import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
 import { updatedStakedSharesAndEth } from './dotnugg';
 import { Claim, Offer, Sell } from '../generated/local/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
+import { mask } from './nuggft';
 
 export function handleEvent__Offer(event: Offer): void {
     // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
@@ -32,13 +33,13 @@ export function handleEvent__Offer(event: Offer): void {
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
@@ -78,13 +79,13 @@ export function handleEvent__Sell(event: Sell): void {
 
     // let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 
-    let agency__eth = agency.rightShift(160).bitAnd(bigi(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(bigi(24));
+    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
     let agency__flag = agency.rightShift(254);
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
@@ -129,7 +130,7 @@ export function handleEvent__Sell(event: Sell): void {
 export function handleEvent__Claim(event: Claim): void {
     log.info('handleEvent__Claim start', []);
 
-    let proto = safeLoadProtocol('0x42069');
+    let proto = safeLoadProtocol();
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
@@ -160,7 +161,7 @@ export function handleEvent__Claim(event: Claim): void {
 export function __offerMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
     log.info('__offerMint start', []);
 
-    // let proto = safeLoadProtocol('0x42069');
+    // let proto = safeLoadProtocol();
 
     log.info('__offerMint start 2', []);
 
