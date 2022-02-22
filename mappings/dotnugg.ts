@@ -1,8 +1,10 @@
 import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import { Write } from '../generated/local/DotnuggV1/DotnuggV1';
 import { NuggftV1 } from '../generated/local/NuggftV1/NuggftV1';
 
 import { Item, Nugg, NuggItem, User } from '../generated/local/schema';
 import {
+    safeAddItemToProtcol,
     safeLoadItem,
     safeLoadItemNull,
     safeLoadNuggItemHelper,
@@ -12,12 +14,34 @@ import {
     safeNewNuggItem,
 } from './safeload';
 import { safeDiv } from './uniswap';
+import { bigi } from './utils';
 
-// export function getDotnuggUserId(nuggftAddress: Address): Address {
-//     // let nuggft = NuggftV1.bind(nuggftAddress);
-//     // let callResult = nuggft.imageURI();
-//     // return callResult;
-// }
+export function getDotnuggUserId(nuggftAddress: Address): Address {
+    let nuggft = NuggftV1.bind(nuggftAddress);
+    let callResult = nuggft.dotnuggV1();
+    return callResult;
+}
+
+export function getItemURIs(nuggftAddress: Address): void {
+    log.info('handleEvent__Write start ', []);
+
+    let nuggft = NuggftV1.bind(nuggftAddress);
+
+    for (let i = 0; i < 8; i++) {
+        let amount = nuggft.featureLength(i);
+        for (let j = 1; j < amount + 1; j++) {
+            let itemId = (i << 8) | j;
+            let callResult = nuggft.try_itemURI((i << 8) | j);
+
+            let item = safeNewItem(bigi(itemId));
+            item.count = bigi(0);
+            item.dotnuggRawCache = callResult.reverted ? 'oops' : callResult.value;
+            item.feature = bigi(i);
+            item.position = bigi(j);
+            item.save();
+        }
+    }
+}
 
 export function cacheDotnugg(nugg: Nugg): void {
     let proto = safeLoadProtocol();

@@ -82,7 +82,10 @@ type Epoch @entity {
 
 type Item @entity {
     id: ID!
+    feature: BigInt!
+    position: BigInt!
     count: BigInt!
+    dotnuggRawCache: String!
 }
 
 type NuggItem @entity {

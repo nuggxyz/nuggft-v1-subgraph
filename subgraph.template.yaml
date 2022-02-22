@@ -37,6 +37,8 @@ dataSources:
                 handler: handleEvent__Transfer
               - event: Offer(indexed uint160,bytes32)
                 handler: handleEvent__Offer
+              - event: OfferMint(indexed uint160,bytes32,bytes32)
+                handler: handleEvent__OfferMint
               - event: OfferItem(indexed uint160,indexed bytes2,bytes32)
                 handler: handleEvent__OfferItem
               - event: Stake(bytes32)
@@ -57,8 +59,6 @@ dataSources:
                 handler: handleEvent__ClaimItem
               - event: Rebalance(indexed uint160,bytes32)
                 handler: handleEvent__RebalanceItem
-              #   - event: DotnuggV1ConfigUpdated(indexed uint256)
-              #     handler: handleEvent__DotnuggV1ConfigUpdated
           blockHandlers:
               - handler: handleBlock__every
               #   - handler: handleBlock__call

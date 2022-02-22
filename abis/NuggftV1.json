@@ -250,7 +250,7 @@
     "inputs": [],
     "outputs": [
       {
-        "internalType": "contract IDotnuggV1",
+        "internalType": "contract IDotnuggV1Safe",
         "name": "",
         "type": "address"
       }
@@ -308,6 +308,25 @@
     "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "featureLength",
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "feature",
+        "type": "uint8"
+      }
+    ],
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "res",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -485,6 +504,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "itemURI",
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "itemId",
+        "type": "uint16"
+      }
+    ],
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "res",
+        "type": "string"
       }
     ],
     "stateMutability": "view"
@@ -1472,6 +1510,28 @@
       },
       {
         "name": "agency",
+        "type": "bytes32",
+        "indexed": false
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OfferMint",
+    "inputs": [
+      {
+        "name": "tokenId",
+        "type": "uint160",
+        "indexed": true
+      },
+      {
+        "name": "agency",
+        "type": "bytes32",
+        "indexed": false
+      },
+      {
+        "name": "proof",
         "type": "bytes32",
         "indexed": false
       }

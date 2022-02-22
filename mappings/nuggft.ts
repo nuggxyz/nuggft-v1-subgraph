@@ -15,11 +15,11 @@ import { handleBlock__every, onEpochGenesis } from './epoch';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
-import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
+import { cacheDotnugg, getDotnuggUserId, getItemURIs, updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { Rotate } from '../generated/local/NuggftV1/NuggftV1';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
-import { handleEvent__Claim, handleEvent__Offer, handleEvent__Sell } from './swap';
+import { handleEvent__Claim, handleEvent__Offer, handleEvent__OfferMint, handleEvent__Sell } from './swap';
 import { bigb, bigi } from './utils';
 
 export {
@@ -38,6 +38,7 @@ export {
     handleEvent__Offer,
     handleEvent__Sell,
     handleEvent__Claim,
+    handleEvent__OfferMint,
 };
 
 export let ONE = BigInt.fromString('1');
@@ -104,7 +105,7 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.nuggftUser = nil.id;
     proto.nullUser = nil.id;
 
-    proto.dotnuggV1Processor = '0x0000000000000000000000000000000000000000';
+    proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
 
     proto.save();
 
@@ -122,6 +123,8 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.nuggftUser = nuggft.id;
 
     proto.save();
+
+    getItemURIs(event.address);
 
     onEpochGenesis(event.block, event.params.blocknum, event.params.interval, bigi(event.params.offset));
 

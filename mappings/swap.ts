@@ -1,4 +1,4 @@
-import { log, BigInt, store, Address, Bytes } from '@graphprotocol/graph-ts';
+import { log, BigInt, store, Address, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import {
     safeGetAndDeleteUserActiveSwap,
     safeLoadActiveSwap,
@@ -17,9 +17,14 @@ import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
 import { updatedStakedSharesAndEth } from './dotnugg';
-import { Claim, Offer, Sell } from '../generated/local/NuggftV1/NuggftV1';
+import { Claim, Offer, OfferMint, Rotate, Sell } from '../generated/local/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
-import { mask } from './nuggft';
+import { handleEvent__Rotate, mask } from './nuggft';
+
+export function handleEvent__OfferMint(event: OfferMint): void {
+    handleEvent__Offer(event as ethereum.Event as Offer);
+    handleEvent__Rotate(event as ethereum.Event as Rotate);
+}
 
 export function handleEvent__Offer(event: Offer): void {
     // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);

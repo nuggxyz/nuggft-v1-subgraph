@@ -132,6 +132,7 @@ export function safeNewNugg(id: BigInt, userId: string): Nugg {
 
     return loaded;
 }
+// "nuggft": "0x5d5f16B48af3fB4f6acbCf3087699d99bd902A40",
 
 export function safeLoadUserFromString(userId: string): User {
     let id = '' + userId;
