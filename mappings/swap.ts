@@ -16,22 +16,39 @@ import {
 import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
-import { updatedStakedSharesAndEth } from './dotnugg';
+import { cacheDotnugg, updatedStakedSharesAndEth } from './dotnugg';
 import { Claim, Offer, OfferMint, Rotate, Sell } from '../generated/local/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
-import { handleEvent__Rotate, mask } from './nuggft';
+import { mask } from './nuggft';
 
 export function handleEvent__OfferMint(event: OfferMint): void {
-    handleEvent__Offer(event as ethereum.Event as Offer);
-    handleEvent__Rotate(event as ethereum.Event as Rotate);
+    _offer(event.params.tokenId, event.params.agency);
+    _rotate(event.params.tokenId);
 }
 
 export function handleEvent__Offer(event: Offer): void {
+    _offer(event.params.tokenId, event.params.agency);
+}
+
+export function handleEvent__Rotate(event: Rotate): void {
+    _rotate(event.params.tokenId);
+}
+
+function _rotate(tokenId: BigInt): void {
+    log.info('handleEvent__Rotate start', []);
+
+    let nugg = safeLoadNugg(tokenId);
+
+    cacheDotnugg(nugg);
+
+    log.info('handleEvent__Rotate end', []);
+}
+
+function _offer(tokenId: BigInt, _agency: Bytes): void {
     // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
-    log.debug('event.params.agency - b - ' + event.params.agency.toHexString(), []);
 
     // transform bytes to Big-Endian
-    let agency = b32toBigEndian(event.params.agency);
+    let agency = b32toBigEndian(_agency);
 
     // log.debug('agency - a - ' + agency.toHex(), []);
     log.debug('agency - b - ' + agency.toHexString(), []);
@@ -46,7 +63,7 @@ export function handleEvent__Offer(event: Offer): void {
 
     let proto = safeLoadProtocol();
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(tokenId);
 
     let user = safeLoadUserNull(agency__account);
 

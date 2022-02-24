@@ -19,8 +19,8 @@ import { cacheDotnugg, getDotnuggUserId, getItemURIs, updatedStakedSharesAndEth,
 import { Rotate } from '../generated/local/NuggftV1/NuggftV1';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
-import { handleEvent__Claim, handleEvent__Offer, handleEvent__OfferMint, handleEvent__Sell } from './swap';
-import { bigb, bigi } from './utils';
+import { handleEvent__Claim, handleEvent__Offer, handleEvent__OfferMint, handleEvent__Rotate, handleEvent__Sell } from './swap';
+import { b32toBigEndian, bigb, bigi } from './utils';
 
 export {
     handleEvent__Transfer,
@@ -134,9 +134,11 @@ function handleEvent__Genesis(event: Genesis): void {
 function handleEvent__Stake(event: Stake): void {
     log.info('handleEvent__Stake start', []);
 
+    let agency = b32toBigEndian(event.params.cache);
+
     // let protocolEth = event.params.stake.bitAnd(mask(96));
-    let eth = bigb(event.params.cache).rightShift(96).bitAnd(mask(96));
-    let shares = bigb(event.params.cache).rightShift(192);
+    let eth = agency.rightShift(96).bitAnd(mask(96));
+    let shares = agency.rightShift(192);
 
     let proto = safeLoadProtocol();
 
@@ -253,16 +255,6 @@ function handleEvent__Mint(event: Mint): void {
     offer.save();
 
     log.info('handleEvent__Mint end', []);
-}
-
-function handleEvent__Rotate(event: Rotate): void {
-    log.info('handleEvent__Rotate start', []);
-
-    let nugg = safeLoadNugg(event.params.tokenId);
-
-    cacheDotnugg(nugg);
-
-    log.info('handleEvent__Rotate end', []);
 }
 
 // 6286335;
