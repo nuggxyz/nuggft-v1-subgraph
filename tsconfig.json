@@ -1,16 +1,26 @@
 {
+    "extends": "./node_modules/assemblyscript/std/assembly.json",
     "compilerOptions": {
-        "target": "es2021",
-        "module": "commonjs",
-        "strict": false,
-        "esModuleInterop": true,
-        "resolveJsonModule": true,
-        "downlevelIteration": true,
-        "outDir": "./build" /* Redirect output structure to the directory. */
-        //   "rootDir": "./src"
+        //////////////// from assemblyscript/tsconfig-base.json /////////////////
+        // "alwaysStrict": true,
+        // "noImplicitAny": true,
+        // "noImplicitReturns": true,
+        // "noImplicitThis": true,
+        // "noEmitOnError": true,
+        // "strictNullChecks": true,
+        // "experimentalDecorators": true,
+        // "target": "esnext",
+        // "module": "commonjs",
+        // "noLib": true,
+        // "allowJs": false,
+        // "typeRoots": ["types"],
+        // "types": ["assembly"],
+        // "baseUrl": ".",
+        // "paths": {
+        //     "assembly": ["./node_modules/assemblyscript/std/assembly/*"]
+        // }
+        //////////////// from assemblyscript/tsconfig-base.json /////////////////
     },
-    "extends": "./node_modules/node_modules/assemblyscript/base-tsconfig.json"
-
-    // "include": ["src/**/*"],
-    // "exclude": ["test", "build", "types"]
+    "include": ["mappings"],
+    "exclude": ["tests"]
 }

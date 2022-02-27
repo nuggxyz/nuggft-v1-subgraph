@@ -218,7 +218,8 @@ export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
     return loaded;
 }
 export function safeLoadActiveSwap(nugg: Nugg): Swap {
-    if (nugg.activeSwap == null) log.critical('safeLoadActiveSwap: NUGG.activeSwap CANNOT BE NULL,', []);
+    if (nugg.activeSwap == null)
+        log.critical('safeLoadActiveSwap: NUGG.activeSwap CANNOT BE NULL,', []);
     let id = nugg.activeSwap as string;
     let loaded = Swap.load(nugg.activeSwap as string);
     if (loaded == null) log.critical('Swap CANNOT BE NULL:' + id, []);
@@ -284,7 +285,8 @@ export function safeLoadLoanHelper(nugg: Nugg): Loan {
 }
 
 export function safeLoadActiveItemSwap(nuggItem: NuggItem): ItemSwap {
-    if (nuggItem.activeSwap == '') log.critical('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
+    if (nuggItem.activeSwap == '')
+        log.critical('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
 
     let id = nuggItem.activeSwap as string;
     let loaded = ItemSwap.load(id);
@@ -350,7 +352,10 @@ export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void 
         loaded.save();
     } else {
         if (loaded.activeId != swap.id) {
-            log.error('safeSetUserActiveSwap: new useractiveswap trying to be set when old still exists', []);
+            log.error(
+                'safeSetUserActiveSwap: new useractiveswap trying to be set when old still exists',
+                [],
+            );
             log.critical('', []);
         }
     }
@@ -411,7 +416,10 @@ export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: 
         loaded.save();
     } else {
         if (loaded.activeId != swap.id) {
-            log.error('safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists', []);
+            log.error(
+                'safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists',
+                [],
+            );
             log.critical('', []);
         }
     }

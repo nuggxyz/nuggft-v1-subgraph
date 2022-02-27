@@ -180,7 +180,13 @@ export function handleEvent__Claim(event: Claim): void {
     log.info('handleEvent__Claim end', []);
 }
 
-export function __offerMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
+export function __offerMint(
+    proto: Protocol,
+    user: User,
+    nugg: Nugg,
+    swap: Swap,
+    lead: BigInt,
+): void {
     log.info('__offerMint start', []);
 
     // let proto = safeLoadProtocol();
@@ -190,7 +196,10 @@ export function __offerMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap,
     if (proto.epoch != nugg.id) {
         log.info('__offerMint start 3', []);
 
-        log.critical('__offerMint: INVALID EPOCH: ' + proto.epoch + ' != ' + nugg.id.toString(), []);
+        log.critical(
+            '__offerMint: INVALID EPOCH: ' + proto.epoch + ' != ' + nugg.id.toString(),
+            [],
+        );
     }
 
     proto.nuggftStakedShares = proto.nuggftStakedShares.plus(BigInt.fromString('1'));
@@ -222,7 +231,13 @@ export function __offerMint(proto: Protocol, user: User, nugg: Nugg, swap: Swap,
     log.info('__offerMint end', []);
 }
 
-export function __offerCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
+export function __offerCommit(
+    proto: Protocol,
+    user: User,
+    nugg: Nugg,
+    swap: Swap,
+    lead: BigInt,
+): void {
     log.info('__offerCommit start', []);
 
     // let owner = safeLoadUser(Address.fromString(swap.owner));
@@ -231,7 +246,8 @@ export function __offerCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swa
     // let owneroffer = safeLoadOfferHelper(swap, owner);
     // log.info('__offerCommit start 6', [swap.epoch == null ? 'null' : (swap.epoch as string)]);
 
-    if (swap.epoch != '' && swap.epoch != null) log.critical('__offerCommit: SWAP.epochId MUST BE NULL', []);
+    if (swap.epoch != '' && swap.epoch != null)
+        log.critical('__offerCommit: SWAP.epochId MUST BE NULL', []);
     // log.info('__offerCommit start 7', []);
 
     // store.remove('Swap', swap.id);
@@ -288,7 +304,13 @@ export function __offerCommit(proto: Protocol, user: User, nugg: Nugg, swap: Swa
     log.info('__offerCommit end', []);
 }
 
-export function __offerCarry(proto: Protocol, user: User, nugg: Nugg, swap: Swap, lead: BigInt): void {
+export function __offerCarry(
+    proto: Protocol,
+    user: User,
+    nugg: Nugg,
+    swap: Swap,
+    lead: BigInt,
+): void {
     log.info('__offerCarry start', []);
 
     let offer = safeLoadOfferHelperNull(swap, user);

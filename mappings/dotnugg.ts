@@ -1,10 +1,8 @@
-import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
-import { Write } from '../generated/local/DotnuggV1/DotnuggV1';
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
 import { NuggftV1 } from '../generated/local/NuggftV1/NuggftV1';
 
-import { Item, Nugg, NuggItem, User } from '../generated/local/schema';
+import { Item, Nugg, NuggItem } from '../generated/local/schema';
 import {
-    safeAddItemToProtcol,
     safeLoadItem,
     safeLoadItemNull,
     safeLoadNuggItemHelper,

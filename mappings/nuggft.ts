@@ -15,11 +15,22 @@ import { handleBlock__every, onEpochGenesis } from './epoch';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/local/schema';
-import { cacheDotnugg, getDotnuggUserId, getItemURIs, updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { Rotate } from '../generated/local/NuggftV1/NuggftV1';
+import {
+    cacheDotnugg,
+    getDotnuggUserId,
+    getItemURIs,
+    updatedStakedSharesAndEth,
+    updateProof,
+} from './dotnugg';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
-import { handleEvent__Claim, handleEvent__Offer, handleEvent__OfferMint, handleEvent__Rotate, handleEvent__Sell } from './swap';
+import {
+    handleEvent__Claim,
+    handleEvent__Offer,
+    handleEvent__OfferMint,
+    handleEvent__Rotate,
+    handleEvent__Sell,
+} from './swap';
 import { b32toBigEndian, bigb, bigi } from './utils';
 
 export {
@@ -126,7 +137,12 @@ function handleEvent__Genesis(event: Genesis): void {
 
     getItemURIs(event.address);
 
-    onEpochGenesis(event.block, event.params.blocknum, event.params.interval, bigi(event.params.offset));
+    onEpochGenesis(
+        event.block,
+        event.params.blocknum,
+        event.params.interval,
+        bigi(event.params.offset),
+    );
 
     log.info('handleEvent__Genesis end', [proto.epoch]);
 }

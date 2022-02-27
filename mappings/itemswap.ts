@@ -1,4 +1,4 @@
-import { log, BigInt, store, Bytes } from '@graphprotocol/graph-ts';
+import { log, BigInt } from '@graphprotocol/graph-ts';
 import { wethToUsdc } from './uniswap';
 import {
     safeNewItemSwap,
@@ -55,11 +55,29 @@ export function handleEvent__OfferItem(event: OfferItem): void {
     safeSetNuggActiveItemSwap(buyingNugg, nuggitem, itemswap);
 
     if (itemswap.nextDelegateType == 'Commit') {
-        _offerCommitItem(proto, buyingNugg, sellingNugg, item, nuggitem, itemswap, event.transaction.value);
+        _offerCommitItem(
+            proto,
+            buyingNugg,
+            sellingNugg,
+            item,
+            nuggitem,
+            itemswap,
+            event.transaction.value,
+        );
     } else if (itemswap.nextDelegateType == 'Carry') {
-        _offerOfferItem(proto, buyingNugg, sellingNugg, item, nuggitem, itemswap, event.transaction.value);
+        _offerOfferItem(
+            proto,
+            buyingNugg,
+            sellingNugg,
+            item,
+            nuggitem,
+            itemswap,
+            event.transaction.value,
+        );
     } else {
-        log.error('itemswap.nextDelegateType should be Commit or Offer', [itemswap.nextDelegateType]);
+        log.error('itemswap.nextDelegateType should be Commit or Offer', [
+            itemswap.nextDelegateType,
+        ]);
         log.critical('', []);
     }
 
@@ -209,7 +227,8 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap != null) log.critical('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL', []);
+    if (nuggitem.activeSwap != null)
+        log.critical('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL', []);
 
     let itemSwap = safeNewItemSwap(nuggitem);
 

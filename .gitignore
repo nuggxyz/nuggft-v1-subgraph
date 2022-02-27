@@ -4,3 +4,5 @@ generated
 node_modules
 .bin
 build
+
+*.tmp.*

@@ -17,7 +17,12 @@ import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
 import { cacheDotnugg } from './dotnugg';
 
-export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, interval: BigInt, offset: BigInt): void {
+export function onEpochGenesis(
+    block: ethereum.Block,
+    genesisBlock: BigInt,
+    interval: BigInt,
+    offset: BigInt,
+): void {
     let proto = safeLoadProtocol();
 
     proto.genesisBlock = genesisBlock;
@@ -25,7 +30,12 @@ export function onEpochGenesis(block: ethereum.Block, genesisBlock: BigInt, inte
     proto.init = true;
     proto.epochOffset = offset;
 
-    let currentEpochId = getCurrentEpoch(proto.genesisBlock, proto.interval, block.number, proto.epochOffset);
+    let currentEpochId = getCurrentEpoch(
+        proto.genesisBlock,
+        proto.interval,
+        block.number,
+        proto.epochOffset,
+    );
 
     onEpochInit(currentEpochId, proto);
 
@@ -73,8 +83,18 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
 export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     let newEpoch = safeNewEpoch(id);
 
-    newEpoch.endblock = getEndBlockFromEpoch(id, proto.genesisBlock, proto.interval, proto.epochOffset);
-    newEpoch.startblock = getStartBlockFromEpoch(id, proto.genesisBlock, proto.interval, proto.epochOffset);
+    newEpoch.endblock = getEndBlockFromEpoch(
+        id,
+        proto.genesisBlock,
+        proto.interval,
+        proto.epochOffset,
+    );
+    newEpoch.startblock = getStartBlockFromEpoch(
+        id,
+        proto.genesisBlock,
+        proto.interval,
+        proto.epochOffset,
+    );
     newEpoch.status = 'PENDING';
     newEpoch._activeItemSwaps = [];
 
@@ -117,7 +137,12 @@ export function handleBlock__every(block: ethereum.Block): void {
     let proto = Protocol.load('0x42069');
     if (proto == null) return;
 
-    let currentEpochId = getCurrentEpoch(proto.genesisBlock, proto.interval, block.number, proto.epochOffset);
+    let currentEpochId = getCurrentEpoch(
+        proto.genesisBlock,
+        proto.interval,
+        block.number,
+        proto.epochOffset,
+    );
 
     let epoch = safeLoadActiveEpoch();
 
@@ -138,7 +163,12 @@ export function handleBlock__every(block: ethereum.Block): void {
     // switch()
 }
 
-export function getCurrentEpoch(genesis: BigInt, interval: BigInt, blocknum: BigInt, offset: BigInt): BigInt {
+export function getCurrentEpoch(
+    genesis: BigInt,
+    interval: BigInt,
+    blocknum: BigInt,
+    offset: BigInt,
+): BigInt {
     let diff = blocknum.plus(BigInt.fromString('1')).minus(genesis);
     return safeDiv(diff, interval).plus(offset);
 }
@@ -153,10 +183,25 @@ export function getCurrentEndBlock(interval: BigInt, blocknum: BigInt): BigInt {
     return num.plus(interval).minus(BigInt.fromString('1'));
 }
 
-export function getStartBlockFromEpoch(epoch: BigInt, genesis: BigInt, interval: BigInt, offset: BigInt): BigInt {
+export function getStartBlockFromEpoch(
+    epoch: BigInt,
+    genesis: BigInt,
+    interval: BigInt,
+    offset: BigInt,
+): BigInt {
     return epoch.minus(offset).times(interval).plus(genesis);
 }
 
-export function getEndBlockFromEpoch(epoch: BigInt, genesis: BigInt, interval: BigInt, offset: BigInt): BigInt {
-    return getStartBlockFromEpoch(epoch.plus(BigInt.fromString('1')), genesis, interval, offset).minus(BigInt.fromString('1'));
+export function getEndBlockFromEpoch(
+    epoch: BigInt,
+    genesis: BigInt,
+    interval: BigInt,
+    offset: BigInt,
+): BigInt {
+    return getStartBlockFromEpoch(
+        epoch.plus(BigInt.fromString('1')),
+        genesis,
+        interval,
+        offset,
+    ).minus(BigInt.fromString('1'));
 }

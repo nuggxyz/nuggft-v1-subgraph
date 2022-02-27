@@ -1,10 +1,10 @@
 specVersion: 0.0.2
 description: NuggftV1
-repository: https://github.com/nugg-labs/nuggft-subgraph
+repository: https://github.com/nuggxyz/nuggft-subgraph
 # features:
 #     - nonFatalErrors
 schema:
-    file: ../../schema.graphql
+    file: ../schema.graphql
 dataSources:
     - kind: ethereum/contract
       name: NuggftV1
@@ -19,7 +19,7 @@ dataSources:
           kind: ethereum/events
           apiVersion: 0.0.6
           language: wasm/assemblyscript
-          file: ../../mappings/nuggft.ts
+          file: ../mappings/nuggft.ts
           entities:
               - Protocol
               - Sell
@@ -27,7 +27,7 @@ dataSources:
               - Item
           abis:
               - name: NuggftV1
-                file: ../../abis/NuggftV1.json
+                file: ../abis/NuggftV1.json
           eventHandlers:
               - event: Genesis(uint256,uint32,uint24,uint8)
                 handler: handleEvent__Genesis
