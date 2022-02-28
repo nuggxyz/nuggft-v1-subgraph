@@ -17,9 +17,9 @@ import {
     safeLoadNuggItemHelper,
     safeLoadItemOfferHelperNull,
 } from './safeload';
-import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/local/schema';
+import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/schema';
 import { updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { ClaimItem, OfferItem, SellItem } from '../generated/local/NuggftV1/NuggftV1';
+import { ClaimItem, OfferItem, SellItem } from '../generated/NuggftV1/NuggftV1';
 import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
 import { mask } from './nuggft';
 
@@ -56,6 +56,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
 
     if (itemswap.nextDelegateType == 'Commit') {
         _offerCommitItem(
+            event.transaction.hash.toHexString(),
             proto,
             buyingNugg,
             sellingNugg,
@@ -66,6 +67,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
         );
     } else if (itemswap.nextDelegateType == 'Carry') {
         _offerOfferItem(
+            event.transaction.hash.toHexString(),
             proto,
             buyingNugg,
             sellingNugg,
@@ -85,6 +87,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
 }
 
 function _offerCommitItem(
+    hash: string,
     proto: Protocol,
     buyerNugg: Nugg,
     sellerNugg: Nugg,
@@ -121,6 +124,7 @@ function _offerCommitItem(
     itemoffer.owner = false;
     itemoffer.nugg = buyerNugg.id;
     itemoffer.swap = itemswap.id;
+    itemoffer.txhash = hash;
     itemoffer.save();
 
     itemswap.eth = itemoffer.eth;
@@ -134,6 +138,7 @@ function _offerCommitItem(
 }
 
 function _offerOfferItem(
+    hash: string,
     proto: Protocol,
     buyerNugg: Nugg,
     sellerNugg: Nugg,
@@ -154,9 +159,12 @@ function _offerOfferItem(
         itemoffer.owner = false;
         itemoffer.nugg = buyerNugg.id;
         itemoffer.swap = itemswap.id;
+        itemoffer.txhash = hash;
+
         itemoffer.save();
     }
 
+    itemoffer.txhash = hash;
     itemoffer.eth = itemoffer.eth.plus(eth);
     itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
     itemoffer.save();

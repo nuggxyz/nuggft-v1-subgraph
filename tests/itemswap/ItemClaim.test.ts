@@ -1,13 +1,26 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Epoch, Item, ItemOffer, ItemSwap, Nugg, NuggItem, Protocol, User } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import {
+    Epoch,
+    Item,
+    ItemOffer,
+    ItemSwap,
+    Nugg,
+    NuggItem,
+    Protocol,
+    User,
+} from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { handleClaimItem } from '../../mappings/itemswap';
 import { logStore } from 'matchstick-as/assembly/store';
-import { ClaimItem, ClaimItem__Params } from '../../generated/local/NuggFT/NuggFT';
+import { ClaimItem, ClaimItem__Params } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
-import { handlePreMintDummy1, handlePreMintDummy0, handlePreMintDummy2 } from '../nuggft/PreMint.test';
+import { Receive } from '../../generated/xNUGG/xNUGG';
+import {
+    handlePreMintDummy1,
+    handlePreMintDummy0,
+    handlePreMintDummy2,
+} from '../nuggft/PreMint.test';
 import { handleOfferItemDummy0 } from './ItemOffer.test';
 import { handleCommitItemDummy0 } from './ItemCommit.test';
 import { handleSwapItemDummy0 } from './ItemSwap.test';
@@ -29,7 +42,14 @@ let address0 = '0xa16081f360e3847006db660bae1c6d1b2eaaaaaa';
 let address1 = '0xa16081f360e3847006db660bae1c6d1b2eabcdef';
 
 export function handleClaimItemDummy0(nuggItem: NuggItem, nugg: Nugg, endingEpoch: BigInt): void {
-    handleEvent(createEvent(BigInt.fromString(nuggItem.nugg), BigInt.fromString(nuggItem.item), BigInt.fromString(nugg.id), endingEpoch));
+    handleEvent(
+        createEvent(
+            BigInt.fromString(nuggItem.nugg),
+            BigInt.fromString(nuggItem.item),
+            BigInt.fromString(nugg.id),
+            endingEpoch,
+        ),
+    );
 }
 
 export function handleEvent(event: ClaimItem): void {
@@ -37,11 +57,19 @@ export function handleEvent(event: ClaimItem): void {
 }
 // const help: { [key in keyof ClaimItem__Params]: ClaimItem__Params[key] };
 
-export function createEvent(sellingTokenId: BigInt, itemId: BigInt, buyingTokenId: BigInt, endingEpoch: BigInt): ClaimItem {
+export function createEvent(
+    sellingTokenId: BigInt,
+    itemId: BigInt,
+    buyingTokenId: BigInt,
+    endingEpoch: BigInt,
+): ClaimItem {
     let event = changetype<ClaimItem>(newMockEvent());
 
     event.parameters = [
-        new ethereum.EventParam('sellingTokenId', ethereum.Value.fromUnsignedBigInt(sellingTokenId)),
+        new ethereum.EventParam(
+            'sellingTokenId',
+            ethereum.Value.fromUnsignedBigInt(sellingTokenId),
+        ),
         new ethereum.EventParam('itemId', ethereum.Value.fromUnsignedBigInt(itemId)),
         new ethereum.EventParam('buyingTokenId', ethereum.Value.fromUnsignedBigInt(buyingTokenId)),
         new ethereum.EventParam('endingEpoch', ethereum.Value.fromUnsignedBigInt(endingEpoch)),

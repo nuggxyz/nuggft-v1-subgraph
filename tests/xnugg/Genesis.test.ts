@@ -1,6 +1,6 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import { Protocol } from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { logStore } from 'matchstick-as/assembly/store';
 import { handleGenesis } from '../../archive/xnugg';
 import { runGenesisNuggFT } from '../nuggft/Genesis.test';
@@ -25,7 +25,12 @@ test('handleGenesis 0', () => {
     handleGenesis(newGenesisEvent);
     assert.fieldEquals('Protocol', '0x42069', 'id', '0x42069');
 
-    assert.fieldEquals('Protocol', '0x42069', 'xnuggUser', '' + newGenesisEvent.address.toHexString());
+    assert.fieldEquals(
+        'Protocol',
+        '0x42069',
+        'xnuggUser',
+        '' + newGenesisEvent.address.toHexString(),
+    );
     assert.fieldEquals('Protocol', '0x42069', 'nuggftUser', '' + niladdress);
 
     assert.fieldEquals('Epoch', 'NOTLIVE', 'id', 'NOTLIVE');

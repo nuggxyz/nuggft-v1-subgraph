@@ -1,12 +1,12 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from './../../generated/local/schema';
-import { Genesis } from './../../generated/local/xNUGG/xNUGG';
+import { Protocol } from './../../generated/schema';
+import { Genesis } from './../../generated/xNUGG/xNUGG';
 import { handleMint } from './../../mappings/swap';
 import { logStore } from 'matchstick-as/assembly/store';
-import { Mint, Mint__Params } from './../../generated/local/NuggFT/NuggFT';
+import { Mint, Mint__Params } from './../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
+import { Receive } from '../../generated/xNUGG/xNUGG';
 import { handlePreMintDummy1, handlePreMintDummy0 } from '../nuggft/PreMint.test';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
@@ -14,7 +14,13 @@ let niladdress = '0x0000000000000000000000000000000000000000';
 let address0 = '0xa16081f360e3847006db660bae1c6d1b2eabcdef';
 
 export function handleMintDummy0(): void {
-    handleEvent(createEvent(Address.fromString(address0), BigInt.fromString('0'), BigInt.fromString('1000000')));
+    handleEvent(
+        createEvent(
+            Address.fromString(address0),
+            BigInt.fromString('0'),
+            BigInt.fromString('1000000'),
+        ),
+    );
 }
 
 export function handleEvent(event: Mint): void {
@@ -40,7 +46,9 @@ test('Mint 0 - no value', () => {
     runGenesisxNugg();
     handlePreMintDummy0();
 
-    handleEvent(createEvent(Address.fromString(address0), BigInt.fromString('0'), BigInt.fromString('0')));
+    handleEvent(
+        createEvent(Address.fromString(address0), BigInt.fromString('0'), BigInt.fromString('0')),
+    );
     let offerId = '0-0-' + address0;
 
     assert.fieldEquals('Swap', '0-0', 'id', '0-0');

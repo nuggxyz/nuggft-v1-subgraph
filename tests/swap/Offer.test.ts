@@ -1,12 +1,12 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Nugg, Protocol, User } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import { Nugg, Protocol, User } from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { handleOffer } from '../../mappings/swap';
 import { logStore } from 'matchstick-as/assembly/store';
-import { Offer, Offer__Params } from '../../generated/local/NuggFT/NuggFT';
+import { Offer, Offer__Params } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
+import { Receive } from '../../generated/xNUGG/xNUGG';
 import { handlePreMintDummy1, handlePreMintDummy0 } from '../nuggft/PreMint.test';
 import { handleMintDummy0 } from './Mint.test';
 
@@ -47,7 +47,13 @@ test('Offer 0 - with value', () => {
     assert.fieldEquals('Swap', '0-0', 'eth', '1000000');
     assert.notInStore('Offer', offerId);
 
-    handleEvent(createEvent(Address.fromString(address0), BigInt.fromString('0'), BigInt.fromString('2000000')));
+    handleEvent(
+        createEvent(
+            Address.fromString(address0),
+            BigInt.fromString('0'),
+            BigInt.fromString('2000000'),
+        ),
+    );
 
     assert.fieldEquals('Swap', '0-0', 'id', '0-0');
     assert.fieldEquals('Swap', '0-0', 'leader', address0);

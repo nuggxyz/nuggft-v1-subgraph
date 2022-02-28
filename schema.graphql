@@ -50,6 +50,8 @@ type Protocol @entity {
 type Offer @entity {
     id: ID!
 
+    txhash: String!
+
     swap: Swap!
     user: User!
 
@@ -252,6 +254,8 @@ type NuggActiveItemSwap @entity {
 
 type ItemOffer @entity {
     id: ID!
+
+    txhash: String!
 
     swap: ItemSwap!
     nugg: Nugg!

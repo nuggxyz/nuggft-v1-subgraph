@@ -1,7 +1,7 @@
 import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { Liquidate, Loan as LoanEvent, NuggftV1, Rebalance } from '../generated/local/NuggftV1/NuggftV1';
+import { Liquidate, Loan as LoanEvent, NuggftV1, Rebalance } from '../generated/NuggftV1/NuggftV1';
 
-import { Loan } from '../generated/local/schema';
+import { Loan } from '../generated/schema';
 import { LIQUDATION_PERIOD } from './constants';
 import { mask } from './nuggft';
 

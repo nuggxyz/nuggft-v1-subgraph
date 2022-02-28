@@ -1,11 +1,11 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
-import { Genesis, Receive__Params } from '../../generated/local/xNUGG/xNUGG';
+import { Protocol } from '../../generated/schema';
+import { Genesis, Receive__Params } from '../../generated/xNUGG/xNUGG';
 import { handleReceive } from '../../archive/xnugg';
 import { logStore } from 'matchstick-as/assembly/store';
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from './Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
+import { Receive } from '../../generated/xNUGG/xNUGG';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
 

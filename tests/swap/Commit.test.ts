@@ -1,12 +1,12 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Nugg, Protocol, User } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import { Nugg, Protocol, User } from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { handleCommit } from '../../mappings/swap';
 import { logStore } from 'matchstick-as/assembly/store';
-import { Commit, Commit__Params } from '../../generated/local/NuggFT/NuggFT';
+import { Commit, Commit__Params } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
+import { Receive } from '../../generated/xNUGG/xNUGG';
 
 import { handleSwapDummy0 } from './Swap.test';
 

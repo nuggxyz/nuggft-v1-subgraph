@@ -15,19 +15,19 @@ import {
 } from './safeload';
 import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
-import { Nugg, Protocol, Swap, User } from '../generated/local/schema';
+import { Nugg, Protocol, Swap, User } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth } from './dotnugg';
-import { Claim, Offer, OfferMint, Rotate, Sell } from '../generated/local/NuggftV1/NuggftV1';
+import { Claim, Offer, OfferMint, Rotate, Sell } from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 import { mask } from './nuggft';
 
 export function handleEvent__OfferMint(event: OfferMint): void {
-    _offer(event.params.tokenId, event.params.agency);
+    _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
     _rotate(event.params.tokenId);
 }
 
 export function handleEvent__Offer(event: Offer): void {
-    _offer(event.params.tokenId, event.params.agency);
+    _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
@@ -44,7 +44,7 @@ function _rotate(tokenId: BigInt): void {
     log.info('handleEvent__Rotate end', []);
 }
 
-function _offer(tokenId: BigInt, _agency: Bytes): void {
+function _offer(hash: string, tokenId: BigInt, _agency: Bytes): void {
     // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
 
     // transform bytes to Big-Endian
@@ -81,11 +81,11 @@ function _offer(tokenId: BigInt, _agency: Bytes): void {
     safeSetUserActiveSwap(user, nugg, swap);
 
     if (swap.nextDelegateType == 'Commit') {
-        __offerCommit(proto, user, nugg, swap, agency__eth);
+        __offerCommit(hash, proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Carry') {
-        __offerCarry(proto, user, nugg, swap, agency__eth);
+        __offerCarry(hash, proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Mint') {
-        __offerMint(proto, user, nugg, swap, agency__eth);
+        __offerMint(hash, proto, user, nugg, swap, agency__eth);
     } else {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
@@ -141,6 +141,7 @@ export function handleEvent__Sell(event: Sell): void {
     offer.user = user.id;
     offer.claimer = user.id;
     offer.swap = swap.id;
+    offer.txhash = event.transaction.hash.toHexString();
 
     offer.save();
 
@@ -181,6 +182,7 @@ export function handleEvent__Claim(event: Claim): void {
 }
 
 export function __offerMint(
+    hash: string,
     proto: Protocol,
     user: User,
     nugg: Nugg,
@@ -219,6 +221,8 @@ export function __offerMint(
 
     let offer = safeNewOfferHelper(swap, user);
 
+    offer.txhash = hash;
+
     offer.claimed = false;
     offer.eth = swap.eth;
     offer.ethUsd = swap.ethUsd;
@@ -232,6 +236,7 @@ export function __offerMint(
 }
 
 export function __offerCommit(
+    hash: string,
     proto: Protocol,
     user: User,
     nugg: Nugg,
@@ -284,9 +289,11 @@ export function __offerCommit(
         offer.user = user.id;
         offer.swap = swap.id;
         offer.claimer = user.id;
+        offer.txhash = hash;
 
         offer.save();
     }
+    offer.txhash = hash;
 
     // offer.eth = getCurrentUserOffer(user, nugg);
     offer.eth = lead;
@@ -305,6 +312,7 @@ export function __offerCommit(
 }
 
 export function __offerCarry(
+    hash: string,
     proto: Protocol,
     user: User,
     nugg: Nugg,
@@ -324,9 +332,11 @@ export function __offerCarry(
         offer.user = user.id;
         offer.swap = swap.id;
         offer.claimer = user.id;
+        offer.txhash = hash;
 
         offer.save();
     }
+    offer.txhash = hash;
 
     // offer.eth = getCurrentUserOffer(user, nugg);
     offer.eth = lead;

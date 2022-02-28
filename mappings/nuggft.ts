@@ -1,6 +1,6 @@
 import { Address, log } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { Genesis, Mint, Stake, Transfer } from '../generated/local/NuggftV1/NuggftV1';
+import { Genesis, Mint, Stake, Transfer } from '../generated/NuggftV1/NuggftV1';
 import { safeDiv, wethToUsdc } from './uniswap';
 import {
     safeLoadNuggNull,
@@ -14,7 +14,7 @@ import {
 import { handleBlock__every, onEpochGenesis } from './epoch';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
-import { Epoch, Protocol, User } from '../generated/local/schema';
+import { Epoch, Protocol, User } from '../generated/schema';
 import {
     cacheDotnugg,
     getDotnuggUserId,

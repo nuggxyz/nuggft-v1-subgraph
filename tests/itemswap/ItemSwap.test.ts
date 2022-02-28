@@ -1,12 +1,18 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Nugg, User, Item, NuggItem, ItemSwap, ItemOffer } from '../../generated/local/schema';
+import { Nugg, User, Item, NuggItem, ItemSwap, ItemOffer } from '../../generated/schema';
 import { handleSwapItem } from '../../mappings/itemswap';
-import { SwapItem, SwapItem__Params } from '../../generated/local/NuggFT/NuggFT';
+import { SwapItem, SwapItem__Params } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
 import { handlePreMintDummy2 } from '../nuggft/PreMint.test';
 import { safeLoadItem } from '../../mappings/safeload';
-import { safeNewUser, safeNewNugg, safeLoadNuggItemHelper, safeLoadItemSwapHelper, safeLoadItemOfferHelper } from '../../mappings/safeload';
+import {
+    safeNewUser,
+    safeNewNugg,
+    safeLoadNuggItemHelper,
+    safeLoadItemSwapHelper,
+    safeLoadItemOfferHelper,
+} from '../../mappings/safeload';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
 
@@ -14,7 +20,9 @@ let address0 = '0xa16081f360e3847006db660bae1c6d1b2eabcdef';
 let address3 = '0xa16081f360e3847006db660bae1c6d1b23333333';
 
 export function handleSwapItemDummy0(nuggItem: NuggItem, floor: BigInt): void {
-    handleEvent(createEvent(BigInt.fromString(nuggItem.nugg), BigInt.fromString(nuggItem.item), floor));
+    handleEvent(
+        createEvent(BigInt.fromString(nuggItem.nugg), BigInt.fromString(nuggItem.item), floor),
+    );
 }
 
 export function handleEvent(event: SwapItem): void {
@@ -26,7 +34,10 @@ export function createEvent(sellingTokenId: BigInt, itemId: BigInt, value: BigIn
     let event = changetype<SwapItem>(newMockEvent());
 
     event.parameters = [
-        new ethereum.EventParam('sellingTokenId', ethereum.Value.fromUnsignedBigInt(sellingTokenId)),
+        new ethereum.EventParam(
+            'sellingTokenId',
+            ethereum.Value.fromUnsignedBigInt(sellingTokenId),
+        ),
         new ethereum.EventParam('itemId', ethereum.Value.fromUnsignedBigInt(itemId)),
         new ethereum.EventParam('eth', ethereum.Value.fromUnsignedBigInt(value)),
     ];

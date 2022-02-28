@@ -1,18 +1,23 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Item, ItemOffer, ItemSwap, Nugg, NuggItem, Protocol, User } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import { Item, ItemOffer, ItemSwap, Nugg, NuggItem, Protocol, User } from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { handleCommitItem } from '../../mappings/itemswap';
 import { logStore } from 'matchstick-as/assembly/store';
-import { CommitItem, CommitItem__Params } from '../../generated/local/NuggFT/NuggFT';
+import { CommitItem, CommitItem__Params } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
+import { Receive } from '../../generated/xNUGG/xNUGG';
 import { handlePreMintDummy2 } from '../nuggft/PreMint.test';
 import { handleSwapItemDummy0 } from './ItemSwap.test';
 
 // import { handleSwapDummy0 } from './ItemSwap.test';
 import { safeNewNugg, safeNewUser } from '../../mappings/safeload';
-import { safeLoadItem, safeLoadNuggItemHelper, safeLoadItemSwapHelper, safeLoadItemOfferHelper } from '../../mappings/safeload';
+import {
+    safeLoadItem,
+    safeLoadNuggItemHelper,
+    safeLoadItemSwapHelper,
+    safeLoadItemOfferHelper,
+} from '../../mappings/safeload';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
 
@@ -20,7 +25,14 @@ let address0 = '0xa16081f360e3847006db660bae1c6d1b2eaaaaaa';
 let address1 = '0xa16081f360e3847006db660bae1c6d1b2ebbbbbb';
 
 export function handleCommitItemDummy0(nuggItem: NuggItem, nugg: Nugg, eth: BigInt): void {
-    handleEvent(createEvent(BigInt.fromString(nuggItem.nugg), BigInt.fromString(nuggItem.item), BigInt.fromString(nugg.id), eth));
+    handleEvent(
+        createEvent(
+            BigInt.fromString(nuggItem.nugg),
+            BigInt.fromString(nuggItem.item),
+            BigInt.fromString(nugg.id),
+            eth,
+        ),
+    );
 }
 
 export function handleEvent(event: CommitItem): void {
@@ -28,11 +40,19 @@ export function handleEvent(event: CommitItem): void {
 }
 // const help: { [key in keyof CommitItem__Params]: CommitItem__Params[key] };
 
-export function createEvent(sellingTokenId: BigInt, itemId: BigInt, buyingTokenId: BigInt, value: BigInt): CommitItem {
+export function createEvent(
+    sellingTokenId: BigInt,
+    itemId: BigInt,
+    buyingTokenId: BigInt,
+    value: BigInt,
+): CommitItem {
     let event = changetype<CommitItem>(newMockEvent());
 
     event.parameters = [
-        new ethereum.EventParam('sellingTokenId', ethereum.Value.fromUnsignedBigInt(sellingTokenId)),
+        new ethereum.EventParam(
+            'sellingTokenId',
+            ethereum.Value.fromUnsignedBigInt(sellingTokenId),
+        ),
         new ethereum.EventParam('itemId', ethereum.Value.fromUnsignedBigInt(itemId)),
         new ethereum.EventParam('buyingTokenId', ethereum.Value.fromUnsignedBigInt(buyingTokenId)),
         new ethereum.EventParam('eth', ethereum.Value.fromUnsignedBigInt(value)),

@@ -1,5 +1,5 @@
 import { BigInt, log } from '@graphprotocol/graph-ts';
-import { Protocol } from '../generated/local/schema';
+import { Protocol } from '../generated/schema';
 
 export function invariant(test: boolean, error: string): void {
     if (!test) {

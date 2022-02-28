@@ -1,9 +1,9 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Nugg, Protocol } from './../../generated/local/schema';
-import { Genesis, PreMint__Params } from './../../generated/local/NuggFT/NuggFT';
+import { Nugg, Protocol } from './../../generated/schema';
+import { Genesis, PreMint__Params } from './../../generated/NuggFT/NuggFT';
 import { handlePreMint } from './../../mappings/nuggft';
 import { logStore } from 'matchstick-as/assembly/store';
-import { PreMint } from './../../generated/local/NuggFT/NuggFT';
+import { PreMint } from './../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
 
@@ -12,11 +12,23 @@ let niladdress = '0x0000000000000000000000000000000000000000';
 let address0 = '0xa16081f360e3847006db660bae1c6d1b2e17ec2a';
 
 export function handlePreMintDummy1(): void {
-    handleEvent(createEvent(BigInt.fromString('3'), [BigInt.fromString('5'), BigInt.fromString('11'), BigInt.fromString('11')]));
+    handleEvent(
+        createEvent(BigInt.fromString('3'), [
+            BigInt.fromString('5'),
+            BigInt.fromString('11'),
+            BigInt.fromString('11'),
+        ]),
+    );
 }
 
 export function handlePreMintDummy0(): void {
-    handleEvent(createEvent(BigInt.fromString('0'), [BigInt.fromString('5'), BigInt.fromString('11'), BigInt.fromString('11')]));
+    handleEvent(
+        createEvent(BigInt.fromString('0'), [
+            BigInt.fromString('5'),
+            BigInt.fromString('11'),
+            BigInt.fromString('11'),
+        ]),
+    );
 }
 
 export function handlePreMintDummy2(nugg: Nugg, items: BigInt[]): void {

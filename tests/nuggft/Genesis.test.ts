@@ -1,6 +1,6 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/NuggFT/NuggFT';
+import { Protocol } from '../../generated/schema';
+import { Genesis } from '../../generated/NuggFT/NuggFT';
 import { logStore } from 'matchstick-as/assembly/store';
 import { handleGenesis } from '../../mappings/nuggft';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';

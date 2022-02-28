@@ -1,7 +1,7 @@
 import { Address, BigInt, log } from '@graphprotocol/graph-ts';
-import { NuggftV1 } from '../generated/local/NuggftV1/NuggftV1';
+import { NuggftV1 } from '../generated/NuggftV1/NuggftV1';
 
-import { Item, Nugg, NuggItem } from '../generated/local/schema';
+import { Item, Nugg, NuggItem } from '../generated/schema';
 import {
     safeLoadItem,
     safeLoadItemNull,

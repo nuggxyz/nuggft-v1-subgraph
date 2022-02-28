@@ -1,5 +1,5 @@
 import { ethereum, BigInt, store, log } from '@graphprotocol/graph-ts';
-import { Epoch, Protocol } from '../generated/local/schema';
+import { Epoch, Protocol } from '../generated/schema';
 import {
     safeLoadActiveEpoch,
     safeLoadEpoch,
@@ -12,10 +12,14 @@ import {
     unsafeLoadItemSwap,
     safeRemoveNuggActiveSwap,
     safeRemoveNuggItemActiveSwap,
+    safeLoadActiveSwap,
+    safeNewNuggNoCache,
+    safeLoadNuggNull,
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
 import { cacheDotnugg } from './dotnugg';
+import { bigi } from './utils';
 
 export function onEpochGenesis(
     block: ethereum.Block,
@@ -29,6 +33,7 @@ export function onEpochGenesis(
     proto.interval = interval;
     proto.init = true;
     proto.epochOffset = offset;
+    proto.save();
 
     let currentEpochId = getCurrentEpoch(
         proto.genesisBlock,
@@ -38,19 +43,17 @@ export function onEpochGenesis(
     );
 
     onEpochInit(currentEpochId, proto);
-
+    onSwapInit(currentEpochId, proto);
+    cacheDotnugg(safeLoadNugg(currentEpochId));
     onEpochStart(currentEpochId, proto);
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
     onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
-
-    proto.save();
 }
-
-export function onEpochStart(id: BigInt, proto: Protocol): void {
+export function onSwapInit(id: BigInt, proto: Protocol): void {
     let nextEpoch = safeLoadEpoch(id);
 
-    let nextNugg = safeNewNugg(id, proto.nullUser);
+    let nextNugg = safeNewNuggNoCache(id, proto.nullUser);
 
     let nextSwap = safeNewSwapHelper(nextNugg);
 
@@ -64,9 +67,16 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
     nextSwap.nugg = nextNugg.id;
     nextSwap.nextDelegateType = 'Mint';
 
-    safeSetNuggActiveSwap(nextNugg, nextSwap);
-
     nextSwap.save();
+
+    safeSetNuggActiveSwap(nextNugg, nextSwap);
+}
+export function onEpochStart(id: BigInt, proto: Protocol): void {
+    let nextEpoch = safeLoadEpoch(id);
+
+    let nextNugg = safeLoadNugg(id);
+
+    let nextSwap = safeLoadActiveSwap(nextNugg);
 
     nextEpoch.status = 'ACTIVE';
 
@@ -109,14 +119,14 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
     for (var i = 0; i < swaps.length; i++) {
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
-        log.error('wut', [nugg.user]);
+        // log.error('wut', [nugg.user]);
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
             store.remove('Nugg', nugg.id);
             store.remove('Swap', s.id);
         } else {
             safeRemoveNuggActiveSwap(nugg);
         }
-        log.error('nope', [nugg.user]);
+        // log.error('nope', [nugg.user]);
     }
 
     let itemswaps = epoch._activeItemSwaps;
@@ -135,7 +145,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
 
 export function handleBlock__every(block: ethereum.Block): void {
     let proto = Protocol.load('0x42069');
-    if (proto == null) return;
+    if (proto == null || !proto.init) return;
 
     let currentEpochId = getCurrentEpoch(
         proto.genesisBlock,
@@ -148,17 +158,34 @@ export function handleBlock__every(block: ethereum.Block): void {
 
     // let startblock = getCurrentStartBlock(proto.interval, block.number)
 
-    if (proto.init && epoch.idnum.notEqual(currentEpochId)) {
-        onEpochClose(epoch, proto);
+    let check = epoch.endblock.minus(block.number);
+    log.warning(check.toString(), []);
 
-        onEpochStart(currentEpochId, proto);
+    switch (check.toI32()) {
+        case 0:
+            onEpochClose(epoch, proto);
 
-        onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
+            onEpochStart(currentEpochId, proto);
+
+            onEpochInit(currentEpochId.plus(bigi(2)), proto);
+            break;
+        case 4:
+            let nugg = safeLoadNuggNull(currentEpochId.plus(bigi(1)));
+            if (nugg == null) {
+                onSwapInit(currentEpochId.plus(bigi(1)), proto);
+                nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
+            }
+            cacheDotnugg(nugg);
+            break;
+        case 16:
+            onSwapInit(currentEpochId.plus(bigi(1)), proto);
+            break;
     }
 
-    proto.nuggsNotCached.forEach((id) => {
-        cacheDotnugg(safeLoadNugg(BigInt.fromString(id)));
-    });
+    if (proto.init && epoch.idnum.notEqual(currentEpochId))
+        proto.nuggsNotCached.forEach((id) => {
+            cacheDotnugg(safeLoadNugg(BigInt.fromString(id)));
+        });
 
     // switch()
 }

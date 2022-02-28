@@ -1,9 +1,9 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
-import { Genesis, PopItem__Params } from '../../generated/local/NuggFT/NuggFT';
+import { Protocol } from '../../generated/schema';
+import { Genesis, PopItem__Params } from '../../generated/NuggFT/NuggFT';
 import { handlePopItem } from '../../mappings/nuggft';
 import { logStore } from 'matchstick-as/assembly/store';
-import { PopItem } from '../../generated/local/NuggFT/NuggFT';
+import { PopItem } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
 import { handlePreMintDummy1 } from './PreMint.test';

@@ -13,7 +13,7 @@ import {
     Loan,
     UserActiveSwap,
     NuggActiveItemSwap,
-} from '../generated/local/schema';
+} from '../generated/schema';
 import { cacheDotnugg } from './dotnugg';
 
 export function safeLoadActiveEpoch(): Epoch {
@@ -82,7 +82,10 @@ export function safeLoadProtocol(): Protocol {
 export function safeLoadNugg(id: BigInt): Nugg {
     let ids = '' + id.toString();
     let loaded = Nugg.load(ids);
-    if (loaded == null) log.critical('Nugg CANNOT BE NULL:' + ids, []);
+    if (loaded == null) {
+        log.error('CRITICAL: Nugg CANNOT BE NULL:' + ids, []);
+        log.critical('def', []);
+    }
     return loaded as Nugg;
 }
 
@@ -100,8 +103,9 @@ export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): void {
 
 export function safeSetNuggActiveLoan(nugg: Nugg, loan: Loan): void {
     nugg.activeLoan = loan.id;
-    nugg.protocol = '0x42069';
+    loan.protocol = '0x42069';
     nugg.save();
+    loan.save();
 }
 
 export function safeRemoveNuggActiveSwap(nugg: Nugg): void {
@@ -129,6 +133,21 @@ export function safeNewNugg(id: BigInt, userId: string): Nugg {
     safeAddNuggToProtcol();
 
     cacheDotnugg(loaded);
+
+    return loaded;
+}
+
+export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
+    let loaded = new Nugg(id.toString());
+    loaded.idnum = id;
+    loaded.burned = false;
+    loaded.numSwaps = BigInt.fromString('0');
+    loaded.user = userId;
+    loaded.lastUser = userId;
+    loaded.resolver = '0x0000000000000000000000000000000000000000';
+    loaded.save();
+
+    safeAddNuggToProtcol();
 
     return loaded;
 }

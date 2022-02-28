@@ -1,9 +1,9 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import { Protocol } from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { handleTransfer } from '../../archive/xnugg';
 import { logStore } from 'matchstick-as/assembly/store';
-import { Transfer } from '../../generated/local/xNUGG/xNUGG';
+import { Transfer } from '../../generated/xNUGG/xNUGG';
 import { Address, ethereum, BigInt } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from './Genesis.test';
 
@@ -17,7 +17,10 @@ export function createEvent(from: string, to: string, amount: string): Transfer 
     event.parameters = [
         new ethereum.EventParam('from', ethereum.Value.fromAddress(Address.fromString(from))),
         new ethereum.EventParam('to', ethereum.Value.fromAddress(Address.fromString(to))),
-        new ethereum.EventParam('amount', ethereum.Value.fromUnsignedBigInt(BigInt.fromString(amount))),
+        new ethereum.EventParam(
+            'amount',
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromString(amount)),
+        ),
     ];
 
     return event;

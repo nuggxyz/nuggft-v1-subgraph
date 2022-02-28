@@ -1,12 +1,12 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Nugg, Protocol, User } from '../../generated/local/schema';
-import { Genesis } from '../../generated/local/xNUGG/xNUGG';
+import { Nugg, Protocol, User } from '../../generated/schema';
+import { Genesis } from '../../generated/xNUGG/xNUGG';
 import { handleSwap } from '../../mappings/swap';
 import { logStore } from 'matchstick-as/assembly/store';
-import { Swap, Swap__Params } from '../../generated/local/NuggFT/NuggFT';
+import { Swap, Swap__Params } from '../../generated/NuggFT/NuggFT';
 import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import { runGenesisxNugg } from '../xnugg/Genesis.test';
-import { Receive } from '../../generated/local/xNUGG/xNUGG';
+import { Receive } from '../../generated/xNUGG/xNUGG';
 import { handlePreMintDummy1, handlePreMintDummy0 } from '../nuggft/PreMint.test';
 
 let niladdress = '0x0000000000000000000000000000000000000000';
