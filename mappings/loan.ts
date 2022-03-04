@@ -78,7 +78,7 @@ export function handleEvent__Loan(event: LoanEvent): void {
 export function handleEvent__Liquidate(event: Liquidate): void {
     log.info('handlePayoff', []);
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 
@@ -123,7 +123,7 @@ export function handleEvent__Rebalance(event: Rebalance): void {
 
     let loan = safeLoadLoanHelper(nugg);
 
-    let agency = BigInt.fromUnsignedBytes(event.params.agency);
+    let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = Address.fromBigInt(agency.bitAnd(MAX_UINT160));
 

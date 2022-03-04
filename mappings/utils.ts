@@ -9,7 +9,7 @@ export function bigb(num: Bytes): BigInt {
 }
 
 export function addr_i(num: BigInt): Address {
-    return Address.fromString(num.toHexString());
+    return Address.fromString('0x' + num.toHex().replace('0x', '').padStart(40, '0'));
 }
 
 export function addr_b(num: Bytes): Address {

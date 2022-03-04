@@ -169,6 +169,7 @@ export function safeLoadUser(userId: Address): User {
 
 export function safeNewUser(userId: Address): User {
     let id = '' + userId.toHexString();
+    // 0xf0dcdec50135504e000000000000000000000040
     let loaded = new User(id);
     safeAddUserToProtcol();
     return loaded;
