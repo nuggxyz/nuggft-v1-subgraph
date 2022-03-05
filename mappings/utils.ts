@@ -5,7 +5,7 @@ export function bigi(num: i32): BigInt {
 }
 
 export function bigb(num: Bytes): BigInt {
-    return BigInt.fromUnsignedBytes(num);
+    return b32toBigEndian(num);
 }
 
 export function addr_i(num: BigInt): Address {

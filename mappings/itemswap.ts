@@ -3,11 +3,13 @@ import { wethToUsdc } from './uniswap';
 import {
     safeNewItemSwap,
     safeNewItemOffer,
-    safeLoadActiveItemSwap,
+    safeLoadActiveNuggItemSwap,
     safeLoadEpoch,
     safeSetNuggItemActiveSwap,
     safeSetNuggActiveItemSwap,
     safeGetAndDeleteNuggActiveItemSwap,
+    safeSetItemActiveSwap,
+    safeLoadActiveItemSwap,
 } from './safeload';
 import {
     safeLoadProtocol,
@@ -27,32 +29,37 @@ import { mask } from './nuggft';
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol();
+    log.warning('A', []);
 
     let agency = b32toBigEndian(event.params.agency);
+    log.warning('B' + agency.toHexString(), []);
 
     let agency__account = agency.bitAnd(MAX_UINT160);
-
-    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
-
-    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
-
-    let agency__flag = agency.rightShift(254);
+    log.warning('C' + agency__account.toHexString(), []);
 
     let sellingNuggId = event.params.sellingTokenId;
+    log.warning('D', []);
 
     let sellingItemId = bigb(event.params.itemId);
+    log.warning('E' + sellingItemId.toString(), []);
 
     let sellingNugg = safeLoadNugg(sellingNuggId);
+    log.warning('F', []);
 
     let item = safeLoadItem(sellingItemId);
+    log.warning('G', []);
 
     let buyingNugg = safeLoadNugg(agency__account);
+    log.warning('H', []);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
+    log.warning('I', []);
 
-    let itemswap = safeLoadActiveItemSwap(nuggitem);
+    let itemswap = safeLoadActiveNuggItemSwap(nuggitem);
+    log.warning('J', []);
 
     safeSetNuggActiveItemSwap(buyingNugg, nuggitem, itemswap);
+    log.warning('K + ' + itemswap.nextDelegateType, []);
 
     if (itemswap.nextDelegateType == 'Commit') {
         _offerCommitItem(
@@ -98,7 +105,7 @@ function _offerCommitItem(
 ): void {
     log.info('_offerCommitItem start', []);
 
-    if (itemswap.epoch != null) log.critical('_offerOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
+    if (itemswap.epoch !== null) log.critical('_offerOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
 
@@ -110,12 +117,32 @@ function _offerCommitItem(
 
     let _s = epoch._activeItemSwaps as string[];
     _s.push(itemswap.id as string);
-    epoch._activeSwaps = _s as string[];
+    epoch._activeItemSwaps = _s as string[];
+
+    _s = epoch._activeNuggItemSwaps as string[];
+    _s.push(itemswap.id as string);
+    epoch._activeNuggItemSwaps = _s as string[];
     epoch.save();
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
 
-    safeSetNuggItemActiveSwap(nuggItem, itemswap);
+    if (item.activeSwap != null) {
+        let itemActiveSwap = safeLoadActiveItemSwap(item);
+        if (itemActiveSwap.endingEpoch !== null) {
+            if ((itemActiveSwap.endingEpoch as BigInt).equals(BigInt.fromString(epoch.id))) {
+                let _s = epoch._upcomingActiveItemSwaps as string[];
+                _s.push(itemswap.id as string);
+                epoch._upcomingActiveItemSwaps = _s as string[];
+                epoch.save();
+            } else {
+                safeSetItemActiveSwap(item, itemswap);
+            }
+        } else {
+            safeSetItemActiveSwap(item, itemswap);
+        }
+    } else {
+        safeSetItemActiveSwap(item, itemswap);
+    }
 
     itemoffer = safeNewItemOffer(itemswap, buyerNugg);
     itemoffer.claimed = false;
@@ -129,7 +156,7 @@ function _offerCommitItem(
 
     itemswap.eth = itemoffer.eth;
     itemswap.ethUsd = itemoffer.ethUsd;
-
+    itemswap.nextDelegateType = 'Carry';
     itemswap.leader = buyerNugg.id;
 
     itemswap.save();
@@ -217,26 +244,30 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     let agency = b32toBigEndian(event.params.agency);
 
-    let agency__account = agency.bitAnd(MAX_UINT160);
+    log.warning('A', []);
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
-
-    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
-
-    let agency__flag = agency.rightShift(254);
+    log.warning('B', []);
 
     let sellingNuggId = event.params.sellingTokenId;
+    log.warning('C', []);
 
     let sellingItemId = bigb(event.params.itemId);
+    log.warning('D', []);
 
     let sellingNugg = safeLoadNugg(sellingNuggId);
+    log.warning('E', []);
 
     let item = safeLoadItem(sellingItemId);
+    log.warning('F', []);
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
+    log.warning('G', []);
 
-    if (nuggitem.activeSwap != null)
+    if (nuggitem.activeSwap !== null) {
+        log.warning('HERE', []);
         log.critical('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL', []);
+    }
 
     let itemSwap = safeNewItemSwap(nuggitem);
 

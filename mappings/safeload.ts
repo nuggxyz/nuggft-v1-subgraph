@@ -15,6 +15,7 @@ import {
     NuggActiveItemSwap,
 } from '../generated/schema';
 import { cacheDotnugg } from './dotnugg';
+import { bigi } from './utils';
 
 export function safeLoadActiveEpoch(): Epoch {
     let loaded = safeLoadProtocol();
@@ -120,7 +121,7 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
     nugg.save();
 }
 
-export function safeNewNugg(id: BigInt, userId: string): Nugg {
+export function safeNewNugg(id: BigInt, userId: string, block: ethereum.Block): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id;
     loaded.burned = false;
@@ -132,7 +133,7 @@ export function safeNewNugg(id: BigInt, userId: string): Nugg {
 
     safeAddNuggToProtcol();
 
-    cacheDotnugg(loaded);
+    cacheDotnugg(loaded, block.number.toI32());
 
     return loaded;
 }
@@ -182,8 +183,11 @@ export function safeLoadUserNull(userId: Address): User | null {
 }
 
 export function safeLoadItem(id: BigInt): Item {
-    let loaded = Item.load('' + id.toString());
-    if (loaded == null) log.critical('Item CANNOT BE NULL:' + id.toString(), []);
+    let loaded = Item.load(id.toString());
+    if (loaded === null) {
+        log.error('ITEM IS NULLLLLLLLLL:' + id.toString(), []);
+        log.critical('Item CANNOT BE NULL:' + id.toString(), []);
+    }
     return loaded as Item;
 }
 
@@ -203,6 +207,27 @@ export function safeSetNuggItemActiveSwap(nuggitem: NuggItem, itemswap: ItemSwap
     nuggitem.protocol = '0x42069';
     nuggitem.save();
 }
+
+export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
+    // let _item = safeLoadItem(BigInt.fromString(item));
+    item.activeSwap = itemswap.id;
+    item.protocol = '0x42069';
+    item.save();
+}
+
+export function unsafeSetItemActiveSwap(item: string, itemswap: ItemSwap): void {
+    let _item = safeLoadItem(BigInt.fromString(item));
+    _item.activeSwap = itemswap.id;
+    _item.protocol = '0x42069';
+    _item.save();
+}
+
+export function safeRemoveItemActiveSwap(item: Item): void {
+    // let _item = safeLoadItem(BigInt.fromString(item));
+    item.activeSwap = null;
+    item.protocol = null;
+    item.save();
+}
 export function safeRemoveNuggItemActiveSwap(nuggitem: NuggItem): void {
     nuggitem.activeSwap = null;
     nuggitem.protocol = null;
@@ -214,25 +239,31 @@ export function unsafeLoadNuggItem(id: string): NuggItem {
     return loaded as NuggItem;
 }
 
+export function unsafeLoadItem(id: string): Item {
+    let loaded = Item.load('' + id);
+    if (loaded == null) log.critical('Item CANNOT BE NULL:' + id, []);
+    return loaded as Item;
+}
+
 export function safeLoadNuggItemHelper(nugg: Nugg, item: Item): NuggItem {
-    let header = '';
-    let id = header.concat(nugg.id).concat('-').concat(item.id.toString());
+    let id = nugg.id + '-' + item.id;
     let loaded = NuggItem.load(id);
-    if (loaded == null) log.critical('NuggItem CANNOT BE NULL:' + id, []);
+    if (loaded === null) {
+        log.warning('HERE', []);
+        log.critical('NuggItem CANNOT BE NULL:' + id, []);
+    }
     return loaded as NuggItem;
 }
 
 export function safeLoadNuggItemHelperNull(nugg: Nugg, item: Item): NuggItem | null {
-    let header = '';
-    let id = header.concat(nugg.id).concat('-').concat(item.id.toString());
+    let id = nugg.id + '-' + item.id;
     let loaded = NuggItem.load(id);
 
     return loaded;
 }
 
 export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
-    let header = '';
-    let id = header.concat(nugg.id).concat('-').concat(item.id.toString());
+    let id = nugg.id + '-' + item.id;
     let loaded = new NuggItem(id);
     loaded.numSwaps = BigInt.fromString('0');
     return loaded;
@@ -304,7 +335,7 @@ export function safeLoadLoanHelper(nugg: Nugg): Loan {
     return loaded as Loan;
 }
 
-export function safeLoadActiveItemSwap(nuggItem: NuggItem): ItemSwap {
+export function safeLoadActiveNuggItemSwap(nuggItem: NuggItem): ItemSwap {
     if (nuggItem.activeSwap == '')
         log.critical('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
 
@@ -314,6 +345,15 @@ export function safeLoadActiveItemSwap(nuggItem: NuggItem): ItemSwap {
     return loaded as ItemSwap;
 }
 
+export function safeLoadActiveItemSwap(item: Item): ItemSwap {
+    if (item.activeSwap == '')
+        log.critical('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL', []);
+
+    let id = item.activeSwap as string;
+    let loaded = ItemSwap.load(id);
+    if (loaded == null) log.critical('safeLoadActiveItemSwap ItemSwap CANNOT BE NULL:' + id, []);
+    return loaded as ItemSwap;
+}
 export function unsafeLoadItemSwap(id: string): ItemSwap {
     let loaded = ItemSwap.load(id);
     if (loaded == null) log.critical('ItemSwap CANNOT BE NULL:' + id, []);
@@ -339,7 +379,7 @@ export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
     sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(BigInt.fromString('1'));
     sellingNuggItem.save();
 
-    let id = ''.concat(sellingNuggItem.id).concat('-').concat(currNum.toString());
+    let id = sellingNuggItem.id + '-' + currNum.toString();
 
     safeAddItemSwapToProtcol();
     let swap = new ItemSwap(id);
@@ -502,20 +542,17 @@ export function safeLoadOfferHelper(swap: Swap, user: User): Offer {
 // }
 
 export function safeNewItemOffer(swap: ItemSwap, nugg: Nugg): ItemOffer {
-    let header = '';
-    let id = header.concat(swap.id).concat('-').concat(nugg.id.toString());
+    let id = swap.id + '-' + nugg.id;
     return new ItemOffer(id);
 }
 
 export function safeLoadItemOfferHelperNull(swap: ItemSwap, nugg: Nugg): ItemOffer | null {
-    let header = '';
-    let id = header.concat(swap.id).concat('-').concat(nugg.id.toString());
+    let id = swap.id + '-' + nugg.id;
     return ItemOffer.load(id);
 }
 
 export function safeLoadItemOfferHelper(swap: ItemSwap, nugg: Nugg): ItemOffer {
-    let header = '';
-    let id = header.concat(swap.id).concat('-').concat(nugg.id.toString());
+    let id = swap.id + '-' + nugg.id;
     let loaded = ItemOffer.load(id);
     if (loaded == null) log.critical('ItemOffer CANNOT BE NULL:' + id, []);
     return loaded as ItemOffer;

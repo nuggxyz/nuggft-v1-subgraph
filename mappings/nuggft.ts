@@ -102,6 +102,8 @@ function handleEvent__Genesis(event: Genesis): void {
     epoch.status = 'PENDING';
     epoch._activeItemSwaps = [];
     epoch._activeSwaps = [];
+    epoch._upcomingActiveItemSwaps = [];
+    epoch._activeNuggItemSwaps = [];
     epoch.save();
 
     let nil = new User('0x0000000000000000000000000000000000000000');
@@ -175,7 +177,7 @@ function handleEvent__Transfer(event: Transfer): void {
     let nugg = safeLoadNuggNull(event.params._tokenId);
 
     if (nugg == null) {
-        nugg = safeNewNugg(event.params._tokenId, proto.nullUser);
+        nugg = safeNewNugg(event.params._tokenId, proto.nullUser, event.block);
     }
 
     let sender = safeLoadUser(event.params._from);
@@ -247,7 +249,7 @@ function handleEvent__Transfer(event: Transfer): void {
 
     updatedStakedSharesAndEth();
 
-    cacheDotnugg(nugg);
+    cacheDotnugg(nugg, event.block.number.toI32());
 
     log.info('handleEvent__Transfer end', []);
 }

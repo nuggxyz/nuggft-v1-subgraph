@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import { NuggftV1 } from '../generated/NuggftV1/NuggftV1';
 
 import { Item, Nugg, NuggItem } from '../generated/schema';
@@ -41,9 +41,10 @@ export function getItemURIs(nuggftAddress: Address): void {
     }
 }
 
-export function cacheDotnugg(nugg: Nugg): void {
+export function cacheDotnugg(nugg: Nugg, blockNum: i32): void {
     let proto = safeLoadProtocol();
 
+    // if (blockNum > 10276528) {
     let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
     let callResult = dotnugg.try_imageURI(nugg.idnum);
 
@@ -108,16 +109,22 @@ export function cacheDotnugg(nugg: Nugg): void {
         if (nugg.dotnuggRawCache == null || nugg.dotnuggRawCache == '') {
             nugg.dotnuggRawCache = 'ERROR_WITH_DOTNUGG_CACHE: try getting data on chain';
             nugg.dotnuggSvgCache = [];
-            let tmp = proto.nuggsNotCached;
-            // tmp.push(nugg.id);
-            // proto.nuggsNotCached = tmp;
-            // proto.save();
+            let tmp = proto.nuggsNotCached as string[];
+            tmp.push(nugg.id as string);
+            proto.nuggsNotCached = tmp as string[];
+            proto.save();
         }
 
         log.info('cacheDotnugg reverted with default resolver', []);
     }
 
     nugg.save();
+    // } else {
+    //     let tmp = proto.nuggsNotCached as string[];
+    //     tmp.push(nugg.id as string);
+    //     proto.nuggsNotCached = tmp as string[];
+    //     proto.save();
+    // }
 }
 
 export function updatedStakedSharesAndEth(): void {

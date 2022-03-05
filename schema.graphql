@@ -44,7 +44,8 @@ type Protocol @entity {
     nuggsNotCached: [String!]!
 
     activeNuggs: [Nugg!]! @derivedFrom(field: "protocol")
-    activeItems: [NuggItem!]! @derivedFrom(field: "protocol")
+    activeNuggItems: [NuggItem!]! @derivedFrom(field: "protocol")
+    activeItems: [Item!]! @derivedFrom(field: "protocol")
 }
 
 type Offer @entity {
@@ -79,7 +80,10 @@ type Epoch @entity {
     status: EpochStatus!
 
     _activeSwaps: [String!]!
+    _activeNuggItemSwaps: [String!]!
     _activeItemSwaps: [String!]!
+
+    _upcomingActiveItemSwaps: [String!]!
 }
 
 type Item @entity {
@@ -88,6 +92,10 @@ type Item @entity {
     position: BigInt!
     count: BigInt!
     dotnuggRawCache: String!
+
+    protocol: Protocol
+
+    activeSwap: ItemSwap
 
     swaps: [ItemSwap!]! @derivedFrom(field: "sellingItem")
 }

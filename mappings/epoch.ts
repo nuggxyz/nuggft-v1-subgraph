@@ -15,6 +15,10 @@ import {
     safeLoadActiveSwap,
     safeNewNuggNoCache,
     safeLoadNuggNull,
+    unsafeLoadItem,
+    safeRemoveItemActiveSwap,
+    safeSetItemActiveSwap,
+    unsafeSetItemActiveSwap,
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
@@ -44,7 +48,7 @@ export function onEpochGenesis(
 
     onEpochInit(currentEpochId, proto);
     onSwapInit(currentEpochId, proto);
-    cacheDotnugg(safeLoadNugg(currentEpochId));
+    cacheDotnugg(safeLoadNugg(currentEpochId), block.number.toI32());
     onEpochStart(currentEpochId, proto);
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
@@ -72,6 +76,7 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     safeSetNuggActiveSwap(nextNugg, nextSwap);
 }
 export function onEpochStart(id: BigInt, proto: Protocol): void {
+    log.info('onEpochStart IN', []);
     let nextEpoch = safeLoadEpoch(id);
 
     let nextNugg = safeLoadNugg(id);
@@ -83,14 +88,26 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
     let _s = nextEpoch._activeSwaps as string[];
     _s.push(nextSwap.id as string);
     nextEpoch._activeSwaps = _s as string[];
+
+    let swaps = nextEpoch._upcomingActiveItemSwaps as string[];
+
+    for (let index = 0; index < swaps.length; index++) {
+        let itemswap = unsafeLoadItemSwap(swaps[index]);
+        unsafeSetItemActiveSwap(itemswap.sellingItem, itemswap);
+    }
+
+    nextEpoch._upcomingActiveItemSwaps = [];
     nextEpoch.save();
 
     proto.epoch = nextEpoch.id;
     proto.defaultActiveNugg = nextNugg.id;
     proto.save();
+    log.info('onEpochStart OUT', []);
 }
 
 export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
+    log.info('onEpochInit IN', []);
+
     let newEpoch = safeNewEpoch(id);
 
     newEpoch.endblock = getEndBlockFromEpoch(
@@ -107,40 +124,57 @@ export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     );
     newEpoch.status = 'PENDING';
     newEpoch._activeItemSwaps = [];
+    newEpoch._upcomingActiveItemSwaps = [];
 
     newEpoch.save();
+    log.info('onEpochInit OUT', []);
 
     return newEpoch;
 }
 
 export function onEpochClose(epoch: Epoch, proto: Protocol): void {
-    let swaps = epoch._activeSwaps;
+    log.info('onEpochClose IN', []);
 
-    for (var i = 0; i < swaps.length; i++) {
+    let swaps = epoch._activeSwaps;
+    log.warning('onEpochClose A: ' + swaps.join('='), []);
+
+    for (let i = 0; i < swaps.length; i++) {
+        log.warning('onEpochClose B: ' + i.toString(), []);
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
-        // log.error('wut', [nugg.user]);
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
             store.remove('Nugg', nugg.id);
             store.remove('Swap', s.id);
         } else {
             safeRemoveNuggActiveSwap(nugg);
         }
-        // log.error('nope', [nugg.user]);
     }
 
-    let itemswaps = epoch._activeItemSwaps;
+    let nuggItemSwaps = epoch._activeNuggItemSwaps;
+    log.warning('AAA: ' + nuggItemSwaps.join('='), []);
 
-    for (var j = 0; j < itemswaps.length; j++) {
-        let s = unsafeLoadItemSwap(itemswaps[i]);
+    for (let j = 0; j < nuggItemSwaps.length; j++) {
+        let s = unsafeLoadItemSwap(nuggItemSwaps[j]);
         let nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
         safeRemoveNuggItemActiveSwap(nuggitem);
     }
 
+    let itemswaps = epoch._activeItemSwaps;
+
+    log.warning('BBB: ' + itemswaps.join('='), []);
+    for (let j = 0; j < itemswaps.length; j++) {
+        let s = unsafeLoadItemSwap(itemswaps[j]);
+
+        let item = unsafeLoadItem(s.sellingItem);
+        safeRemoveItemActiveSwap(item);
+    }
+
     epoch._activeItemSwaps = [];
+    epoch._activeNuggItemSwaps = [];
     epoch._activeSwaps = [];
     epoch.status = 'OVER';
     epoch.save();
+    log.info('onEpochClose OUT', []);
 }
 
 export function handleBlock__every(block: ethereum.Block): void {
@@ -175,17 +209,21 @@ export function handleBlock__every(block: ethereum.Block): void {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);
                 nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
             }
-            cacheDotnugg(nugg);
+            cacheDotnugg(nugg, block.number.toI32());
             break;
         case 16:
             onSwapInit(currentEpochId.plus(bigi(1)), proto);
             break;
     }
 
-    if (proto.init && epoch.idnum.notEqual(currentEpochId))
-        proto.nuggsNotCached.forEach((id) => {
-            cacheDotnugg(safeLoadNugg(BigInt.fromString(id)));
-        });
+    // if (block.number.toI32() === 10276528)
+    //     for (let i = 0; i < proto.nuggsNotCached.length; i++) {
+    //         // proto.nuggsNotCached.forEach((id) => {
+    //         let nugg = safeLoadNuggNull(BigInt.fromString(proto.nuggsNotCached[i]));
+    //         if (nugg !== null) {
+    //             cacheDotnugg(nugg, block.number.toI32());
+    //         }
+    //     }
 
     // switch()
 }

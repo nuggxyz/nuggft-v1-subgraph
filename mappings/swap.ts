@@ -23,7 +23,7 @@ import { mask } from './nuggft';
 
 export function handleEvent__OfferMint(event: OfferMint): void {
     _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
-    _rotate(event.params.tokenId);
+    _rotate(event.params.tokenId, event.block);
 }
 
 export function handleEvent__Offer(event: Offer): void {
@@ -31,15 +31,15 @@ export function handleEvent__Offer(event: Offer): void {
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
-    _rotate(event.params.tokenId);
+    _rotate(event.params.tokenId, event.block);
 }
 
-function _rotate(tokenId: BigInt): void {
+function _rotate(tokenId: BigInt, block: ethereum.Block): void {
     log.info('handleEvent__Rotate start', []);
 
     let nugg = safeLoadNugg(tokenId);
 
-    cacheDotnugg(nugg);
+    cacheDotnugg(nugg, block.number.toI32());
 
     updateProof(nugg);
 
