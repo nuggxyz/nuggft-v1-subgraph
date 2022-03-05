@@ -241,6 +241,8 @@ export function handleEvent__SellItem(event: SellItem): void {
     let itemSwap = safeNewItemSwap(nuggitem);
 
     itemSwap.sellingNuggItem = nuggitem.id;
+    itemSwap.sellingItem = nuggitem.item;
+
     itemSwap.eth = agency__eth;
     itemSwap.ethUsd = wethToUsdc(agency__eth);
     itemSwap.owner = sellingNugg.id;

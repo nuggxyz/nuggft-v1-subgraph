@@ -88,6 +88,8 @@ type Item @entity {
     position: BigInt!
     count: BigInt!
     dotnuggRawCache: String!
+
+    swaps: [ItemSwap!]! @derivedFrom(field: "sellingItem")
 }
 
 type NuggItem @entity {
@@ -227,6 +229,7 @@ type ItemSwap @entity {
     id: ID!
 
     sellingNuggItem: NuggItem!
+    sellingItem: Item!
 
     offers: [ItemOffer!]! @derivedFrom(field: "swap")
 

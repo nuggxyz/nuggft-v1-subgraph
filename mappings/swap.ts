@@ -16,7 +16,7 @@ import {
 import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/schema';
-import { cacheDotnugg, updatedStakedSharesAndEth } from './dotnugg';
+import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { Claim, Offer, OfferMint, Rotate, Sell } from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 import { mask } from './nuggft';
@@ -40,6 +40,8 @@ function _rotate(tokenId: BigInt): void {
     let nugg = safeLoadNugg(tokenId);
 
     cacheDotnugg(nugg);
+
+    updateProof(nugg);
 
     log.info('handleEvent__Rotate end', []);
 }
