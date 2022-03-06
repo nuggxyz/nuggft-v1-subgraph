@@ -264,7 +264,7 @@ export function handleEvent__SellItem(event: SellItem): void {
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
     log.warning('G', []);
 
-    if (nuggitem.activeSwap !== null) {
+    if (nuggitem.activeSwap != null) {
         log.warning('HERE', []);
         log.critical('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL', []);
     }

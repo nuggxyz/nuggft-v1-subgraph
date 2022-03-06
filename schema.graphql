@@ -79,6 +79,9 @@ type Epoch @entity {
     endblock: BigInt!
     status: EpochStatus!
 
+    starttime: BigInt
+    endtime: BigInt
+
     _activeSwaps: [String!]!
     _activeNuggItemSwaps: [String!]!
     _activeItemSwaps: [String!]!

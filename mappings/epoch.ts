@@ -49,7 +49,7 @@ export function onEpochGenesis(
     onEpochInit(currentEpochId, proto);
     onSwapInit(currentEpochId, proto);
     cacheDotnugg(safeLoadNugg(currentEpochId), block.number.toI32());
-    onEpochStart(currentEpochId, proto);
+    onEpochStart(currentEpochId, proto, block);
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
     onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
@@ -75,7 +75,7 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
 }
-export function onEpochStart(id: BigInt, proto: Protocol): void {
+export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block): void {
     log.info('onEpochStart IN', []);
     let nextEpoch = safeLoadEpoch(id);
 
@@ -84,6 +84,7 @@ export function onEpochStart(id: BigInt, proto: Protocol): void {
     let nextSwap = safeLoadActiveSwap(nextNugg);
 
     nextEpoch.status = 'ACTIVE';
+    nextEpoch.starttime = block.timestamp;
 
     let _s = nextEpoch._activeSwaps as string[];
     _s.push(nextSwap.id as string);
@@ -132,7 +133,7 @@ export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     return newEpoch;
 }
 
-export function onEpochClose(epoch: Epoch, proto: Protocol): void {
+export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Block): void {
     log.info('onEpochClose IN', []);
 
     let swaps = epoch._activeSwaps;
@@ -168,7 +169,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol): void {
         let item = unsafeLoadItem(s.sellingItem);
         safeRemoveItemActiveSwap(item);
     }
-
+    epoch.endtime = block.timestamp;
     epoch._activeItemSwaps = [];
     epoch._activeNuggItemSwaps = [];
     epoch._activeSwaps = [];
@@ -197,9 +198,9 @@ export function handleBlock__every(block: ethereum.Block): void {
 
     switch (check.toI32()) {
         case 0:
-            onEpochClose(epoch, proto);
+            onEpochClose(epoch, proto, block);
 
-            onEpochStart(currentEpochId, proto);
+            onEpochStart(currentEpochId, proto, block);
 
             onEpochInit(currentEpochId.plus(bigi(2)), proto);
             break;

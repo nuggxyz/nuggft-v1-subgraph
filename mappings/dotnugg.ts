@@ -159,16 +159,16 @@ export function updateProof(nugg: Nugg): void {
         let toDelete = difference(nugg._items, items);
 
         for (let i = 0; i < toCreate.length; i++) {
-            let item = safeLoadItemNull(BigInt.fromI32(toCreate[i]));
-            if (item == null) {
-                item = safeNewItem(BigInt.fromI32(toCreate[i]));
-                item.count = BigInt.fromString('0');
-                item.save();
-            }
-            item = item as Item;
+            let item = safeLoadItem(BigInt.fromI32(toCreate[i]));
+            // if (item === null) {
+            //     item = safeNewItem(BigInt.fromI32(toCreate[i]));
+            //     item.count = BigInt.fromString('0');
+            //     item.save();
+            // }
+            // item = item as Item;
             let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
 
-            if (nuggItem == null) {
+            if (nuggItem === null) {
                 nuggItem = safeNewNuggItem(nugg, item);
                 nuggItem.count = BigInt.fromString('0');
                 nuggItem.item = item.id;
