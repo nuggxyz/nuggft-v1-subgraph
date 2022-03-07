@@ -96,6 +96,12 @@ export function safeLoadNuggNull(id: BigInt): Nugg | null {
     return loaded;
 }
 
+// export function safeRemoveNuggItemActiveSwap(nuggItem: NuggItem): void {
+//     nuggItem.activeSwap = null;
+//     nuggItem.protocol = null;
+//     nuggItem.save();
+// }
+
 export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): void {
     nugg.activeSwap = swap.id;
     nugg.protocol = '0x42069';
@@ -229,6 +235,7 @@ export function safeRemoveItemActiveSwap(item: Item): void {
     item.save();
 }
 export function safeRemoveNuggItemActiveSwap(nuggitem: NuggItem): void {
+    // let acitveswap = nuggitem.activeSwap;
     nuggitem.activeSwap = null;
     nuggitem.protocol = null;
     nuggitem.save();
@@ -385,7 +392,9 @@ export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
     let swap = new ItemSwap(id);
     swap.num = sellingNuggItem.numSwaps;
     // swap.endingEpoch = endingEpoch;
-
+    sellingNuggItem.activeSwap = swap.id;
+    sellingNuggItem.save();
+    swap.save();
     return swap;
 }
 export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void {
@@ -538,7 +547,7 @@ export function safeLoadOfferHelper(swap: Swap, user: User): Offer {
 
 //     let loaded = ItemOffer.load(header + id);
 //     if (loaded == null) log.critical('ItemOffer CANNOT BE NULL:' + id, []);
-//     return loaded as ItemOffer;
+//     return loaded as ItemOffeFr;
 // }
 
 export function safeNewItemOffer(swap: ItemSwap, nugg: Nugg): ItemOffer {
