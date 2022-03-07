@@ -34,7 +34,7 @@ export function handleEvent__Rotate(event: Rotate): void {
     _rotate(event.params.tokenId, event.block);
 }
 
-function _rotate(tokenId: BigInt, block: ethereum.Block): void {
+export function _rotate(tokenId: BigInt, block: ethereum.Block): void {
     log.info('handleEvent__Rotate start', []);
 
     let nugg = safeLoadNugg(tokenId);

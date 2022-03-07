@@ -137,10 +137,10 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     log.info('onEpochClose IN', []);
 
     let swaps = epoch._activeSwaps;
-    log.warning('onEpochClose A: ' + swaps.join('='), []);
+    // log.warning('onEpochClose A: ' + swaps.join('='), []);
 
     for (let i = 0; i < swaps.length; i++) {
-        log.warning('onEpochClose B: ' + i.toString(), []);
+        // log.warning('onEpochClose B: ' + i.toString(), []);
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
@@ -152,7 +152,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     }
 
     let nuggItemSwaps = epoch._activeNuggItemSwaps;
-    log.warning('AAA: ' + nuggItemSwaps.join('='), []);
+    // log.warning('AAA: ' + nuggItemSwaps.join('='), []);
 
     for (let j = 0; j < nuggItemSwaps.length; j++) {
         let s = unsafeLoadItemSwap(nuggItemSwaps[j]);
@@ -162,7 +162,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
 
     let itemswaps = epoch._activeItemSwaps;
 
-    log.warning('BBB: ' + itemswaps.join('='), []);
+    // log.warning('BBB: ' + itemswaps.join('='), []);
     for (let j = 0; j < itemswaps.length; j++) {
         let s = unsafeLoadItemSwap(itemswaps[j]);
 
@@ -194,7 +194,7 @@ export function handleBlock__every(block: ethereum.Block): void {
     // let startblock = getCurrentStartBlock(proto.interval, block.number)
 
     let check = epoch.endblock.minus(block.number);
-    log.warning(check.toString(), []);
+    // log.warning(check.toString(), []);
 
     switch (check.toI32()) {
         case 0:
