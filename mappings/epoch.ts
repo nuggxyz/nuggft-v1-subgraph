@@ -204,7 +204,7 @@ export function handleBlock__every(block: ethereum.Block): void {
 
             onEpochInit(currentEpochId.plus(bigi(2)), proto);
             break;
-        case 4:
+        case 8:
             let nugg = safeLoadNuggNull(currentEpochId.plus(bigi(1)));
             if (nugg == null) {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);

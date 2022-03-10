@@ -26,12 +26,14 @@ import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } fro
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
 import {
     handleEvent__Claim,
+    handleEvent__Mint,
     handleEvent__Offer,
     handleEvent__OfferMint,
     handleEvent__Rotate,
     handleEvent__Sell,
 } from './swap';
 import { b32toBigEndian, bigb, bigi } from './utils';
+import { handleEvent__TransferItem } from './swap';
 
 export {
     handleEvent__Transfer,
@@ -50,6 +52,7 @@ export {
     handleEvent__Sell,
     handleEvent__Claim,
     handleEvent__OfferMint,
+    handleEvent__TransferItem,
 };
 
 export let ONE = BigInt.fromString('1');
@@ -204,41 +207,41 @@ function handleEvent__Transfer(event: Transfer): void {
     }
 
     // if this is a mint
-    if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
-        // cacheDotnugg(nugg);
+    // if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
+    //     // cacheDotnugg(nugg);
 
-        let swap = safeNewSwapHelper(nugg);
+    //     let swap = safeNewSwapHelper(nugg);
 
-        nugg.numSwaps = BigInt.fromString('1');
+    //     nugg.numSwaps = BigInt.fromString('1');
 
-        nugg.save();
+    //     nugg.save();
 
-        swap.eth = BigInt.fromString('0'); // handled by Mint or Offer
-        swap.ethUsd = wethToUsdc(swap.eth);
-        swap.owner = proto.nullUser;
-        swap.leader = receiver.id;
-        swap.nugg = nugg.id;
-        swap.endingEpoch = BigInt.fromString(proto.epoch);
-        swap.epoch = proto.epoch;
-        swap.startingEpoch = proto.epoch;
-        swap.nextDelegateType = 'None';
-        swap.save();
+    //     swap.eth = BigInt.fromString('0'); // handled by Mint or Offer
+    //     swap.ethUsd = BigInt.fromString('0');
+    //     swap.owner = proto.nullUser;
+    //     swap.leader = receiver.id;
+    //     swap.nugg = nugg.id;
+    //     swap.endingEpoch = BigInt.fromString(proto.epoch);
+    //     swap.epoch = proto.epoch;
+    //     swap.startingEpoch = proto.epoch;
+    //     swap.nextDelegateType = 'None';
+    //     swap.save();
 
-        // safeSetNuggActiveSwap(nugg, swap);
+    //     // safeSetNuggActiveSwap(nugg, swap);
 
-        let offer = safeNewOfferHelper(swap, receiver);
+    //     let offer = safeNewOfferHelper(swap, receiver);
 
-        offer.claimed = true;
-        offer.eth = BigInt.fromString('0'); // handled by Mint or Offer
-        offer.ethUsd = wethToUsdc(offer.eth);
-        offer.owner = false;
-        offer.user = receiver.id;
-        offer.swap = swap.id;
+    //     offer.claimed = true;
+    //     offer.eth = BigInt.fromString('0'); // handled by Mint or Offer
+    //     offer.ethUsd = BigInt.fromString('0');
+    //     offer.owner = false;
+    //     offer.user = receiver.id;
+    //     offer.swap = swap.id;
 
-        offer.save();
+    //     offer.save();
 
-        updateProof(nugg);
-    }
+    //     updateProof(nugg, );
+    // }
 
     nugg.user = receiver.id;
     nugg.lastUser = sender.id;
@@ -254,20 +257,53 @@ function handleEvent__Transfer(event: Transfer): void {
     log.info('handleEvent__Transfer end', []);
 }
 
-function handleEvent__Mint(event: Mint): void {
+export function _mint(event: Mint): void {
     log.info('handleEvent__Mint start', []);
 
+    let proto = safeLoadProtocol();
+
     let nugg = safeLoadNugg(event.params.tokenId);
-    let swap = unsafeLoadSwap(nugg.id + '-0');
 
     let user = safeLoadUser(Address.fromString(nugg.user));
+
+    let swap = safeNewSwapHelper(nugg);
+
+    nugg.numSwaps = BigInt.fromString('1');
+
+    nugg.save();
+
+    swap.eth = BigInt.fromString('0'); // handled by Mint or Offer
+    swap.ethUsd = BigInt.fromString('0');
+    swap.owner = proto.nullUser;
+    swap.leader = user.id;
+    swap.nugg = nugg.id;
+    swap.endingEpoch = BigInt.fromString(proto.epoch);
+    swap.epoch = proto.epoch;
+    swap.startingEpoch = proto.epoch;
+    swap.nextDelegateType = 'None';
+    swap.save();
+
+    let voffer = safeNewOfferHelper(swap, user);
+
+    voffer.claimed = true;
+    voffer.eth = BigInt.fromString('0'); // handled by Mint or Offer
+    voffer.ethUsd = BigInt.fromString('0');
+    voffer.owner = false;
+    voffer.user = user.id;
+    voffer.swap = swap.id;
+
+    voffer.save();
+
     let offer = safeLoadOfferHelper(swap, user);
+    log.info('B', []);
 
     swap.eth = event.params.value;
-    swap.ethUsd = wethToUsdc(swap.eth);
+    swap.ethUsd = event.params.value;
+    log.info('C', []);
 
     offer.eth = swap.eth;
-    offer.ethUsd = swap.ethUsd;
+    offer.ethUsd = swap.eth;
+    log.info('D', []);
 
     swap.save();
     offer.save();

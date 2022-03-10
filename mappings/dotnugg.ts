@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
 import { NuggftV1 } from '../generated/NuggftV1/NuggftV1';
 
 import { Item, Nugg, NuggItem } from '../generated/schema';
@@ -12,7 +12,7 @@ import {
     safeNewNuggItem,
 } from './safeload';
 import { safeDiv } from './uniswap';
-import { bigi } from './utils';
+import { bigi, b32toBigEndian } from './utils';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
     let nuggft = NuggftV1.bind(nuggftAddress);
@@ -136,64 +136,74 @@ export function updatedStakedSharesAndEth(): void {
     proto.save();
 }
 
-export function updateProof(nugg: Nugg): void {
+export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boolean): void {
     let proto = safeLoadProtocol();
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
-    let res = nuggft.try_proofOf(nugg.idnum);
+    if (preload.equals(BigInt.fromI32(0))) {
+        let res = nuggft.try_proofOf(nugg.idnum);
 
-    if (!res.reverted) {
-        let proof = res.value;
+        if (res.reverted) return;
 
-        let items: i32[] = [];
-
-        do {
-            let curr = proof.bitAnd(BigInt.fromString('65535')).toI32();
-            if (curr != 0) {
-                items.push(curr);
-            }
-        } while (!(proof = proof.rightShift(16)).isZero());
-
-        let toCreate = difference(items, nugg._items);
-
-        let toDelete = difference(nugg._items, items);
-
-        for (let i = 0; i < toCreate.length; i++) {
-            let item = safeLoadItem(BigInt.fromI32(toCreate[i]));
-            // if (item === null) {
-            //     item = safeNewItem(BigInt.fromI32(toCreate[i]));
-            //     item.count = BigInt.fromString('0');
-            //     item.save();
-            // }
-            // item = item as Item;
-            let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
-
-            if (nuggItem === null) {
-                nuggItem = safeNewNuggItem(nugg, item);
-                nuggItem.count = BigInt.fromString('0');
-                nuggItem.item = item.id;
-                nuggItem.nugg = nugg.id;
-            }
-            nuggItem = nuggItem as NuggItem;
-
-            nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
-            nuggItem.save();
-        }
-
-        for (let i = 0; i < toDelete.length; i++) {
-            let item = safeLoadItem(BigInt.fromI32(toDelete[i]));
-
-            let nuggItem = safeLoadNuggItemHelper(nugg, item);
-
-            nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
-
-            nuggItem.save();
-        }
-
-        nugg._items = items;
-
-        nugg.save();
+        preload = res.value;
     }
+
+    let proof = preload;
+
+    let items: i32[] = [];
+
+    do {
+        let curr = proof.bitAnd(BigInt.fromString('65535')).toI32();
+        if (curr != 0) {
+            items.push(curr);
+        }
+    } while (!(proof = proof.rightShift(16)).isZero());
+
+    let toCreate = difference(items, nugg._items);
+
+    let toDelete = difference(nugg._items, items);
+
+    for (let i = 0; i < toCreate.length; i++) {
+        let item = safeLoadItem(BigInt.fromI32(toCreate[i]));
+
+        // if (item === null) {
+        //     item = safeNewItem(BigInt.fromI32(toCreate[i]));
+        //     item.count = BigInt.fromString('0');
+        //     item.save();
+        // }
+        // item = item as Item;
+        let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
+
+        if (nuggItem === null) {
+            nuggItem = safeNewNuggItem(nugg, item);
+            nuggItem.count = BigInt.fromString('0');
+            nuggItem.item = item.id;
+            nuggItem.nugg = nugg.id;
+        }
+        nuggItem = nuggItem as NuggItem;
+
+        if (incrementItemCount) {
+            item.count = item.count.plus(BigInt.fromString('1'));
+            item.save();
+        }
+
+        nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
+        nuggItem.save();
+    }
+
+    for (let i = 0; i < toDelete.length; i++) {
+        let item = safeLoadItem(BigInt.fromI32(toDelete[i]));
+
+        let nuggItem = safeLoadNuggItemHelper(nugg, item);
+
+        nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
+
+        nuggItem.save();
+    }
+
+    nugg._items = items;
+
+    nugg.save();
 
     proto.save();
 }

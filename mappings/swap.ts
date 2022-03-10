@@ -17,13 +17,34 @@ import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { Claim, Offer, OfferMint, Rotate, Sell } from '../generated/NuggftV1/NuggftV1';
+import {
+    Claim,
+    Mint,
+    Offer,
+    OfferMint,
+    Rotate,
+    Sell,
+    TransferItem,
+} from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
-import { mask } from './nuggft';
+import { mask, _mint } from './nuggft';
+
+export function handleEvent__TransferItem(event: TransferItem): void {
+    if (event.params.to.equals(BigInt.fromI32(0))) {
+        _rotate(event.params.from, event.block, event.params.proof, false);
+    } else {
+        _rotate(event.params.to, event.block, event.params.proof, false);
+    }
+}
+
+export function handleEvent__Mint(event: Mint): void {
+    _mint(event);
+    _rotate(event.params.tokenId, event.block, event.params.proof, true);
+}
 
 export function handleEvent__OfferMint(event: OfferMint): void {
     _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
-    _rotate(event.params.tokenId, event.block);
+    _rotate(event.params.tokenId, event.block, event.params.proof, true);
 }
 
 export function handleEvent__Offer(event: Offer): void {
@@ -31,17 +52,22 @@ export function handleEvent__Offer(event: Offer): void {
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
-    _rotate(event.params.tokenId, event.block);
+    _rotate(event.params.tokenId, event.block, event.params.proof, false);
 }
 
-export function _rotate(tokenId: BigInt, block: ethereum.Block): void {
+export function _rotate(
+    tokenId: BigInt,
+    block: ethereum.Block,
+    proof: Bytes,
+    increment: boolean,
+): void {
     log.info('handleEvent__Rotate start', []);
 
     let nugg = safeLoadNugg(tokenId);
 
     cacheDotnugg(nugg, block.number.toI32());
 
-    updateProof(nugg);
+    updateProof(nugg, b32toBigEndian(proof), increment);
 
     log.info('handleEvent__Rotate end', []);
 }
@@ -101,22 +127,9 @@ export function handleEvent__Sell(event: Sell): void {
 
     let agency = b32toBigEndian(event.params.agency);
 
-    // let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
-
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
-
-    let agency__flag = agency.rightShift(254);
-
-    let proto = safeLoadProtocol();
-
     let nugg = safeLoadNugg(event.params.tokenId);
-
-    // if (nugg.user != proto.nuggftUser) {
-    //     log.error('handleEvent__Sell: nugg.user should always be proto.nuggftUser', []);
-    //     log.critical('', []);
-    // }
 
     let user = safeLoadUser(Address.fromString(nugg.user));
 

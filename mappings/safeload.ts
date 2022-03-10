@@ -15,7 +15,6 @@ import {
     NuggActiveItemSwap,
 } from '../generated/schema';
 import { cacheDotnugg } from './dotnugg';
-import { bigi } from './utils';
 
 export function safeLoadActiveEpoch(): Epoch {
     let loaded = safeLoadProtocol();
@@ -253,24 +252,24 @@ export function unsafeLoadItem(id: string): Item {
 }
 
 export function safeLoadNuggItemHelper(nugg: Nugg, item: Item): NuggItem {
-    let id = nugg.id + '-' + item.id;
+    let id = item.id + '-' + nugg.id;
     let loaded = NuggItem.load(id);
-    if (loaded === null) {
-        log.warning('HERE', []);
-        log.critical('NuggItem CANNOT BE NULL:' + id, []);
+    if (loaded == null) {
+        log.warning('NuggItem CANNOT BE NULL:' + id, []);
+        log.critical('', []);
     }
     return loaded as NuggItem;
 }
 
 export function safeLoadNuggItemHelperNull(nugg: Nugg, item: Item): NuggItem | null {
-    let id = nugg.id + '-' + item.id;
+    let id = item.id + '-' + nugg.id;
     let loaded = NuggItem.load(id);
 
     return loaded;
 }
 
 export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
-    let id = nugg.id + '-' + item.id;
+    let id = item.id + '-' + nugg.id;
     let loaded = new NuggItem(id);
     loaded.numSwaps = BigInt.fromString('0');
     return loaded;
@@ -478,12 +477,14 @@ export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: 
         log.critical('', []);
     }
     let id = nugg.id + '-' + nuggItem.id;
+
     let loaded = NuggActiveItemSwap.load(id);
     if (loaded == null) {
         loaded = new NuggActiveItemSwap(id);
         loaded.activeId = swap.id;
         loaded.save();
     } else {
+        log.warning('I AN GEREREGRERE', []);
         if (loaded.activeId != swap.id) {
             log.error(
                 'safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists',

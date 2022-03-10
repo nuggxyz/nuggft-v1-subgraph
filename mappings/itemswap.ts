@@ -212,31 +212,11 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 
     safeRemoveNuggItemActiveSwap(nuggitem);
 
-    // let itemswap = nuggitem.activeSwap;
-
-    // if (itemswap == null) {
-    //     log.error('itemswap connot be null', []);
-    //     log.critical('', []);
-    // }
-
-    // let realitemswap = ItemSwap.load(itemswap as string);
-
-    // if (realitemswap == null) {
-    //     log.error('realitemswap connot be null', []);
-    //     log.critical('', []);
-    // }
-
-    // safeRemoveNuggItemActiveSwap(nuggitem);
-
-    // let itemoffer = safeLoadItemOfferHelper(realitemswap as ItemSwap, buyingNugg);
-
     itemoffer.claimed = true;
 
     itemoffer.save();
 
     updatedStakedSharesAndEth();
-
-    updateProof(buyingNugg);
 }
 
 export function handleEvent__SellItem(event: SellItem): void {
@@ -293,7 +273,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     updatedStakedSharesAndEth();
 
-    updateProof(sellingNugg);
+    // updateProof(sellingNugg, bigi(0), false);
 
-    cacheDotnugg(sellingNugg, 0);
+    // cacheDotnugg(sellingNugg, 0);
 }
