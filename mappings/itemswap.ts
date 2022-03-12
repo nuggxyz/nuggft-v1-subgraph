@@ -25,7 +25,7 @@ import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { ClaimItem, OfferItem, SellItem } from '../generated/NuggftV1/NuggftV1';
 import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
-import { mask } from './nuggft';
+import { mask, _stake } from './nuggft';
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol();
@@ -79,7 +79,9 @@ export function handleEvent__OfferItem(event: OfferItem): void {
         log.critical('', []);
     }
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
+
+    _stake(event.params.stake);
 }
 
 function _offerCommitItem(
@@ -216,7 +218,7 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 
     itemoffer.save();
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
 }
 
 export function handleEvent__SellItem(event: SellItem): void {
@@ -271,7 +273,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     log.info('handleEvent__SellItem end', []);
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
 
     // updateProof(sellingNugg, bigi(0), false);
 

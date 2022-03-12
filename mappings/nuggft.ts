@@ -1,4 +1,4 @@
-import { Address, log } from '@graphprotocol/graph-ts';
+import { Address, log, Bytes } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
 import { Genesis, Mint, Stake, Transfer } from '../generated/NuggftV1/NuggftV1';
 import { safeDiv, wethToUsdc } from './uniswap';
@@ -153,9 +153,13 @@ function handleEvent__Genesis(event: Genesis): void {
 }
 
 function handleEvent__Stake(event: Stake): void {
+    _stake(event.params.cache);
+}
+
+export function _stake(cache: Bytes): void {
     log.info('handleEvent__Stake start', []);
 
-    let agency = b32toBigEndian(event.params.cache);
+    let agency = b32toBigEndian(cache);
 
     // let protocolEth = event.params.stake.bitAnd(mask(96));
     let eth = agency.rightShift(96).bitAnd(mask(96));
@@ -250,7 +254,7 @@ function handleEvent__Transfer(event: Transfer): void {
     nugg.save();
     sender.save();
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
 
     cacheDotnugg(nugg, event.block.number.toI32());
 

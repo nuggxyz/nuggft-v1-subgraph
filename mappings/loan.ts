@@ -28,13 +28,9 @@ export function handleEvent__Loan(event: LoanEvent): void {
 
     let agency = b32toBigEndian(event.params.agency);
 
-    let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
-
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
     let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
-
-    let agency__flag = agency.rightShift(254);
 
     let user = safeLoadUser(Address.fromString(nugg.user));
 
@@ -44,7 +40,7 @@ export function handleEvent__Loan(event: LoanEvent): void {
     loan.liquidatedForEth = BigInt.fromString('0');
     loan.liquidatedForUsd = BigInt.fromString('0');
 
-    loan.epoch = proto.epoch;
+    loan.epoch = agency__epoch.toString();
     loan.user = user.id;
     loan.nugg = nugg.id;
 
@@ -81,12 +77,6 @@ export function handleEvent__Liquidate(event: Liquidate): void {
     let agency = b32toBigEndian(event.params.agency);
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
-
-    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
-
-    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
-
-    let agency__flag = agency.rightShift(254);
 
     let nugg = safeLoadNugg(event.params.tokenId);
 
@@ -134,6 +124,7 @@ export function handleEvent__Rebalance(event: Rebalance): void {
     let agency__flag = agency.rightShift(254);
 
     loan.eth = agency__eth;
+    loan.epoch = agency__epoch.toString();
     loan.endingEpoch = agency__epoch.plus(LIQUDATION_PERIOD);
 
     loan.save();

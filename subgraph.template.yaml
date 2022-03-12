@@ -31,15 +31,15 @@ dataSources:
           eventHandlers:
               - event: Genesis(uint256,uint32,uint24,uint8)
                 handler: handleEvent__Genesis
-              - event: Mint(uint160,uint96,bytes32)
+              - event: Mint(indexed uint160,uint96,bytes32,bytes32)
                 handler: handleEvent__Mint
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleEvent__Transfer
-              - event: Offer(indexed uint160,bytes32)
+              - event: Offer(indexed uint160,bytes32,bytes32)
                 handler: handleEvent__Offer
-              - event: OfferMint(indexed uint160,bytes32,bytes32)
+              - event: OfferMint(indexed uint160,bytes32,bytes32,bytes32)
                 handler: handleEvent__OfferMint
-              - event: OfferItem(indexed uint160,indexed bytes2,bytes32)
+              - event: OfferItem(indexed uint160,indexed bytes2,bytes32,bytes32)
                 handler: handleEvent__OfferItem
               - event: Stake(bytes32)
                 handler: handleEvent__Stake
@@ -58,7 +58,7 @@ dataSources:
               - event: ClaimItem(indexed uint160,indexed bytes2,indexed uint160)
                 handler: handleEvent__ClaimItem
               - event: Rebalance(indexed uint160,bytes32)
-                handler: handleEvent__RebalanceItem
+                handler: handleEvent__Rebalance
               - event: TransferItem(indexed uint256,indexed uint256,indexed bytes2,bytes32)
                 handler: handleEvent__TransferItem
           blockHandlers:

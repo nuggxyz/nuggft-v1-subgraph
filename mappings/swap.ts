@@ -27,7 +27,7 @@ import {
     TransferItem,
 } from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
-import { mask, _mint } from './nuggft';
+import { mask, _mint, _stake } from './nuggft';
 
 export function handleEvent__TransferItem(event: TransferItem): void {
     if (event.params.to.equals(BigInt.fromI32(0))) {
@@ -40,15 +40,18 @@ export function handleEvent__TransferItem(event: TransferItem): void {
 export function handleEvent__Mint(event: Mint): void {
     _mint(event);
     _rotate(event.params.tokenId, event.block, event.params.proof, true);
+    _stake(event.params.stake);
 }
 
 export function handleEvent__OfferMint(event: OfferMint): void {
     _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
     _rotate(event.params.tokenId, event.block, event.params.proof, true);
+    _stake(event.params.stake);
 }
 
 export function handleEvent__Offer(event: Offer): void {
     _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
+    _stake(event.params.stake);
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
@@ -119,7 +122,7 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes): void {
         log.critical('', []);
     }
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
 }
 
 export function handleEvent__Sell(event: Sell): void {
@@ -160,7 +163,7 @@ export function handleEvent__Sell(event: Sell): void {
 
     offer.save();
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
 
     log.info('handleEvent__Sell end', []);
 }
@@ -191,7 +194,7 @@ export function handleEvent__Claim(event: Claim): void {
         }
     }
 
-    updatedStakedSharesAndEth();
+    // updatedStakedSharesAndEth();
 
     log.info('handleEvent__Claim end', []);
 }
