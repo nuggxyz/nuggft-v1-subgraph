@@ -126,7 +126,12 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
     nugg.save();
 }
 
-export function safeNewNugg(id: BigInt, userId: string, block: ethereum.Block): Nugg {
+export function safeNewNugg(
+    id: BigInt,
+    userId: string,
+    block: ethereum.Block,
+    epoch: BigInt,
+): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id;
     loaded.burned = false;
@@ -134,6 +139,7 @@ export function safeNewNugg(id: BigInt, userId: string, block: ethereum.Block): 
     loaded.user = userId;
     loaded.lastUser = userId;
     loaded.resolver = '0x0000000000000000000000000000000000000000';
+    loaded.lastTransfer = epoch.toI32();
     loaded.save();
 
     safeAddNuggToProtcol();
@@ -151,6 +157,7 @@ export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
     loaded.user = userId;
     loaded.lastUser = userId;
     loaded.resolver = '0x0000000000000000000000000000000000000000';
+    loaded.lastTransfer = id.toI32();
     loaded.save();
 
     safeAddNuggToProtcol();

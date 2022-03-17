@@ -9,19 +9,12 @@ import {
     safeNewNugg,
     safeNewOfferHelper,
     safeNewSwapHelper,
-    unsafeLoadSwap,
 } from './safeload';
 import { handleBlock__every, onEpochGenesis } from './epoch';
 
 import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
 import { Epoch, Protocol, User } from '../generated/schema';
-import {
-    cacheDotnugg,
-    getDotnuggUserId,
-    getItemURIs,
-    updatedStakedSharesAndEth,
-    updateProof,
-} from './dotnugg';
+import { cacheDotnugg, getDotnuggUserId, getItemURIs } from './dotnugg';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
 import {
@@ -184,7 +177,12 @@ function handleEvent__Transfer(event: Transfer): void {
     let nugg = safeLoadNuggNull(event.params._tokenId);
 
     if (nugg == null) {
-        nugg = safeNewNugg(event.params._tokenId, proto.nullUser, event.block);
+        nugg = safeNewNugg(
+            event.params._tokenId,
+            proto.nullUser,
+            event.block,
+            BigInt.fromString(proto.epoch),
+        );
     }
 
     let sender = safeLoadUser(event.params._from);
@@ -249,12 +247,11 @@ function handleEvent__Transfer(event: Transfer): void {
 
     nugg.user = receiver.id;
     nugg.lastUser = sender.id;
+    nugg.lastTransfer = BigInt.fromString(proto.epoch).toI32();
 
     receiver.save();
     nugg.save();
     sender.save();
-
-    // updatedStakedSharesAndEth();
 
     cacheDotnugg(nugg, event.block.number.toI32());
 

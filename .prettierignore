@@ -1,2 +1,3 @@
 contracts/gen/*.sol
 types
+node_modules

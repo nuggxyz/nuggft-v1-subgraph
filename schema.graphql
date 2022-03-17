@@ -130,6 +130,8 @@ type Nugg @entity {
     activeSwap: Swap
     activeLoan: Loan
 
+    lastTransfer: Int!
+
     resolver: String!
 
     # dotnuggRawCache: [BigInt!]

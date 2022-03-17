@@ -5,7 +5,6 @@ import {
     safeLoadEpoch,
     safeLoadProtocol,
     safeNewEpoch,
-    safeNewNugg,
     safeNewSwapHelper,
     unsafeLoadSwap,
     safeLoadNugg,
@@ -17,7 +16,6 @@ import {
     safeLoadNuggNull,
     unsafeLoadItem,
     safeRemoveItemActiveSwap,
-    safeSetItemActiveSwap,
     unsafeSetItemActiveSwap,
 } from './safeload';
 import { safeDiv } from './uniswap';
