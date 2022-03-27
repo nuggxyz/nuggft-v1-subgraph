@@ -12,7 +12,13 @@ import {
 } from './safeload';
 import { handleBlock__every, onEpochGenesis } from './epoch';
 
-import { safeNewUser, safeLoadNugg, safeLoadUserNull, safeLoadProtocol } from './safeload';
+import {
+    safeNewUser,
+    safeLoadNugg,
+    safeLoadUserNull,
+    safeLoadProtocol,
+    safeLoadEpoch,
+} from './safeload';
 import { Epoch, Protocol, User } from '../generated/schema';
 import { cacheDotnugg, getDotnuggUserId, getItemURIs } from './dotnugg';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
@@ -24,9 +30,9 @@ import {
     handleEvent__OfferMint,
     handleEvent__Rotate,
     handleEvent__Sell,
+    _transfer,
 } from './swap';
-import { b32toBigEndian, bigb, bigi } from './utils';
-import { handleEvent__TransferItem } from './swap';
+import { b32toBigEndian, bigb, bigi, bigs } from './utils';
 
 export {
     handleEvent__Transfer,
@@ -45,7 +51,6 @@ export {
     handleEvent__Sell,
     handleEvent__Claim,
     handleEvent__OfferMint,
-    handleEvent__TransferItem,
 };
 
 export let ONE = BigInt.fromString('1');
@@ -62,39 +67,32 @@ function handleEvent__Genesis(event: Genesis): void {
     let proto = new Protocol('0x42069');
 
     proto.init = false;
-    proto.lastBlock = event.block.number;
     proto.nuggsNotCached = [];
-    proto.totalSwaps = BigInt.fromString('0');
-    proto.totalUsers = BigInt.fromString('0');
+    proto.totalSwaps = bigi(0);
+    proto.totalUsers = bigi(0);
 
     proto.genesisBlock = event.params.blocknum;
     proto.interval = event.params.interval;
 
-    proto.xnuggTotalSupply = BigInt.fromString('0');
-    proto.xnuggTotalEth = BigInt.fromString('0');
-    proto.nuggftTotalEth = BigInt.fromString('0');
+    proto.nuggftTotalEth = bigi(0);
 
-    proto.tvlEth = BigInt.fromString('0');
-    proto.tvlUsd = BigInt.fromString('0');
+    proto.priceUsdcWeth = bigi(0);
+    proto.totalSwaps = bigi(0);
+    proto.totalUsers = bigi(0);
+    proto.totalNuggs = bigi(0);
+    proto.totalItems = bigi(0);
+    proto.totalItemSwaps = bigi(0);
 
-    proto.priceUsdcWeth = BigInt.fromString('0');
-    proto.priceWethXnugg = BigInt.fromString('0');
-    proto.totalSwaps = BigInt.fromString('0');
-    proto.totalUsers = BigInt.fromString('0');
-    proto.totalNuggs = BigInt.fromString('0');
-    proto.totalItems = BigInt.fromString('0');
-    proto.totalItemSwaps = BigInt.fromString('0');
+    proto.nuggftStakedEthPerShare = bigi(0);
+    proto.nuggftStakedEth = bigi(0);
+    proto.nuggftStakedUsd = bigi(0);
+    proto.nuggftStakedUsdPerShare = bigi(0);
 
-    proto.nuggftStakedEthPerShare = BigInt.fromString('0');
-    proto.nuggftStakedEth = BigInt.fromString('0');
-    proto.nuggftStakedUsd = BigInt.fromString('0');
-    proto.nuggftStakedUsdPerShare = BigInt.fromString('0');
-
-    proto.nuggftStakedShares = BigInt.fromString('0');
+    proto.nuggftStakedShares = bigi(0);
 
     let epoch = new Epoch('NOTLIVE');
-    epoch.startblock = BigInt.fromString('0');
-    epoch.endblock = BigInt.fromString('0');
+    epoch.startblock = bigi(0);
+    epoch.endblock = bigi(0);
     epoch.status = 'PENDING';
     epoch._activeItemSwaps = [];
     epoch._activeSwaps = [];
@@ -103,30 +101,20 @@ function handleEvent__Genesis(event: Genesis): void {
     epoch.save();
 
     let nil = new User('0x0000000000000000000000000000000000000000');
-    nil.xnugg = BigInt.fromString('0');
-    nil.ethin = BigInt.fromString('0');
-    nil.ethout = BigInt.fromString('0');
-    nil.shares = BigInt.fromString('0');
+    nil.shares = bigi(0);
     nil.save();
 
     proto.epoch = epoch.id;
-    proto.xnuggUser = nil.id;
     proto.nuggftUser = nil.id;
     proto.nullUser = nil.id;
-
+    proto.nuggsPendingRemoval = [];
     proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
 
     proto.save();
 
+    // safeNewUser loads Protocol, so this needs to be below proto.save()
     let nuggft = safeNewUser(event.address);
-
-    nuggft.xnugg = BigInt.fromString('0');
-    nuggft.ethin = BigInt.fromString('0');
-    nuggft.ethout = BigInt.fromString('0');
-    nuggft.shares = BigInt.fromString('0');
-
-    //     nuggft.nuggs = [];
-    //     nuggft.offers = [];
+    nuggft.shares = bigi(0);
     nuggft.save();
 
     proto.nuggftUser = nuggft.id;
@@ -170,92 +158,7 @@ export function _stake(cache: Bytes): void {
 }
 
 function handleEvent__Transfer(event: Transfer): void {
-    log.info('handleEvent__Transfer start', []);
-
-    let proto = safeLoadProtocol();
-
-    let nugg = safeLoadNuggNull(event.params._tokenId);
-
-    if (nugg == null) {
-        nugg = safeNewNugg(
-            event.params._tokenId,
-            proto.nullUser,
-            event.block,
-            BigInt.fromString(proto.epoch),
-        );
-    }
-
-    let sender = safeLoadUser(event.params._from);
-
-    let receiver = safeLoadUserNull(event.params._to);
-
-    if (receiver == null) {
-        receiver = safeNewUser(event.params._to);
-        receiver.xnugg = BigInt.fromString('0');
-        receiver.ethin = BigInt.fromString('0');
-        receiver.ethout = BigInt.fromString('0');
-        receiver.shares = BigInt.fromString('0');
-        receiver.save();
-    }
-
-    if (sender.id != proto.nullUser) {
-        sender.shares = sender.shares.minus(BigInt.fromString('1'));
-    }
-
-    if (receiver.id == proto.nullUser) {
-        nugg.burned = true;
-    } else {
-        receiver.shares = receiver.shares.plus(BigInt.fromString('1'));
-    }
-
-    // if this is a mint
-    // if (sender.id == proto.nullUser && receiver.id != proto.nuggftUser) {
-    //     // cacheDotnugg(nugg);
-
-    //     let swap = safeNewSwapHelper(nugg);
-
-    //     nugg.numSwaps = BigInt.fromString('1');
-
-    //     nugg.save();
-
-    //     swap.eth = BigInt.fromString('0'); // handled by Mint or Offer
-    //     swap.ethUsd = BigInt.fromString('0');
-    //     swap.owner = proto.nullUser;
-    //     swap.leader = receiver.id;
-    //     swap.nugg = nugg.id;
-    //     swap.endingEpoch = BigInt.fromString(proto.epoch);
-    //     swap.epoch = proto.epoch;
-    //     swap.startingEpoch = proto.epoch;
-    //     swap.nextDelegateType = 'None';
-    //     swap.save();
-
-    //     // safeSetNuggActiveSwap(nugg, swap);
-
-    //     let offer = safeNewOfferHelper(swap, receiver);
-
-    //     offer.claimed = true;
-    //     offer.eth = BigInt.fromString('0'); // handled by Mint or Offer
-    //     offer.ethUsd = BigInt.fromString('0');
-    //     offer.owner = false;
-    //     offer.user = receiver.id;
-    //     offer.swap = swap.id;
-
-    //     offer.save();
-
-    //     updateProof(nugg, );
-    // }
-
-    nugg.user = receiver.id;
-    nugg.lastUser = sender.id;
-    nugg.lastTransfer = BigInt.fromString(proto.epoch).toI32();
-
-    receiver.save();
-    nugg.save();
-    sender.save();
-
-    cacheDotnugg(nugg, event.block.number.toI32());
-
-    log.info('handleEvent__Transfer end', []);
+    _transfer(event.params._from, event.params._to, event.params._tokenId);
 }
 
 export function _mint(event: Mint): void {
@@ -263,7 +166,16 @@ export function _mint(event: Mint): void {
 
     let proto = safeLoadProtocol();
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNuggNull(event.params.tokenId);
+
+    if (nugg === null) {
+        let agency = b32toBigEndian(event.params.agency);
+        nugg = safeNewNugg(
+            event.params.tokenId,
+            agency.bitAnd(mask(160)).toHexString(),
+            bigs(proto.epoch),
+        );
+    }
 
     let user = safeLoadUser(Address.fromString(nugg.user));
 
@@ -273,8 +185,8 @@ export function _mint(event: Mint): void {
 
     nugg.save();
 
-    swap.eth = BigInt.fromString('0'); // handled by Mint or Offer
-    swap.ethUsd = BigInt.fromString('0');
+    swap.eth = bigi(0); // handled by Mint or Offer
+    swap.ethUsd = bigi(0);
     swap.owner = proto.nullUser;
     swap.leader = user.id;
     swap.nugg = nugg.id;
@@ -282,29 +194,25 @@ export function _mint(event: Mint): void {
     swap.epoch = proto.epoch;
     swap.startingEpoch = proto.epoch;
     swap.nextDelegateType = 'None';
+    swap.bottom = bigi(0);
     swap.save();
 
-    let voffer = safeNewOfferHelper(swap, user);
+    let offer = safeNewOfferHelper(swap, user);
 
-    voffer.claimed = true;
-    voffer.eth = BigInt.fromString('0'); // handled by Mint or Offer
-    voffer.ethUsd = BigInt.fromString('0');
-    voffer.owner = false;
-    voffer.user = user.id;
-    voffer.swap = swap.id;
+    offer.claimed = true;
+    // offer.eth = bigi(0); // handled by Mint or Offer
+    // offer.ethUsd = bigi(0);
+    offer.owner = false;
+    offer.user = user.id;
+    offer.swap = swap.id;
+    offer.txhash = event.transaction.hash.toHexString();
+    // offer.save();
 
-    voffer.save();
-
-    let offer = safeLoadOfferHelper(swap, user);
-    log.info('B', []);
-
+    // let offer = safeLoadOfferHelper(swap, user);
     swap.eth = event.params.value;
     swap.ethUsd = event.params.value;
-    log.info('C', []);
-
-    offer.eth = swap.eth;
-    offer.ethUsd = swap.eth;
-    log.info('D', []);
+    offer.eth = event.params.value;
+    offer.ethUsd = event.params.value;
 
     swap.save();
     offer.save();

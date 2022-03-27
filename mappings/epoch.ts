@@ -21,7 +21,8 @@ import {
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
 import { cacheDotnugg } from './dotnugg';
-import { bigi } from './utils';
+import { addrs, bigi, bigs } from './utils';
+import { _transfer } from './swap';
 
 export function onEpochGenesis(
     block: ethereum.Block,
@@ -68,7 +69,7 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     nextSwap.leader = proto.nullUser;
     nextSwap.nugg = nextNugg.id;
     nextSwap.nextDelegateType = 'Mint';
-
+    nextSwap.bottom = bigi(0);
     nextSwap.save();
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
@@ -135,22 +136,33 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     log.info('onEpochClose IN', []);
 
     let swaps = epoch._activeSwaps;
-    // log.warning('onEpochClose A: ' + swaps.join('='), []);
+
+    let workingRemoval = proto.nuggsPendingRemoval;
+
+    for (let i = 0; i < proto.nuggsPendingRemoval.length; i++) {
+        store.remove('Nugg', workingRemoval[i]);
+        store.remove('Swap', workingRemoval[i] + '-0');
+        // TODO maybe we kill the cached svg here too?\
+    }
+
+    workingRemoval = [];
 
     for (let i = 0; i < swaps.length; i++) {
-        // log.warning('onEpochClose B: ' + i.toString(), []);
         let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
-            store.remove('Nugg', nugg.id);
-            store.remove('Swap', s.id);
+            workingRemoval.push(nugg.id);
         } else {
-            safeRemoveNuggActiveSwap(nugg);
+            nugg = safeRemoveNuggActiveSwap(nugg);
+            nugg = _transfer(addrs(proto.nuggftUser), addrs(s.leader), bigs(nugg.id));
+            nugg.pendingClaim = true;
+            nugg.save();
         }
     }
 
+    proto.nuggsPendingRemoval = workingRemoval;
+
     let nuggItemSwaps = epoch._activeNuggItemSwaps;
-    // log.warning('AAA: ' + nuggItemSwaps.join('='), []);
 
     for (let j = 0; j < nuggItemSwaps.length; j++) {
         let s = unsafeLoadItemSwap(nuggItemSwaps[j]);
@@ -196,12 +208,25 @@ export function handleBlock__every(block: ethereum.Block): void {
 
     switch (check.toI32()) {
         case 0:
+            // if (safeLoadNuggNull(currentEpochId.plus(bigi(1))) == null) {
+            //     onSwapInit(currentEpochId.plus(bigi(1)), proto);
+            // }
+
             onEpochClose(epoch, proto, block);
 
             onEpochStart(currentEpochId, proto, block);
 
             onEpochInit(currentEpochId.plus(bigi(2)), proto);
             break;
+        case 1: {
+            let nugg = safeLoadNuggNull(currentEpochId.plus(bigi(1)));
+            if (nugg == null) {
+                onSwapInit(currentEpochId.plus(bigi(1)), proto);
+                nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
+            }
+            cacheDotnugg(nugg, block.number.toI32());
+            break;
+        }
         case 8:
             let nugg = safeLoadNuggNull(currentEpochId.plus(bigi(1)));
             if (nugg == null) {

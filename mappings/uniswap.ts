@@ -3,9 +3,19 @@ import { Protocol } from '../generated/schema';
 
 export function invariant(test: boolean, error: string): void {
     if (!test) {
-        log.info(error, []);
+        log.debug(error, []);
         log.critical(error, []);
     }
+}
+
+export function panicFatal(error: string): void {
+    log.debug(error, []);
+    log.critical(error, []);
+}
+
+export function panic(error: string): void {
+    log.debug(error, []);
+    log.critical(error, []);
 }
 
 // export function handleWethUsdcUniswap(event: Swap): void {
@@ -35,14 +45,14 @@ export function wethToUsdc(num: BigInt): BigInt {
     return res.div(ONEe18);
 }
 
-export function xnuggToWeth(num: BigInt): BigInt {
-    let proto = Protocol.load('0x42069');
-    if (proto == null) {
-        return BigInt.fromString('0');
-    }
-    let res = num.times(proto.priceWethXnugg);
-    return res.div(ONEe18);
-}
+// export function xnuggToWeth(num: BigInt): BigInt {
+//     let proto = Protocol.load('0x42069');
+//     if (proto == null) {
+//         return BigInt.fromString('0');
+//     }
+//     let res = num.times(proto.priceWethXnugg);
+//     return res.div(ONEe18);
+// }
 
 let ONEe18 = BigInt.fromI32(10).pow(18);
 let ONEe36 = BigInt.fromI32(10).pow(18 * 2 + 12);

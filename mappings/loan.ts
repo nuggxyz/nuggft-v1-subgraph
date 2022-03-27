@@ -1,7 +1,6 @@
-import { log, BigInt, ethereum, Address } from '@graphprotocol/graph-ts';
-import { Liquidate, Loan as LoanEvent, NuggftV1, Rebalance } from '../generated/NuggftV1/NuggftV1';
+import { log, BigInt, Address } from '@graphprotocol/graph-ts';
+import { Liquidate, Loan as LoanEvent, Rebalance } from '../generated/NuggftV1/NuggftV1';
 
-import { Loan } from '../generated/schema';
 import { LIQUDATION_PERIOD } from './constants';
 import { mask } from './nuggft';
 
@@ -10,7 +9,6 @@ import {
     safeLoadNugg,
     safeLoadProtocol,
     safeLoadUser,
-    safeLoadUserFromString,
     safeLoadUserNull,
     safeNewLoanHelper,
     safeNewUser,
@@ -18,7 +16,7 @@ import {
     safeSetNuggActiveLoan,
 } from './safeload';
 import { wethToUsdc } from './uniswap';
-import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
+import { addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 
 export function handleEvent__Loan(event: LoanEvent): void {
     log.info('handleEvent__Loan start', []);
@@ -83,15 +81,6 @@ export function handleEvent__Liquidate(event: Liquidate): void {
     let loan = safeLoadLoanHelper(nugg);
 
     let user = safeLoadUserNull(agency__account);
-
-    if (user == null) {
-        user = safeNewUser(agency__account);
-        user.xnugg = BigInt.fromString('0');
-        user.ethin = BigInt.fromString('0');
-        user.ethout = BigInt.fromString('0');
-        user.shares = BigInt.fromString('0');
-        user.save();
-    }
 
     loan.liquidated = true;
 

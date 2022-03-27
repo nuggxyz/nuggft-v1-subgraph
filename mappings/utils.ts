@@ -4,6 +4,10 @@ export function bigi(num: i32): BigInt {
     return BigInt.fromI32(num);
 }
 
+export function bigs(num: string): BigInt {
+    return BigInt.fromString(num);
+}
+
 export function bigb(num: Bytes): BigInt {
     return b32toBigEndian(num);
 }
@@ -15,7 +19,9 @@ export function addr_i(num: BigInt): Address {
 export function addr_b(num: Bytes): Address {
     return Address.fromString(bigb(num).toHexString());
 }
-
+export function addrs(num: string): Address {
+    return Address.fromString(num);
+}
 export function b32toBigEndian(num: Bytes): BigInt {
     return BigInt.fromUnsignedBytes(Bytes.fromUint8Array(num.reverse()));
 }

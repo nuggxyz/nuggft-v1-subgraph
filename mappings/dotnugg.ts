@@ -29,7 +29,7 @@ export function getItemURIs(nuggftAddress: Address): void {
         let amount = nuggft.featureLength(i);
         for (let j = 1; j < amount + 1; j++) {
             let itemId = (i << 8) | j;
-            let callResult = nuggft.try_itemURI((i << 8) | j);
+            let callResult = nuggft.try_itemURI(bigi((i << 8) | j));
 
             let item = safeNewItem(bigi(itemId));
             item.count = bigi(0);

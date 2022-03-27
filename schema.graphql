@@ -3,7 +3,6 @@ type Protocol @entity {
 
     init: Boolean!
 
-    lastBlock: BigInt!
     epoch: Epoch!
 
     totalSwaps: BigInt!
@@ -17,13 +16,9 @@ type Protocol @entity {
     interval: BigInt!
     epochOffset: BigInt!
 
-    xnuggUser: User! @depreicated
     nuggftUser: User!
     nullUser: User!
     dotnuggV1Processor: String!
-
-    xnuggTotalSupply: BigInt! @depreicated
-    xnuggTotalEth: BigInt! @depreicated
 
     nuggftTotalEth: BigInt!
 
@@ -34,14 +29,12 @@ type Protocol @entity {
     nuggftStakedShares: BigInt!
 
     priceUsdcWeth: BigInt!
-    priceWethXnugg: BigInt! @depreicated
-
-    tvlEth: BigInt! @depreicated
-    tvlUsd: BigInt! @depreicated
 
     defaultActiveNugg: Nugg
 
     nuggsNotCached: [String!]!
+
+    nuggsPendingRemoval: [String!]!
 
     activeNuggs: [Nugg!]! @derivedFrom(field: "protocol")
     activeNuggItems: [NuggItem!]! @derivedFrom(field: "protocol")
@@ -131,11 +124,12 @@ type Nugg @entity {
     activeLoan: Loan
 
     lastTransfer: Int!
+    pendingClaim: Boolean!
 
     resolver: String!
 
     # dotnuggRawCache: [BigInt!]
-    dotnuggRawCache: String! @depreicated
+    dotnuggRawCache: String!
     dotnuggSvgCache: [String!]!
 
     numSwaps: BigInt!
@@ -164,6 +158,7 @@ type Swap @entity {
     startingEpoch: Epoch
 
     num: BigInt!
+    bottom: BigInt!
 
     eth: BigInt!
     ethUsd: BigInt!
@@ -214,12 +209,7 @@ type Loan @entity {
 type User @entity {
     id: ID!
 
-    xnugg: BigInt! @depreicated
-
     shares: BigInt! #update
-    ethin: BigInt!
-    ethout: BigInt!
-
     nuggs: [Nugg!]! @derivedFrom(field: "user")
 
     offers: [Offer!]! @derivedFrom(field: "user")
@@ -250,7 +240,7 @@ type ItemSwap @entity {
     epoch: Epoch
     endingEpoch: BigInt
     startingEpoch: Epoch
-
+    bottom: BigInt!
     nextDelegateType: NextOfferType!
 
     num: BigInt!

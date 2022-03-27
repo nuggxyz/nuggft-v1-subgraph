@@ -1,5 +1,5 @@
 import { log, BigInt } from '@graphprotocol/graph-ts';
-import { wethToUsdc } from './uniswap';
+import { wethToUsdc, panicFatal } from './uniswap';
 import {
     safeNewItemSwap,
     safeNewItemOffer,
@@ -10,7 +10,6 @@ import {
     safeGetAndDeleteNuggActiveItemSwap,
     safeSetItemActiveSwap,
     safeLoadActiveItemSwap,
-    safeRemoveItemActiveSwap,
     safeRemoveNuggItemActiveSwap,
 } from './safeload';
 import {
@@ -22,10 +21,10 @@ import {
     safeLoadItemOfferHelperNull,
 } from './safeload';
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/schema';
-import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
 import { ClaimItem, OfferItem, SellItem } from '../generated/NuggftV1/NuggftV1';
 import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
 import { mask, _stake } from './nuggft';
+import { updateProof, cacheDotnugg } from './dotnugg';
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol();
@@ -73,10 +72,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
             event.transaction.value,
         );
     } else {
-        log.error('itemswap.nextDelegateType should be Commit or Offer', [
-            itemswap.nextDelegateType,
-        ]);
-        log.critical('', []);
+        panicFatal('itemswap.nextDelegateType should be Commit or Offer');
     }
 
     // updatedStakedSharesAndEth();
@@ -96,7 +92,7 @@ function _offerCommitItem(
 ): void {
     log.info('_offerCommitItem start', []);
 
-    if (itemswap.epoch !== null) log.critical('_offerOfferItem: ITEMSWAP.epoch MUST BE NULL', []);
+    if (itemswap.epoch !== null) panicFatal('_offerOfferItem: ITEMSWAP.epoch MUST BE NULL');
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
 
@@ -218,7 +214,13 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 
     itemoffer.save();
 
-    // updatedStakedSharesAndEth();
+    const proof = b32toBigEndian(event.params.proof);
+
+    if (proof.notEqual(bigi(0))) {
+        updateProof(buyingNugg, proof, false);
+
+        cacheDotnugg(buyingNugg, 0);
+    }
 }
 
 export function handleEvent__SellItem(event: SellItem): void {
@@ -239,14 +241,14 @@ export function handleEvent__SellItem(event: SellItem): void {
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
     if (nuggitem.activeSwap != null) {
-        log.critical('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL', []);
+        panicFatal('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL');
     }
 
     let itemSwap = safeNewItemSwap(nuggitem);
 
     itemSwap.sellingNuggItem = nuggitem.id;
     itemSwap.sellingItem = nuggitem.item;
-
+    itemSwap.bottom = agency__eth;
     itemSwap.eth = agency__eth;
     itemSwap.ethUsd = wethToUsdc(agency__eth);
     itemSwap.owner = sellingNugg.id;
@@ -273,9 +275,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     log.info('handleEvent__SellItem end', []);
 
-    // updatedStakedSharesAndEth();
+    updateProof(sellingNugg, b32toBigEndian(event.params.proof), false);
 
-    // updateProof(sellingNugg, bigi(0), false);
-
-    // cacheDotnugg(sellingNugg, 0);
+    cacheDotnugg(sellingNugg, 0);
 }

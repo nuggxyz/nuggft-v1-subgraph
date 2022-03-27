@@ -135,6 +135,12 @@
                 "internalType": "uint160",
                 "name": "buyerTokenId",
                 "type": "uint160"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "proof",
+                "type": "bytes32"
             }
         ],
         "name": "ClaimItem",
@@ -297,6 +303,12 @@
                 "indexed": false,
                 "internalType": "bytes32",
                 "name": "stake",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "agency",
                 "type": "bytes32"
             }
         ],
@@ -467,6 +479,12 @@
                 "internalType": "bytes32",
                 "name": "agency",
                 "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "proof",
+                "type": "bytes32"
             }
         ],
         "name": "SellItem",
@@ -508,37 +526,6 @@
             }
         ],
         "name": "Transfer",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "uint256",
-                "name": "from",
-                "type": "uint256"
-            },
-            {
-                "indexed": true,
-                "internalType": "uint256",
-                "name": "to",
-                "type": "uint256"
-            },
-            {
-                "indexed": true,
-                "internalType": "bytes2",
-                "name": "id",
-                "type": "bytes2"
-            },
-            {
-                "indexed": false,
-                "internalType": "bytes32",
-                "name": "proof",
-                "type": "bytes32"
-            }
-        ],
-        "name": "TransferItem",
         "type": "event"
     },
     {
@@ -633,7 +620,7 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "",
+                "name": "you",
                 "type": "address"
             }
         ],
@@ -641,11 +628,11 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "acc",
                 "type": "uint256"
             }
         ],
-        "stateMutability": "pure",
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -657,6 +644,13 @@
             }
         ],
         "name": "burn",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "bye",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -773,25 +767,6 @@
     {
         "inputs": [
             {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "currentItemSwap",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "uint160",
                 "name": "tokenId",
                 "type": "uint160"
@@ -839,6 +814,19 @@
         "outputs": [
             {
                 "internalType": "contract IDotnuggV1Safe",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "emitter",
+        "outputs": [
+            {
+                "internalType": "contract Erc1155Emmitter",
                 "name": "",
                 "type": "address"
             }
@@ -1100,9 +1088,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint16",
+                "internalType": "uint256",
                 "name": "itemId",
-                "type": "uint16"
+                "type": "uint256"
             }
         ],
         "name": "itemURI",
@@ -1111,6 +1099,25 @@
                 "internalType": "string",
                 "name": "res",
                 "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "lastItemSwap",
+        "outputs": [
+            {
+                "internalType": "uint24",
+                "name": "",
+                "type": "uint24"
             }
         ],
         "stateMutability": "view",

@@ -3,10 +3,12 @@ import {
     safeGetAndDeleteUserActiveSwap,
     safeLoadActiveSwap,
     safeLoadNugg,
+    safeLoadNuggNull,
     safeLoadOfferHelperNull,
     safeLoadProtocol,
     safeLoadUser,
     safeLoadUserNull,
+    safeNewNugg,
     safeNewOfferHelper,
     safeNewSwapHelper,
     safeNewUser,
@@ -17,25 +19,17 @@ import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import {
-    Claim,
-    Mint,
-    Offer,
-    OfferMint,
-    Rotate,
-    Sell,
-    TransferItem,
-} from '../generated/NuggftV1/NuggftV1';
+import { Claim, Mint, Offer, OfferMint, Rotate, Sell } from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 import { mask, _mint, _stake } from './nuggft';
 
-export function handleEvent__TransferItem(event: TransferItem): void {
-    if (event.params.to.equals(BigInt.fromI32(0))) {
-        _rotate(event.params.from, event.block, event.params.proof, false);
-    } else {
-        _rotate(event.params.to, event.block, event.params.proof, false);
-    }
-}
+// export function handleEvent__TransferItem(event: TransferItem): void {
+//     if (event.params.to.equals(BigInt.fromI32(0))) {
+//         _rotate(event.params.from, event.block, event.params.proof, false);
+//     } else {
+//         _rotate(event.params.to, event.block, event.params.proof, false);
+//     }
+// }
 
 export function handleEvent__Mint(event: Mint): void {
     _mint(event);
@@ -56,6 +50,57 @@ export function handleEvent__Offer(event: Offer): void {
 
 export function handleEvent__Rotate(event: Rotate): void {
     _rotate(event.params.tokenId, event.block, event.params.proof, false);
+}
+
+export function _transfer(from: Address, to: Address, tokenId: BigInt): Nugg {
+    log.info('handleEvent__Transfer start', []);
+
+    let proto = safeLoadProtocol();
+
+    let nugg = safeLoadNuggNull(tokenId);
+
+    if (nugg == null) {
+        nugg = safeNewNugg(tokenId, proto.nullUser, BigInt.fromString(proto.epoch));
+    }
+
+    let sender = safeLoadUser(from);
+
+    let receiver = safeLoadUserNull(to);
+
+    // check if we have aready preprocesed this transfer
+    /// this should be equal to the !nugg.pendingClaim check
+    // if (receiver.id !== nugg.user) {
+    if (!nugg.pendingClaim) {
+        if (sender.id != proto.nullUser) {
+            sender.shares = sender.shares.minus(BigInt.fromString('1'));
+        }
+
+        if (receiver.id == proto.nullUser) {
+            nugg.burned = true;
+        } else {
+            receiver.shares = receiver.shares.plus(BigInt.fromString('1'));
+        }
+
+        nugg.user = receiver.id;
+        nugg.lastUser = sender.id;
+
+        receiver.save();
+        nugg.save();
+        sender.save();
+
+        cacheDotnugg(nugg, 0);
+    } else {
+        // if prepocessed, we mark nugg as
+        nugg.pendingClaim = false;
+    }
+
+    nugg.lastTransfer = BigInt.fromString(proto.epoch).toI32();
+
+    nugg.save();
+
+    log.info('handleEvent__Transfer end', []);
+
+    return nugg;
 }
 
 export function _rotate(
@@ -98,15 +143,6 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes): void {
 
     let user = safeLoadUserNull(agency__account);
 
-    if (user == null) {
-        user = safeNewUser(agency__account);
-        user.xnugg = BigInt.fromString('0');
-        user.ethin = BigInt.fromString('0');
-        user.ethout = BigInt.fromString('0');
-        user.shares = BigInt.fromString('0');
-        user.save();
-    }
-
     let swap = safeLoadActiveSwap(nugg);
 
     safeSetUserActiveSwap(user, nugg, swap);
@@ -144,6 +180,7 @@ export function handleEvent__Sell(event: Sell): void {
     swap.leader = user.id;
     swap.nugg = nugg.id;
     swap.nextDelegateType = 'Commit';
+    swap.bottom = agency__eth;
     swap.save();
 
     safeSetNuggActiveSwap(nugg, swap);
@@ -188,7 +225,6 @@ export function handleEvent__Claim(event: Claim): void {
     if (swap.leader == user.id) {
         if (swap.owner == user.id) {
             safeRemoveNuggActiveSwap(nugg);
-
             swap.endingEpoch = BigInt.fromString(proto.epoch);
             swap.save();
         }
@@ -233,10 +269,6 @@ export function __offerMint(
 
     swap.save();
 
-    // nugg.user = proto.nuggftUser;
-
-    // nugg.save();
-
     let offer = safeNewOfferHelper(swap, user);
 
     offer.txhash = hash;
@@ -263,23 +295,10 @@ export function __offerCommit(
 ): void {
     log.info('__offerCommit start', []);
 
-    // let owner = safeLoadUser(Address.fromString(swap.owner));
-    // log.info('__offerCommit start 5', []);
-
-    // let owneroffer = safeLoadOfferHelper(swap, owner);
-    // log.info('__offerCommit start 6', [swap.epoch == null ? 'null' : (swap.epoch as string)]);
-
     if (swap.epoch != '' && swap.epoch != null)
         log.critical('__offerCommit: SWAP.epochId MUST BE NULL', []);
-    // log.info('__offerCommit start 7', []);
-
-    // store.remove('Swap', swap.id);
-    // store.remove('Carry', owneroffer.id);
-
-    // log.info('__offerCommit start 8', []);
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
-    // log.info('__offerCommit start 9', []);
 
     swap.epoch = epoch.id;
     swap.startingEpoch = proto.epoch;
@@ -296,32 +315,16 @@ export function __offerCommit(
 
     safeSetNuggActiveSwap(nugg, swap);
 
-    let offer = safeLoadOfferHelperNull(swap, user);
+    let offer = safeLoadOfferHelperNull(swap, user, hash);
 
-    if (offer == null) {
-        offer = safeNewOfferHelper(swap, user);
-        offer.claimed = false;
-        offer.eth = BigInt.fromString('0');
-        offer.ethUsd = BigInt.fromString('0');
-        offer.owner = false;
-        offer.user = user.id;
-        offer.swap = swap.id;
-        offer.claimer = user.id;
-        offer.txhash = hash;
-
-        offer.save();
-    }
     offer.txhash = hash;
 
-    // offer.eth = getCurrentUserOffer(user, nugg);
     offer.eth = lead;
     offer.ethUsd = wethToUsdc(offer.eth);
     swap.eth = offer.eth;
     swap.ethUsd = offer.ethUsd;
     swap.nextDelegateType = 'Carry';
     swap.leader = user.id;
-
-    // swap.epochId = BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')).toString();
 
     offer.save();
     swap.save();
@@ -339,21 +342,8 @@ export function __offerCarry(
 ): void {
     log.info('__offerCarry start', []);
 
-    let offer = safeLoadOfferHelperNull(swap, user);
+    let offer = safeLoadOfferHelperNull(swap, user, hash);
 
-    if (offer == null) {
-        offer = safeNewOfferHelper(swap, user);
-        offer.claimed = false;
-        offer.eth = BigInt.fromString('0');
-        offer.ethUsd = BigInt.fromString('0');
-        offer.owner = false;
-        offer.user = user.id;
-        offer.swap = swap.id;
-        offer.claimer = user.id;
-        offer.txhash = hash;
-
-        offer.save();
-    }
     offer.txhash = hash;
 
     // offer.eth = getCurrentUserOffer(user, nugg);
