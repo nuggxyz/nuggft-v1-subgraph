@@ -20,7 +20,7 @@ import {
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
-import { cacheDotnugg } from './dotnugg';
+import { cacheDotnugg, updateProof } from './dotnugg';
 import { addrs, bigi, bigs } from './utils';
 import { _transfer } from './swap';
 
@@ -224,7 +224,8 @@ export function handleBlock__every(block: ethereum.Block): void {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);
                 nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
             }
-            cacheDotnugg(nugg, block.number.toI32());
+            cacheDotnugg(nugg, 0);
+            updateProof(nugg, bigi(0), true);
             break;
         }
         case 8:
@@ -233,7 +234,8 @@ export function handleBlock__every(block: ethereum.Block): void {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);
                 nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
             }
-            cacheDotnugg(nugg, block.number.toI32());
+            cacheDotnugg(nugg, 0);
+            updateProof(nugg, bigi(0), true);
             break;
         case 16:
             onSwapInit(currentEpochId.plus(bigi(1)), proto);

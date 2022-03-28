@@ -36,6 +36,7 @@ export function getItemURIs(nuggftAddress: Address): void {
             item.dotnuggRawCache = callResult.reverted ? 'oops' : callResult.value;
             item.feature = bigi(i);
             item.position = bigi(j);
+            item.idnum = bigi(itemId);
             item.save();
         }
     }
