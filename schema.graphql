@@ -4,6 +4,8 @@ type Protocol @entity {
     init: Boolean!
 
     epoch: Epoch!
+    lastEpoch: Epoch!
+    nextEpoch: Epoch!
 
     totalSwaps: BigInt!
     totalLoans: BigInt! #update
@@ -74,6 +76,9 @@ type Epoch @entity {
 
     starttime: BigInt
     endtime: BigInt
+
+    swaps: [Swap!]! @derivedFrom(field: "epoch")
+    itemSwaps: [ItemSwap!]! @derivedFrom(field: "epoch")
 
     _activeSwaps: [String!]!
     _activeNuggItemSwaps: [String!]!

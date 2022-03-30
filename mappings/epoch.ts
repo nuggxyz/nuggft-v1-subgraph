@@ -77,6 +77,7 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
 export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block): void {
     log.info('onEpochStart IN', []);
     let nextEpoch = safeLoadEpoch(id);
+    // let nextNextEpoch = safeLoadEpoch(id.plus(bigi(1)));
 
     let nextNugg = safeLoadNugg(id);
 
@@ -98,8 +99,8 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
 
     nextEpoch._upcomingActiveItemSwaps = [];
     nextEpoch.save();
-
     proto.epoch = nextEpoch.id;
+    proto.nextEpoch = id.plus(bigi(1)).toString();
     proto.defaultActiveNugg = nextNugg.id;
     proto.save();
     log.info('onEpochStart OUT', []);
@@ -184,7 +185,11 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     epoch._activeNuggItemSwaps = [];
     epoch._activeSwaps = [];
     epoch.status = 'OVER';
+
     epoch.save();
+
+    proto.lastEpoch = epoch.id;
+    proto.save();
     log.info('onEpochClose OUT', []);
 }
 

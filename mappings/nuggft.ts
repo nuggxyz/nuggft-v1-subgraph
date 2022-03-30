@@ -103,7 +103,8 @@ function handleEvent__Genesis(event: Genesis): void {
     let nil = new User('0x0000000000000000000000000000000000000000');
     nil.shares = bigi(0);
     nil.save();
-
+    proto.nextEpoch = epoch.id;
+    proto.lastEpoch = epoch.id;
     proto.epoch = epoch.id;
     proto.nuggftUser = nil.id;
     proto.nullUser = nil.id;
