@@ -99,6 +99,7 @@ type Item @entity {
     protocol: Protocol
 
     activeSwap: ItemSwap
+    upcomingActiveSwap: ItemSwap
 
     swaps: [ItemSwap!]! @derivedFrom(field: "sellingItem")
 }
@@ -166,11 +167,13 @@ type Swap @entity {
 
     num: BigInt!
     bottom: BigInt!
+    bottomUsd: BigInt!
 
     eth: BigInt!
     ethUsd: BigInt!
 
     owner: User!
+
     leader: User!
 
     nextDelegateType: NextOfferType!
@@ -248,6 +251,8 @@ type ItemSwap @entity {
     endingEpoch: BigInt
     startingEpoch: Epoch
     bottom: BigInt!
+    bottomUsd: BigInt!
+
     nextDelegateType: NextOfferType!
 
     num: BigInt!
@@ -256,6 +261,7 @@ type ItemSwap @entity {
     ethUsd: BigInt!
 
     owner: Nugg!
+
     leader: Nugg
 }
 

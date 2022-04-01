@@ -11,6 +11,7 @@ import {
     safeSetItemActiveSwap,
     safeLoadActiveItemSwap,
     safeRemoveNuggItemActiveSwap,
+    safeSetUpcomingItemActiveSwap,
 } from './safeload';
 import {
     safeLoadProtocol,
@@ -113,23 +114,35 @@ function _offerCommitItem(
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
 
-    if (item.activeSwap != null) {
-        let itemActiveSwap = safeLoadActiveItemSwap(item);
-        if (itemActiveSwap.endingEpoch !== null) {
-            if ((itemActiveSwap.endingEpoch as BigInt).equals(BigInt.fromString(epoch.id))) {
-                let _s = epoch._upcomingActiveItemSwaps as string[];
-                _s.push(itemswap.id as string);
-                epoch._upcomingActiveItemSwaps = _s as string[];
-                epoch.save();
-            } else {
-                safeSetItemActiveSwap(item, itemswap);
-            }
-        } else {
-            safeSetItemActiveSwap(item, itemswap);
-        }
-    } else {
-        safeSetItemActiveSwap(item, itemswap);
-    }
+    safeSetUpcomingItemActiveSwap(item, itemswap);
+
+    let __s = epoch._upcomingActiveItemSwaps as string[];
+    __s.push(itemswap.id as string);
+    epoch._upcomingActiveItemSwaps = __s as string[];
+    epoch.save();
+
+    // if (item.activeSwap !== null) {
+    //     log.debug("a",[])
+    //     let itemActiveSwap = safeLoadActiveItemSwap(item);
+    //     if (itemActiveSwap.endingEpoch !== null) {
+    //         log.debug("b",[])
+
+    //         if ((itemActiveSwap.endingEpoch as BigInt).equals(BigInt.fromString(epoch.id))) {
+    //             log.debug("c",[])
+
+    //             let _s = epoch._upcomingActiveItemSwaps as string[];
+    //             _s.push(itemswap.id as string);
+    //             epoch._upcomingActiveItemSwaps = _s as string[];
+    //             epoch.save();
+    //         } else {
+    //             safeSetItemActiveSwap(item, itemswap);
+    //         }
+    //     } else {
+    //         safeSetItemActiveSwap(item, itemswap);
+    //     }
+    // } else {
+    //     safeSetItemActiveSwap(item, itemswap);
+    // }
 
     itemoffer = safeNewItemOffer(itemswap, buyerNugg);
     itemoffer.claimed = false;
@@ -161,6 +174,7 @@ function _offerOfferItem(
     itemswap: ItemSwap,
     eth: BigInt,
 ): void {
+    log.info('_offerOfferItem start', []);
     log.info('_offerOfferItem start', []);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
@@ -250,7 +264,8 @@ export function handleEvent__SellItem(event: SellItem): void {
     itemSwap.sellingItem = nuggitem.item;
     itemSwap.bottom = agency__eth;
     itemSwap.eth = agency__eth;
-    itemSwap.ethUsd = wethToUsdc(agency__eth);
+    itemSwap.bottomUsd = wethToUsdc(agency__eth);
+    itemSwap.ethUsd = itemSwap.bottomUsd;
     itemSwap.owner = sellingNugg.id;
     itemSwap.leader = sellingNugg.id;
     itemSwap.nextDelegateType = 'Commit';

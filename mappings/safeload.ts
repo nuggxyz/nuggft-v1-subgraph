@@ -16,6 +16,7 @@ import {
 } from '../generated/schema';
 import { cacheDotnugg } from './dotnugg';
 import { panicFatal } from './uniswap';
+import { bigi } from './utils';
 
 export function safeLoadActiveEpoch(): Epoch {
     let loaded = safeLoadProtocol();
@@ -45,33 +46,33 @@ export function safeNewEpoch(id: BigInt): Epoch {
 }
 export function safeAddNuggToProtcol(): void {
     let loaded = safeLoadProtocol();
-    loaded.totalNuggs = loaded.totalNuggs.plus(BigInt.fromString('1'));
+    loaded.totalNuggs = loaded.totalNuggs.plus(bigi(1));
     loaded.save();
 }
 export function safeAddUserToProtcol(): void {
     let loaded = safeLoadProtocol();
-    loaded.totalUsers = loaded.totalUsers.plus(BigInt.fromString('1'));
+    loaded.totalUsers = loaded.totalUsers.plus(bigi(1));
     loaded.save();
 }
 export function safeAddSwapToProtcol(): void {
     let loaded = safeLoadProtocol();
-    loaded.totalSwaps = loaded.totalSwaps.plus(BigInt.fromString('1'));
+    loaded.totalSwaps = loaded.totalSwaps.plus(bigi(1));
     loaded.save();
 }
 
 export function safeAddLoanToProtcol(): void {
     let loaded = safeLoadProtocol();
-    loaded.totalLoans = loaded.totalLoans.plus(BigInt.fromString('1'));
+    loaded.totalLoans = loaded.totalLoans.plus(bigi(1));
     loaded.save();
 }
 export function safeAddItemToProtcol(): void {
     let loaded = safeLoadProtocol();
-    loaded.totalItems = loaded.totalItems.plus(BigInt.fromString('1'));
+    loaded.totalItems = loaded.totalItems.plus(bigi(1));
     loaded.save();
 }
 export function safeAddItemSwapToProtcol(): void {
     let loaded = safeLoadProtocol();
-    loaded.totalItemSwaps = loaded.totalItemSwaps.plus(BigInt.fromString('1'));
+    loaded.totalItemSwaps = loaded.totalItemSwaps.plus(bigi(1));
     loaded.save();
 }
 
@@ -232,12 +233,31 @@ export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
     item.save();
 }
 
-export function unsafeSetItemActiveSwap(item: string, itemswap: ItemSwap): void {
-    let _item = safeLoadItem(BigInt.fromString(item));
-    _item.activeSwap = itemswap.id;
-    _item.protocol = '0x42069';
-    _item.save();
+export function safeSetUpcomingItemActiveSwap(item: Item, itemswap: ItemSwap): void {
+    // let _item = safeLoadItem(BigInt.fromString(item));
+    item.upcomingActiveSwap = itemswap.id;
+    item.protocol = '0x42069';
+    item.save();
 }
+
+export function unsafeIncrementItemActiveSwap(_item: string): void {
+    let item = safeLoadItem(BigInt.fromString(_item));
+    item.activeSwap = item.upcomingActiveSwap;
+    item.upcomingActiveSwap = null;
+    if (item.activeSwap === null) {
+        item.protocol = null;
+    } else {
+        item.protocol = '0x42069';
+    }
+    item.save();
+}
+
+// export function unsafeSetItemActiveSwap(item: string, itemswap: ItemSwap): void {
+//     let _item = safeLoadItem(BigInt.fromString(item));
+//     _item.activeSwap = itemswap.id;
+//     _item.protocol = '0x42069';
+//     _item.save();
+// }
 
 export function safeRemoveItemActiveSwap(item: Item): void {
     // let _item = safeLoadItem(BigInt.fromString(item));
@@ -304,7 +324,7 @@ export function safeLoadActiveSwap(nugg: Nugg): Swap {
 
 export function safeNewSwapHelper(nugg: Nugg): Swap {
     let currNum = nugg.numSwaps;
-    nugg.numSwaps = nugg.numSwaps.plus(BigInt.fromString('1'));
+    nugg.numSwaps = nugg.numSwaps.plus(bigi(1));
     nugg.save();
 
     let id = '' + nugg.id + '-' + currNum.toString();
@@ -392,7 +412,7 @@ export function unsafeLoadItemSwap(id: string): ItemSwap {
 
 export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
     let currNum = sellingNuggItem.numSwaps;
-    sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(BigInt.fromString('1'));
+    sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(bigi(1));
     sellingNuggItem.save();
 
     let id = sellingNuggItem.id + '-' + currNum.toString();

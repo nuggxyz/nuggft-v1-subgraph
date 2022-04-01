@@ -16,7 +16,7 @@ import {
     safeLoadNuggNull,
     unsafeLoadItem,
     safeRemoveItemActiveSwap,
-    unsafeSetItemActiveSwap,
+    unsafeIncrementItemActiveSwap,
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
@@ -63,13 +63,15 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     nextSwap.epoch = nextEpoch.id;
     nextSwap.startingEpoch = nextEpoch.id;
     nextSwap.endingEpoch = BigInt.fromString(nextEpoch.id);
-    nextSwap.eth = BigInt.fromString('0');
-    nextSwap.ethUsd = BigInt.fromString('0');
+    nextSwap.eth = bigi(0);
+    nextSwap.ethUsd = bigi(0);
     nextSwap.owner = proto.nullUser;
     nextSwap.leader = proto.nullUser;
     nextSwap.nugg = nextNugg.id;
     nextSwap.nextDelegateType = 'Mint';
     nextSwap.bottom = bigi(0);
+    nextSwap.bottomUsd = bigi(0);
+
     nextSwap.save();
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
@@ -92,9 +94,11 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
 
     let swaps = nextEpoch._upcomingActiveItemSwaps as string[];
 
+    nextEpoch._activeItemSwaps = swaps;
+
     for (let index = 0; index < swaps.length; index++) {
         let itemswap = unsafeLoadItemSwap(swaps[index]);
-        unsafeSetItemActiveSwap(itemswap.sellingItem, itemswap);
+        unsafeIncrementItemActiveSwap(itemswap.sellingItem);
     }
 
     nextEpoch._upcomingActiveItemSwaps = [];
@@ -163,22 +167,24 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
 
     proto.nuggsPendingRemoval = workingRemoval;
 
-    let nuggItemSwaps = epoch._activeNuggItemSwaps;
+    // let nuggItemSwaps = epoch._activeNuggItemSwaps;
 
-    for (let j = 0; j < nuggItemSwaps.length; j++) {
-        let s = unsafeLoadItemSwap(nuggItemSwaps[j]);
-        let nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
-        safeRemoveNuggItemActiveSwap(nuggitem);
-    }
+    // for (let j = 0; j < nuggItemSwaps.length; j++) {
+    //     let s = unsafeLoadItemSwap(nuggItemSwaps[j]);
+    //     let nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
+    //     safeRemoveNuggItemActiveSwap(nuggitem);
+    // }
 
     let itemswaps = epoch._activeItemSwaps;
 
     // log.warning('BBB: ' + itemswaps.join('='), []);
     for (let j = 0; j < itemswaps.length; j++) {
         let s = unsafeLoadItemSwap(itemswaps[j]);
+        let nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
 
         let item = unsafeLoadItem(s.sellingItem);
         safeRemoveItemActiveSwap(item);
+        safeRemoveNuggItemActiveSwap(nuggitem);
     }
     epoch.endtime = block.timestamp;
     epoch._activeItemSwaps = [];
@@ -217,6 +223,7 @@ export function handleBlock__every(block: ethereum.Block): void {
             //     onSwapInit(currentEpochId.plus(bigi(1)), proto);
             // }
 
+            // must be called before on epoch start
             onEpochClose(epoch, proto, block);
 
             onEpochStart(currentEpochId, proto, block);

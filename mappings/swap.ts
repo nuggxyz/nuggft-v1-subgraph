@@ -175,12 +175,14 @@ export function handleEvent__Sell(event: Sell): void {
     let swap = safeNewSwapHelper(nugg);
 
     swap.eth = agency__eth;
-    swap.ethUsd = wethToUsdc(swap.eth);
+    swap.ethUsd = wethToUsdc(agency__eth);
     swap.owner = user.id;
     swap.leader = user.id;
     swap.nugg = nugg.id;
     swap.nextDelegateType = 'Commit';
     swap.bottom = agency__eth;
+    swap.bottomUsd = wethToUsdc(agency__eth);
+
     swap.save();
 
     safeSetNuggActiveSwap(nugg, swap);
