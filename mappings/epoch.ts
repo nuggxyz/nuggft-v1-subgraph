@@ -47,7 +47,9 @@ export function onEpochGenesis(
 
     onEpochInit(currentEpochId, proto);
     onSwapInit(currentEpochId, proto);
-    cacheDotnugg(safeLoadNugg(currentEpochId), block.number.toI32());
+    let nugg = safeLoadNugg(currentEpochId);
+    updateProof(nugg, bigi(0), true);
+    cacheDotnugg(nugg, block.number.toI32());
     onEpochStart(currentEpochId, proto, block);
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
