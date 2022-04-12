@@ -33,23 +33,23 @@ import { mask, _mint, _stake } from './nuggft';
 
 export function handleEvent__Mint(event: Mint): void {
     _mint(event);
-    _rotate(event.params.tokenId, event.block, event.params.proof, true);
+    _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
     _stake(event.params.stake);
 }
 
 export function handleEvent__OfferMint(event: OfferMint): void {
-    _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
-    _rotate(event.params.tokenId, event.block, event.params.proof, true);
+    _offer(event.transaction.hash.toHexString(), bigi(event.params.tokenId), event.params.agency);
+    _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
     _stake(event.params.stake);
 }
 
 export function handleEvent__Offer(event: Offer): void {
-    _offer(event.transaction.hash.toHexString(), event.params.tokenId, event.params.agency);
+    _offer(event.transaction.hash.toHexString(), bigi(event.params.tokenId), event.params.agency);
     _stake(event.params.stake);
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
-    _rotate(event.params.tokenId, event.block, event.params.proof, false);
+    _rotate(bigi(event.params.tokenId), event.block, event.params.proof, false);
 }
 
 export function _transfer(from: Address, to: Address, tokenId: BigInt): Nugg {
@@ -168,7 +168,7 @@ export function handleEvent__Sell(event: Sell): void {
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(bigi(event.params.tokenId));
 
     let user = safeLoadUser(Address.fromString(nugg.user));
 
@@ -212,7 +212,7 @@ export function handleEvent__Claim(event: Claim): void {
 
     let proto = safeLoadProtocol();
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(bigi(event.params.tokenId));
 
     let user = safeLoadUser(event.params.account);
 

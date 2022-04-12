@@ -36,9 +36,9 @@ export function handleEvent__OfferItem(event: OfferItem): void {
 
     let sellingNuggId = event.params.sellingTokenId;
 
-    let sellingItemId = bigb(event.params.itemId);
+    let sellingItemId = bigi(event.params.itemId);
 
-    let sellingNugg = safeLoadNugg(sellingNuggId);
+    let sellingNugg = safeLoadNugg(bigi(sellingNuggId));
 
     let item = safeLoadItem(sellingItemId);
 
@@ -208,13 +208,13 @@ function _offerOfferItem(
 export function handleEvent__ClaimItem(event: ClaimItem): void {
     let sellingNuggId = event.params.sellingTokenId;
 
-    let sellingItemId = bigb(event.params.itemId);
+    let sellingItemId = bigi(event.params.itemId);
 
-    let sellingNugg = safeLoadNugg(sellingNuggId);
+    let sellingNugg = safeLoadNugg(bigi(sellingNuggId));
 
     let item = safeLoadItem(sellingItemId);
 
-    let buyingNugg = safeLoadNugg(event.params.buyerTokenId);
+    let buyingNugg = safeLoadNugg(bigi(event.params.buyerTokenId));
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
@@ -246,9 +246,9 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     let sellingNuggId = event.params.sellingTokenId;
 
-    let sellingItemId = bigb(event.params.itemId);
+    let sellingItemId = bigi(event.params.itemId);
 
-    let sellingNugg = safeLoadNugg(sellingNuggId);
+    let sellingNugg = safeLoadNugg(bigi(sellingNuggId));
 
     let item = safeLoadItem(sellingItemId);
 

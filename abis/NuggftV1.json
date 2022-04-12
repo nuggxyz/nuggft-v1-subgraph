@@ -76,9 +76,9 @@
         "inputs": [
             {
                 "indexed": false,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -101,9 +101,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": true,
@@ -120,21 +120,21 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "sellingTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": true,
-                "internalType": "bytes2",
+                "internalType": "uint16",
                 "name": "itemId",
-                "type": "bytes2"
+                "type": "uint16"
             },
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "buyerTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -195,9 +195,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -214,9 +214,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -239,15 +239,15 @@
             },
             {
                 "indexed": false,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
-                "internalType": "uint256",
+                "internalType": "bytes32",
                 "name": "proof",
-                "type": "uint256"
+                "type": "bytes32"
             },
             {
                 "indexed": false,
@@ -283,9 +283,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -320,9 +320,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -345,15 +345,15 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "sellingTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": true,
-                "internalType": "bytes2",
+                "internalType": "uint16",
                 "name": "itemId",
-                "type": "bytes2"
+                "type": "uint16"
             },
             {
                 "indexed": false,
@@ -376,9 +376,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -407,9 +407,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -426,9 +426,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -445,9 +445,9 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": false,
@@ -464,15 +464,15 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "sellingTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "indexed": true,
-                "internalType": "bytes2",
+                "internalType": "uint16",
                 "name": "itemId",
-                "type": "bytes2"
+                "type": "uint16"
             },
             {
                 "indexed": false,
@@ -496,7 +496,7 @@
             {
                 "indexed": false,
                 "internalType": "bytes32",
-                "name": "cache",
+                "name": "stake",
                 "type": "bytes32"
             }
         ],
@@ -583,8 +583,21 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "value",
                 "type": "uint256"
+            }
+        ],
+        "name": "addStakedShare",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint24",
+                "name": "",
+                "type": "uint24"
             }
         ],
         "name": "agency",
@@ -620,6 +633,25 @@
         "inputs": [
             {
                 "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "balance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
                 "name": "you",
                 "type": "address"
             }
@@ -638,9 +670,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "burn",
@@ -658,53 +690,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
-                "name": "buyer",
-                "type": "uint160"
-            },
-            {
-                "internalType": "uint160",
-                "name": "seller",
-                "type": "uint160"
-            },
-            {
-                "internalType": "uint16",
-                "name": "itemId",
-                "type": "uint16"
-            }
-        ],
-        "name": "check",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "canOffer",
-                "type": "bool"
-            },
-            {
-                "internalType": "uint96",
-                "name": "nextSwapAmount",
-                "type": "uint96"
-            },
-            {
-                "internalType": "uint96",
-                "name": "senderCurrentOffer",
-                "type": "uint96"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "address",
                 "name": "sender",
                 "type": "address"
             },
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "check",
@@ -731,32 +724,63 @@
     {
         "inputs": [
             {
-                "internalType": "uint160[]",
-                "name": "sellingTokenItemIds",
-                "type": "uint160[]"
+                "internalType": "uint24",
+                "name": "buyer",
+                "type": "uint24"
             },
             {
-                "internalType": "uint160[]",
-                "name": "buyerTokenIds",
-                "type": "uint160[]"
+                "internalType": "uint24",
+                "name": "seller",
+                "type": "uint24"
+            },
+            {
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
             }
         ],
-        "name": "claim",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "name": "check",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "canOffer",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint96",
+                "name": "next",
+                "type": "uint96"
+            },
+            {
+                "internalType": "uint96",
+                "name": "current",
+                "type": "uint96"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
             {
-                "internalType": "uint160[]",
+                "internalType": "uint24[]",
                 "name": "tokenIds",
-                "type": "uint160[]"
+                "type": "uint24[]"
             },
             {
                 "internalType": "address[]",
                 "name": "accounts",
                 "type": "address[]"
+            },
+            {
+                "internalType": "uint24[]",
+                "name": "buyingTokenIds",
+                "type": "uint24[]"
+            },
+            {
+                "internalType": "uint16[]",
+                "name": "itemIds",
+                "type": "uint16[]"
             }
         ],
         "name": "claim",
@@ -767,9 +791,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "debt",
@@ -826,7 +850,7 @@
         "name": "emitter",
         "outputs": [
             {
-                "internalType": "contract Erc1155Emmitter",
+                "internalType": "contract NuggftV1Items",
                 "name": "",
                 "type": "address"
             }
@@ -908,17 +932,17 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "floop",
         "outputs": [
             {
-                "internalType": "bytes2[]",
+                "internalType": "uint16[]",
                 "name": "arr",
-                "type": "bytes2[]"
+                "type": "uint16[]"
             }
         ],
         "stateMutability": "view",
@@ -954,6 +978,25 @@
             }
         ],
         "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "hotproof",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -1045,16 +1088,21 @@
     {
         "inputs": [
             {
-                "internalType": "uint176",
-                "name": "",
-                "type": "uint176"
+                "internalType": "uint24",
+                "name": "sellingTokenId",
+                "type": "uint24"
+            },
+            {
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
             }
         ],
         "name": "itemAgency",
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "value",
                 "type": "uint256"
             }
         ],
@@ -1064,21 +1112,26 @@
     {
         "inputs": [
             {
-                "internalType": "uint176",
-                "name": "",
-                "type": "uint176"
+                "internalType": "uint24",
+                "name": "buyingTokenid",
+                "type": "uint24"
             },
             {
-                "internalType": "uint160",
-                "name": "",
-                "type": "uint160"
+                "internalType": "uint24",
+                "name": "sellingTokenId",
+                "type": "uint24"
+            },
+            {
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
             }
         ],
         "name": "itemOffers",
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "value",
                 "type": "uint256"
             }
         ],
@@ -1107,17 +1160,17 @@
     {
         "inputs": [
             {
-                "internalType": "uint256",
+                "internalType": "uint16",
                 "name": "",
-                "type": "uint256"
+                "type": "uint16"
             }
         ],
         "name": "lastItemSwap",
         "outputs": [
             {
-                "internalType": "uint24",
+                "internalType": "uint256",
                 "name": "",
-                "type": "uint24"
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -1126,9 +1179,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "liquidate",
@@ -1139,9 +1192,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160[]",
+                "internalType": "uint24[]",
                 "name": "tokenIds",
-                "type": "uint160[]"
+                "type": "uint24[]"
             }
         ],
         "name": "loan",
@@ -1152,9 +1205,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "migrate",
@@ -1178,12 +1231,25 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "mint",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "friend",
+                "type": "address"
+            }
+        ],
+        "name": "mint2",
         "outputs": [],
         "stateMutability": "payable",
         "type": "function"
@@ -1217,27 +1283,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
-                "name": "tokenId",
-                "type": "uint160"
-            }
-        ],
-        "name": "offer",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "buyingTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "sellingTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "internalType": "uint16",
@@ -1253,13 +1306,26 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
-                "name": "",
-                "type": "uint160"
+                "internalType": "uint24",
+                "name": "tokenId",
+                "type": "uint24"
+            }
+        ],
+        "name": "offer",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint24",
+                "name": "tokenId",
+                "type": "uint24"
             },
             {
                 "internalType": "address",
-                "name": "",
+                "name": "account",
                 "type": "address"
             }
         ],
@@ -1267,7 +1333,7 @@
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "value",
                 "type": "uint256"
             }
         ],
@@ -1296,9 +1362,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "proofOf",
@@ -1328,9 +1394,33 @@
     {
         "inputs": [
             {
-                "internalType": "uint160[]",
+                "internalType": "uint8",
+                "name": "feature",
+                "type": "uint8"
+            },
+            {
+                "internalType": "uint8",
+                "name": "position",
+                "type": "uint8"
+            }
+        ],
+        "name": "rarity",
+        "outputs": [
+            {
+                "internalType": "uint16",
+                "name": "res",
+                "type": "uint16"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint24[]",
                 "name": "tokenIds",
-                "type": "uint160[]"
+                "type": "uint24[]"
             }
         ],
         "name": "rebalance",
@@ -1341,9 +1431,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "internalType": "uint8[]",
@@ -1415,9 +1505,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "internalType": "uint96",
@@ -1433,9 +1523,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "sellingTokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "internalType": "uint16",
@@ -1722,9 +1812,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "internalType": "address",
@@ -1740,9 +1830,22 @@
     {
         "inputs": [
             {
-                "internalType": "uint160[]",
+                "internalType": "address",
+                "name": "friend",
+                "type": "address"
+            }
+        ],
+        "name": "trustedMint2",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint24[]",
                 "name": "tokenIds",
-                "type": "uint160[]"
+                "type": "uint24[]"
             }
         ],
         "name": "vfl",
@@ -1759,14 +1862,14 @@
     {
         "inputs": [
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "buyer",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "seller",
-                "type": "uint160"
+                "type": "uint24"
             },
             {
                 "internalType": "uint16",
@@ -1793,9 +1896,9 @@
                 "type": "address"
             },
             {
-                "internalType": "uint160",
+                "internalType": "uint24",
                 "name": "tokenId",
-                "type": "uint160"
+                "type": "uint24"
             }
         ],
         "name": "vfo",
@@ -1812,9 +1915,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint160[]",
+                "internalType": "uint24[]",
                 "name": "tokenIds",
-                "type": "uint160[]"
+                "type": "uint24[]"
             }
         ],
         "name": "vfr",

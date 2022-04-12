@@ -90,7 +90,7 @@ type Epoch @entity {
 type Item @entity {
     id: ID!
 
-    idnum: BigInt!
+    idnum: Int!
     feature: BigInt!
     position: BigInt!
     count: BigInt!
@@ -122,7 +122,7 @@ type NuggItem @entity {
 
 type Nugg @entity {
     id: ID!
-    idnum: BigInt!
+    idnum: Int!
 
     user: User!
     lastUser: User!

@@ -135,7 +135,7 @@ function handleEvent__Genesis(event: Genesis): void {
 }
 
 function handleEvent__Stake(event: Stake): void {
-    _stake(event.params.cache);
+    _stake(event.params.stake);
 }
 
 export function _stake(cache: Bytes): void {
@@ -167,12 +167,12 @@ export function _mint(event: Mint): void {
 
     let proto = safeLoadProtocol();
 
-    let nugg = safeLoadNuggNull(event.params.tokenId);
+    let nugg = safeLoadNuggNull(bigi(event.params.tokenId));
 
     if (nugg === null) {
         let agency = b32toBigEndian(event.params.agency);
         nugg = safeNewNugg(
-            event.params.tokenId,
+            bigi(event.params.tokenId),
             agency.bitAnd(mask(160)).toHexString(),
             bigs(proto.epoch),
         );

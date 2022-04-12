@@ -28,15 +28,15 @@ export function getItemURIs(nuggftAddress: Address): void {
     for (let i = 0; i < 8; i++) {
         let amount = nuggft.featureLength(i);
         for (let j = 1; j < amount + 1; j++) {
-            let itemId = (i << 8) | j;
-            let callResult = nuggft.try_itemURI(bigi((i << 8) | j));
+            let itemId = i * 1000 + j;
+            let callResult = nuggft.try_itemURI(bigi(itemId));
 
             let item = safeNewItem(bigi(itemId));
             item.count = bigi(0);
             item.dotnuggRawCache = callResult.reverted ? 'oops' : callResult.value;
             item.feature = bigi(i);
             item.position = bigi(j);
-            item.idnum = bigi(itemId);
+            item.idnum = itemId;
             item.save();
         }
     }
@@ -47,7 +47,7 @@ export function cacheDotnugg(nugg: Nugg, blockNum: i32): void {
 
     // if (blockNum > 10276528) {
     let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
-    let callResult = dotnugg.try_imageURI(nugg.idnum);
+    let callResult = dotnugg.try_imageURI(bigi(nugg.idnum));
 
     let arr: string[] = [];
 

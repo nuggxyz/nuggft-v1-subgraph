@@ -22,7 +22,7 @@ export function handleEvent__Loan(event: LoanEvent): void {
     log.info('handleEvent__Loan start', []);
     let proto = safeLoadProtocol();
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(bigi(event.params.tokenId));
 
     let agency = b32toBigEndian(event.params.agency);
 
@@ -76,7 +76,7 @@ export function handleEvent__Liquidate(event: Liquidate): void {
 
     let agency__account = addr_i(agency.bitAnd(MAX_UINT160));
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(bigi(event.params.tokenId));
 
     let loan = safeLoadLoanHelper(nugg);
 
@@ -98,7 +98,7 @@ export function handleEvent__Liquidate(event: Liquidate): void {
 export function handleEvent__Rebalance(event: Rebalance): void {
     log.info('handleRebalance', []);
 
-    let nugg = safeLoadNugg(event.params.tokenId);
+    let nugg = safeLoadNugg(bigi(event.params.tokenId));
 
     let loan = safeLoadLoanHelper(nugg);
 

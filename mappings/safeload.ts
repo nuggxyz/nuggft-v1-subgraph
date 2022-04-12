@@ -132,7 +132,7 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
 
 export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt): Nugg {
     let loaded = new Nugg(id.toString());
-    loaded.idnum = id;
+    loaded.idnum = id.toI32();
     loaded.burned = false;
     loaded.numSwaps = BigInt.fromString('0');
     loaded.user = userId;
@@ -151,7 +151,7 @@ export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt): Nugg {
 
 export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
     let loaded = new Nugg(id.toString());
-    loaded.idnum = id;
+    loaded.idnum = id.toI32();
     loaded.burned = false;
     loaded.numSwaps = BigInt.fromString('0');
     loaded.user = userId;
