@@ -95,6 +95,7 @@ type Item @entity {
     position: BigInt!
     count: BigInt!
     dotnuggRawCache: String!
+    rarityX16: BigInt!
 
     protocol: Protocol
 
@@ -209,11 +210,11 @@ type Loan @entity {
     liquidatedForEth: BigInt!
     liquidatedForUsd: BigInt!
 
-    feeEth: BigInt! @depreicated
-    feeUsd: BigInt! @depreicated
-    endingEpoch: BigInt! @depreicated
-    eth: BigInt! @depreicated
-    ethUsd: BigInt! @depreicated
+    feeEth: BigInt! @deprecated
+    feeUsd: BigInt! @deprecated
+    endingEpoch: BigInt! @deprecated
+    eth: BigInt! @deprecated
+    ethUsd: BigInt! @deprecated
 }
 
 type User @entity {

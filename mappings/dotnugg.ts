@@ -30,6 +30,7 @@ export function getItemURIs(nuggftAddress: Address): void {
         for (let j = 1; j < amount + 1; j++) {
             let itemId = i * 1000 + j;
             let callResult = nuggft.try_itemURI(bigi(itemId));
+            let rarityResult = nuggft.try_rarity(i, j);
 
             let item = safeNewItem(bigi(itemId));
             item.count = bigi(0);
@@ -37,6 +38,7 @@ export function getItemURIs(nuggftAddress: Address): void {
             item.feature = bigi(i);
             item.position = bigi(j);
             item.idnum = itemId;
+            item.rarityX16 = rarityResult.reverted ? bigi(0) : bigi(rarityResult.value);
             item.save();
         }
     }
