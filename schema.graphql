@@ -112,7 +112,7 @@ type NuggItem @entity {
     nugg: Nugg!
 
     numSwaps: BigInt!
-
+    displayed: Boolean!
     count: BigInt!
 
     protocol: Protocol

@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, store, log } from '@graphprotocol/graph-ts';
 import { NuggftV1 } from '../generated/NuggftV1/NuggftV1';
 
 import { Item, Nugg, NuggItem } from '../generated/schema';
@@ -12,7 +12,7 @@ import {
     safeNewNuggItem,
 } from './safeload';
 import { safeDiv } from './uniswap';
-import { bigi, b32toBigEndian } from './utils';
+import { bigi } from './utils';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
     let nuggft = NuggftV1.bind(nuggftAddress);
@@ -155,11 +155,22 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
 
     let items: i32[] = [];
 
+    let _displayed: i32[] = [];
+    let seen = [false, false, false, false, false, false, false, false];
+
+    let index = 0;
+
     do {
-        let curr = proof.bitAnd(BigInt.fromString('65535')).toI32();
-        if (curr != 0) {
-            items.push(curr);
+        let curr = proof.bitAnd(BigInt.fromString('65535'));
+        if (!curr.isZero()) {
+            items.push(curr.toI32());
+            let feature = curr.div(bigi(1000)).toI32();
+            if (index < 8 && !seen[feature]) {
+                _displayed.push(curr.toI32());
+                seen[feature] = true;
+            }
         }
+        index++;
     } while (!(proof = proof.rightShift(16)).isZero());
 
     let toCreate = difference(items, nugg._items);
@@ -182,6 +193,7 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
             nuggItem.count = BigInt.fromString('0');
             nuggItem.item = item.id;
             nuggItem.nugg = nugg.id;
+            nuggItem.displayed = false;
         }
         nuggItem = nuggItem as NuggItem;
 
@@ -190,7 +202,10 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
             item.save();
         }
 
+        // if (_displayed.includes(toCreate[i]))
+
         nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
+        nuggItem.displayed = false;
         nuggItem.save();
     }
 
@@ -200,8 +215,11 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
         let nuggItem = safeLoadNuggItemHelper(nugg, item);
 
         nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
-
+        // if (nuggItem.count.isZero()) {
+        nuggItem.displayed = false;
+        // }
         nuggItem.save();
+        // }
     }
 
     nugg._items = items;
@@ -209,10 +227,25 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
     nugg.save();
 
     proto.save();
+
+    for (let i = 0; i < items.length; i++) {
+        let item = safeLoadItem(bigi(items[i]));
+
+        let nuggItem = safeLoadNuggItemHelper(nugg, item);
+        if (_displayed.includes(items[i])) {
+            if (!nuggItem.displayed) {
+                nuggItem.displayed = true;
+                nuggItem.save();
+            }
+        } else {
+            if (nuggItem.displayed) {
+                nuggItem.displayed = false;
+                nuggItem.save();
+            }
+        }
+    }
 }
 export function difference(arr1: i32[], arr2: i32[]): i32[] {
-    // var set1 = new Set<BigInt>(arr1);
-    // var set2 = new Set<BigInt>(arr2);
     let tmp: i32[] = [];
     for (let i = 0; i < arr1.length; i++) {
         if (!arr2.includes(arr1[i])) {

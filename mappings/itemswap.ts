@@ -275,8 +275,8 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     safeSetNuggActiveItemSwap(sellingNugg, nuggitem, itemSwap);
 
-    nuggitem.count = nuggitem.count.minus(BigInt.fromString('1'));
-    nuggitem.save();
+    // nuggitem.count = nuggitem.count.minus(BigInt.fromString('1'));
+    // nuggitem.save();
 
     let itemoffer = safeNewItemOffer(itemSwap, sellingNugg);
 
