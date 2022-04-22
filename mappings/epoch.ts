@@ -47,7 +47,9 @@ export function onEpochGenesis(
 
     onEpochInit(currentEpochId, proto);
     onSwapInit(currentEpochId, proto);
+
     let nugg = safeLoadNugg(currentEpochId);
+
     updateProof(nugg, bigi(0), true);
     cacheDotnugg(nugg, block.number.toI32());
     onEpochStart(currentEpochId, proto, block);
@@ -56,6 +58,8 @@ export function onEpochGenesis(
     onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
 }
 export function onSwapInit(id: BigInt, proto: Protocol): void {
+    log.info('onSwapInit IN {}', [id.toString()]);
+
     let nextEpoch = safeLoadEpoch(id);
 
     let nextNugg = safeNewNuggNoCache(id, proto.nullUser);
@@ -77,9 +81,10 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     nextSwap.save();
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
+    log.info('onSwapInit OUT {}', [id.toString()]);
 }
 export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block): void {
-    log.info('onEpochStart IN', []);
+    log.info('onEpochStart IN [id:{}]', [id.toString()]);
     let nextEpoch = safeLoadEpoch(id);
     // let nextNextEpoch = safeLoadEpoch(id.plus(bigi(1)));
 
@@ -109,11 +114,11 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
     proto.nextEpoch = id.plus(bigi(1)).toString();
     proto.defaultActiveNugg = nextNugg.id;
     proto.save();
-    log.info('onEpochStart OUT', []);
+    log.info('onEpochStart OUT {}', [id.toString()]);
 }
 
 export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
-    log.info('onEpochInit IN', []);
+    log.info('onEpochInit IN {}', [id.toString()]);
 
     let newEpoch = safeNewEpoch(id);
 
@@ -134,13 +139,13 @@ export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     newEpoch._upcomingActiveItemSwaps = [];
 
     newEpoch.save();
-    log.info('onEpochInit OUT', []);
+    log.info('onEpochInit OUT {}', [id.toString()]);
 
     return newEpoch;
 }
 
 export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Block): void {
-    log.info('onEpochClose IN', []);
+    log.info('onEpochClose IN {}', [epoch.id]);
 
     let swaps = epoch._activeSwaps;
 
@@ -198,7 +203,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
 
     proto.lastEpoch = epoch.id;
     proto.save();
-    log.info('onEpochClose OUT', []);
+    log.info('onEpochClose OUT {}', [epoch.id]);
 }
 
 export function handleBlock__every(block: ethereum.Block): void {

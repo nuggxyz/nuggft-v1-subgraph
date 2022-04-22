@@ -9,7 +9,7 @@ export function invariant(test: boolean, error: string): void {
 }
 
 export function panicFatal(error: string): void {
-    log.debug(error, []);
+    log.error(error, []);
     log.critical(error, []);
 }
 

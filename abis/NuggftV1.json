@@ -7,7 +7,7 @@
                 "type": "address"
             }
         ],
-        "stateMutability": "nonpayable",
+        "stateMutability": "payable",
         "type": "constructor"
     },
     {
@@ -185,6 +185,30 @@
                 "internalType": "uint8",
                 "name": "intervalOffset",
                 "type": "uint8"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint24",
+                "name": "early",
+                "type": "uint24"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "dotnugg",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "inuggftv1",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "stake",
+                "type": "bytes32"
             }
         ],
         "name": "Genesis",
@@ -400,6 +424,37 @@
             }
         ],
         "name": "OfferMint",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint24",
+                "name": "tokenId",
+                "type": "uint24"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint96",
+                "name": "value",
+                "type": "uint96"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "proof",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "agency",
+                "type": "bytes32"
+            }
+        ],
+        "name": "PreMint",
         "type": "event"
     },
     {
@@ -690,6 +745,25 @@
     {
         "inputs": [
             {
+                "internalType": "uint24",
+                "name": "tokenId",
+                "type": "uint24"
+            }
+        ],
+        "name": "calculateEarlySeed",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "seed",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "address",
                 "name": "sender",
                 "type": "address"
@@ -834,7 +908,7 @@
     },
     {
         "inputs": [],
-        "name": "dotnuggV1",
+        "name": "dotnuggv1",
         "outputs": [
             {
                 "internalType": "contract IDotnuggV1Safe",
@@ -847,12 +921,12 @@
     },
     {
         "inputs": [],
-        "name": "emitter",
+        "name": "early",
         "outputs": [
             {
-                "internalType": "contract NuggftV1Items",
+                "internalType": "uint24",
                 "name": "",
-                "type": "address"
+                "type": "uint24"
             }
         ],
         "stateMutability": "view",
@@ -984,25 +1058,6 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "hotproof",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
                 "name": "tokenId",
                 "type": "uint256"
             }
@@ -1037,6 +1092,19 @@
                 "internalType": "string",
                 "name": "res",
                 "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "inuggftv1",
+        "outputs": [
+            {
+                "internalType": "contract NuggftV1Items",
+                "name": "",
+                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -1242,16 +1310,21 @@
         "type": "function"
     },
     {
-        "inputs": [
+        "inputs": [],
+        "name": "mintTokens",
+        "outputs": [
             {
-                "internalType": "address",
-                "name": "friend",
-                "type": "address"
+                "internalType": "uint24",
+                "name": "first",
+                "type": "uint24"
+            },
+            {
+                "internalType": "uint24",
+                "name": "last",
+                "type": "uint24"
             }
         ],
-        "name": "mint2",
-        "outputs": [],
-        "stateMutability": "payable",
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -1354,6 +1427,56 @@
                 "internalType": "address",
                 "name": "res",
                 "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint24",
+                "name": "tokenId",
+                "type": "uint24"
+            }
+        ],
+        "name": "premint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "premintTokens",
+        "outputs": [
+            {
+                "internalType": "uint24",
+                "name": "first",
+                "type": "uint24"
+            },
+            {
+                "internalType": "uint24",
+                "name": "last",
+                "type": "uint24"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint24",
+                "name": "",
+                "type": "uint24"
+            }
+        ],
+        "name": "proof",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -1828,16 +1951,21 @@
         "type": "function"
     },
     {
-        "inputs": [
+        "inputs": [],
+        "name": "trustedMintTokens",
+        "outputs": [
             {
-                "internalType": "address",
-                "name": "friend",
-                "type": "address"
+                "internalType": "uint24",
+                "name": "first",
+                "type": "uint24"
+            },
+            {
+                "internalType": "uint24",
+                "name": "last",
+                "type": "uint24"
             }
         ],
-        "name": "trustedMint2",
-        "outputs": [],
-        "stateMutability": "payable",
+        "stateMutability": "view",
         "type": "function"
     },
     {

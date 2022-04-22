@@ -20,7 +20,7 @@ import {
     safeLoadEpoch,
 } from './safeload';
 import { Epoch, Protocol, User } from '../generated/schema';
-import { cacheDotnugg, getDotnuggUserId, getItemURIs } from './dotnugg';
+import { cacheDotnugg, getDotnuggUserId, getItemURIs, getPremints } from './dotnugg';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
 import {
@@ -106,7 +106,12 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.nextEpoch = epoch.id;
     proto.lastEpoch = epoch.id;
     proto.epoch = epoch.id;
+    proto.dotnuggv1 = nil.id;
+    proto.inuggftv1 = nil.id;
+
     proto.nuggftUser = nil.id;
+    proto.nuggftUser = nil.id;
+
     proto.nullUser = nil.id;
     proto.nuggsPendingRemoval = [];
     proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
@@ -114,11 +119,23 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.save();
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
+    let inuggftv1 = safeNewUser(event.params.inuggftv1);
+    inuggftv1.shares = bigi(0);
+    inuggftv1.save();
+
+    // safeNewUser loads Protocol, so this needs to be below proto.save()
+    let dotnuggv1 = safeNewUser(event.params.dotnugg);
+    dotnuggv1.shares = bigi(0);
+    dotnuggv1.save();
+
+    // safeNewUser loads Protocol, so this needs to be below proto.save()
     let nuggft = safeNewUser(event.address);
     nuggft.shares = bigi(0);
     nuggft.save();
 
     proto.nuggftUser = nuggft.id;
+    proto.dotnuggv1 = dotnuggv1.id;
+    proto.inuggftv1 = inuggftv1.id;
 
     proto.save();
 
@@ -131,7 +148,11 @@ function handleEvent__Genesis(event: Genesis): void {
         bigi(event.params.offset),
     );
 
-    log.info('handleEvent__Genesis end', [proto.epoch]);
+    getPremints(event, event.address, nuggft);
+
+    _stake(event.params.stake);
+
+    log.info('handleEvent__Genesis end {}', [proto.epoch]);
 }
 
 function handleEvent__Stake(event: Stake): void {
@@ -162,17 +183,16 @@ function handleEvent__Transfer(event: Transfer): void {
     _transfer(event.params._from, event.params._to, event.params._tokenId);
 }
 
-export function _mint(event: Mint): void {
+export function _mint(tokenId: i32, agency: BigInt, hash: Bytes, value: BigInt): void {
     log.info('handleEvent__Mint start', []);
 
     let proto = safeLoadProtocol();
 
-    let nugg = safeLoadNuggNull(bigi(event.params.tokenId));
+    let nugg = safeLoadNuggNull(bigi(tokenId));
 
     if (nugg === null) {
-        let agency = b32toBigEndian(event.params.agency);
         nugg = safeNewNugg(
-            bigi(event.params.tokenId),
+            bigi(tokenId),
             agency.bitAnd(mask(160)).toHexString(),
             bigs(proto.epoch),
         );
@@ -206,14 +226,14 @@ export function _mint(event: Mint): void {
     offer.owner = false;
     offer.user = user.id;
     offer.swap = swap.id;
-    offer.txhash = event.transaction.hash.toHexString();
+    offer.txhash = hash.toHexString();
     // offer.save();
 
     // let offer = safeLoadOfferHelper(swap, user);
-    swap.eth = event.params.value;
-    swap.ethUsd = event.params.value;
-    offer.eth = event.params.value;
-    offer.ethUsd = event.params.value;
+    swap.eth = value;
+    swap.ethUsd = value;
+    offer.eth = value;
+    offer.ethUsd = value;
 
     swap.save();
     offer.save();

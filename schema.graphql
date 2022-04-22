@@ -20,7 +20,10 @@ type Protocol @entity {
 
     nuggftUser: User!
     nullUser: User!
-    dotnuggV1Processor: String!
+    dotnuggv1: User!
+    inuggftv1: User!
+
+    dotnuggV1Processor: String! @deprecated
 
     nuggftTotalEth: BigInt!
 

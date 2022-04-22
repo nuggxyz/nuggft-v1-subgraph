@@ -16,6 +16,10 @@ export function addr_i(num: BigInt): Address {
     return Address.fromString('0x' + num.toHex().replace('0x', '').padStart(40, '0'));
 }
 
+export function bighs(num: string): BigInt {
+    return BigInt.fromByteArray(Bytes.fromHexString(num));
+}
+
 export function addr_b(num: Bytes): Address {
     return Address.fromString(bigb(num).toHexString());
 }

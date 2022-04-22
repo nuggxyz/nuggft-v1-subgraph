@@ -1,7 +1,7 @@
-import { Address, BigInt, Bytes, store, log } from '@graphprotocol/graph-ts';
-import { NuggftV1 } from '../generated/NuggftV1/NuggftV1';
+import { Address, BigInt, Bytes, store, log, ethereum } from '@graphprotocol/graph-ts';
+import { NuggftV1, Genesis } from '../generated/NuggftV1/NuggftV1';
 
-import { Item, Nugg, NuggItem } from '../generated/schema';
+import { Item, Nugg, NuggItem, User } from '../generated/schema';
 import {
     safeLoadItem,
     safeLoadItemNull,
@@ -12,12 +12,34 @@ import {
     safeNewNuggItem,
 } from './safeload';
 import { safeDiv } from './uniswap';
-import { bigi } from './utils';
+import { bighs, bigi, bigs } from './utils';
+import { safeNewNugg } from './safeload';
+import { _mint } from './nuggft';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
     let nuggft = NuggftV1.bind(nuggftAddress);
-    let callResult = nuggft.dotnuggV1();
+    let callResult = nuggft.dotnuggv1();
     return callResult;
+}
+
+export function getPremints(event: Genesis, nuggftAddress: Address, owner: User): void {
+    log.info('handleEvent__Write start ', []);
+
+    let nuggft = NuggftV1.bind(nuggftAddress);
+
+    let res = nuggft.premintTokens();
+
+    let first = res.value0;
+    let last = res.value1;
+
+    let eps = nuggft.eps();
+
+    for (let i = first; i <= last; i++) {
+        let nugg = safeNewNugg(bigi(i), owner.id, bigi(0));
+
+        _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps);
+        updateProof(nugg, bigi(0), true);
+    }
 }
 
 export function getItemURIs(nuggftAddress: Address): void {
@@ -140,6 +162,7 @@ export function updatedStakedSharesAndEth(): void {
 }
 
 export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boolean): void {
+    log.info('updateProof IN args:[{}]', [nugg.id]);
     let proto = safeLoadProtocol();
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
@@ -244,6 +267,7 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
             }
         }
     }
+    log.info('updateProof OUT args:[{}]', [nugg.id]);
 }
 export function difference(arr1: i32[], arr2: i32[]): i32[] {
     let tmp: i32[] = [];

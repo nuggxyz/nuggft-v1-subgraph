@@ -19,7 +19,15 @@ import { wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
-import { Claim, Mint, Offer, OfferMint, Rotate, Sell } from '../generated/NuggftV1/NuggftV1';
+import {
+    Claim,
+    Mint,
+    Offer,
+    OfferMint,
+    PreMint,
+    Rotate,
+    Sell,
+} from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
 import { mask, _mint, _stake } from './nuggft';
 
@@ -31,8 +39,15 @@ import { mask, _mint, _stake } from './nuggft';
 //     }
 // }
 
+export function handleEvent__PreMint(event: PreMint): void {}
+
 export function handleEvent__Mint(event: Mint): void {
-    _mint(event);
+    _mint(
+        event.params.tokenId,
+        b32toBigEndian(event.params.agency),
+        event.transaction.hash,
+        event.params.value,
+    );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
     _stake(event.params.stake);
 }

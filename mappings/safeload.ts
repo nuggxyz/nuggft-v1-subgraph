@@ -32,9 +32,13 @@ export function safeLoadActiveEpoch(): Epoch {
 }
 
 export function safeLoadEpoch(id: BigInt): Epoch {
+    log.info('safeLoadEpoch IN [id:{}]', [id.toString()]);
+
     let epoch = Epoch.load(id.toString());
 
     if (epoch == null) panicFatal('safeLoadEpoch: EPOCH CANNOT BE NULL: ' + id.toString());
+
+    log.info('safeLoadEpoch OUT [epoch:id:{}]', [(epoch as Epoch).id]);
 
     return epoch as Epoch;
 }
@@ -83,11 +87,15 @@ export function safeLoadProtocol(): Protocol {
 }
 
 export function safeLoadNugg(id: BigInt): Nugg {
-    let ids = '' + id.toString();
+    log.info('safeLoadNugg IN {}', [id.toString()]);
+    let ids = id.toString();
     let loaded = Nugg.load(ids);
     if (loaded == null) {
+        log.error('safeLoadNugg ERROR [loaded == null] - {}', [ids]);
         panicFatal('safeLoadNugg: CRITICAL: Nugg CANNOT BE NULL:' + ids);
     }
+    log.info('safeLoadNugg OUT {}', [ids]);
+
     return loaded as Nugg;
 }
 
@@ -306,10 +314,13 @@ export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
     return loaded;
 }
 export function safeLoadActiveSwap(nugg: Nugg): Swap {
+    log.info(' safeLoadActiveSwap IN [NuggId:{}]', [nugg.id]);
     if (nugg.activeSwap == null) panicFatal('safeLoadActiveSwap: NUGG.activeSwap CANNOT BE NULL,');
     let id = nugg.activeSwap as string;
     let loaded = Swap.load(nugg.activeSwap as string);
     if (loaded == null) panicFatal('Swap CANNOT BE NULL:' + id);
+    log.info(' safeLoadActiveSwap OUT [NuggId:{}]', [nugg.id]);
+
     return loaded as Swap;
 }
 

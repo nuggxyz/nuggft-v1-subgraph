@@ -28,10 +28,12 @@ dataSources:
               - name: NuggftV1
                 file: ../abis/NuggftV1.json
           eventHandlers:
-              - event: Genesis(uint256,uint32,uint24,uint8)
+              - event: Genesis(uint256,uint32,uint24,uint8,uint24,address,address,bytes32)
                 handler: handleEvent__Genesis
               - event: Mint(indexed uint24,uint96,bytes32,bytes32,bytes32)
                 handler: handleEvent__Mint
+              - event: PreMint(indexed uint24,uint96,bytes32,bytes32)
+                handler: handleEvent__PreMint
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleEvent__Transfer
               - event: Offer(indexed uint24,bytes32,bytes32)
