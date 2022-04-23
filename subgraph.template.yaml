@@ -27,6 +27,8 @@ dataSources:
           abis:
               - name: NuggftV1
                 file: ../abis/NuggftV1.json
+              - name: xNuggftV1
+                file: ../abis/xNuggftV1.json
           eventHandlers:
               - event: Genesis(uint256,uint32,uint24,uint8,uint24,address,address,bytes32)
                 handler: handleEvent__Genesis

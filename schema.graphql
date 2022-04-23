@@ -21,7 +21,7 @@ type Protocol @entity {
     nuggftUser: User!
     nullUser: User!
     dotnuggv1: User!
-    inuggftv1: User!
+    xnuggftv1: User!
 
     dotnuggV1Processor: String! @deprecated
 
@@ -98,6 +98,8 @@ type Item @entity {
     position: BigInt!
     count: BigInt!
     dotnuggRawCache: String!
+    dotnuggUtfCache: String!
+
     rarityX16: BigInt!
 
     protocol: Protocol
@@ -140,9 +142,9 @@ type Nugg @entity {
 
     resolver: String!
 
-    # dotnuggRawCache: [BigInt!]
+    dotnuggUtfCache: String!
+
     dotnuggRawCache: String!
-    dotnuggSvgCache: [String!]!
 
     numSwaps: BigInt!
 

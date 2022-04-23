@@ -1,12 +1,6 @@
 [
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "dotnugg",
-                "type": "address"
-            }
-        ],
+        "inputs": [],
         "stateMutability": "payable",
         "type": "constructor"
     },
@@ -201,7 +195,7 @@
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "inuggftv1",
+                "name": "xnuggftv1",
                 "type": "address"
             },
             {
@@ -987,25 +981,6 @@
     {
         "inputs": [
             {
-                "internalType": "uint8",
-                "name": "feature",
-                "type": "uint8"
-            }
-        ],
-        "name": "featureLength",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "res",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "uint24",
                 "name": "tokenId",
                 "type": "uint24"
@@ -1062,6 +1037,25 @@
                 "type": "uint256"
             }
         ],
+        "name": "imageSVG",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "res",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
         "name": "imageURI",
         "outputs": [
             {
@@ -1092,19 +1086,6 @@
                 "internalType": "string",
                 "name": "res",
                 "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "inuggftv1",
-        "outputs": [
-            {
-                "internalType": "contract NuggftV1Items",
-                "name": "",
-                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -1201,25 +1182,6 @@
                 "internalType": "uint256",
                 "name": "value",
                 "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "itemId",
-                "type": "uint256"
-            }
-        ],
-        "name": "itemURI",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "res",
-                "type": "string"
             }
         ],
         "stateMutability": "view",
@@ -1509,30 +1471,6 @@
                 "internalType": "uint96",
                 "name": "res",
                 "type": "uint96"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "feature",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint8",
-                "name": "position",
-                "type": "uint8"
-            }
-        ],
-        "name": "rarity",
-        "outputs": [
-            {
-                "internalType": "uint16",
-                "name": "res",
-                "type": "uint16"
             }
         ],
         "stateMutability": "view",
@@ -2054,6 +1992,19 @@
                 "internalType": "uint96[]",
                 "name": "vals",
                 "type": "uint96[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "xnuggftv1",
+        "outputs": [
+            {
+                "internalType": "contract xNuggftV1",
+                "name": "",
+                "type": "address"
             }
         ],
         "stateMutability": "view",

@@ -107,7 +107,7 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.lastEpoch = epoch.id;
     proto.epoch = epoch.id;
     proto.dotnuggv1 = nil.id;
-    proto.inuggftv1 = nil.id;
+    proto.xnuggftv1 = nil.id;
 
     proto.nuggftUser = nil.id;
     proto.nuggftUser = nil.id;
@@ -119,9 +119,9 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.save();
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    let inuggftv1 = safeNewUser(event.params.inuggftv1);
-    inuggftv1.shares = bigi(0);
-    inuggftv1.save();
+    let xnuggftv1 = safeNewUser(event.params.xnuggftv1);
+    xnuggftv1.shares = bigi(0);
+    xnuggftv1.save();
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
     let dotnuggv1 = safeNewUser(event.params.dotnugg);
@@ -135,11 +135,11 @@ function handleEvent__Genesis(event: Genesis): void {
 
     proto.nuggftUser = nuggft.id;
     proto.dotnuggv1 = dotnuggv1.id;
-    proto.inuggftv1 = inuggftv1.id;
+    // proto.xnuggftv1 = xnuggftv1.id;
 
     proto.save();
 
-    getItemURIs(event.address);
+    getItemURIs(event.params.xnuggftv1);
 
     onEpochGenesis(
         event.block,

@@ -148,6 +148,8 @@ export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt): Nugg {
     loaded.resolver = '0x0000000000000000000000000000000000000000';
     loaded.lastTransfer = epoch.toI32();
     loaded.pendingClaim = false;
+    loaded.dotnuggRawCache = '';
+    loaded.dotnuggUtfCache = '';
     loaded.save();
 
     safeAddNuggToProtcol();

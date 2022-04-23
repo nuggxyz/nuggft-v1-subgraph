@@ -15,6 +15,7 @@ import { safeDiv } from './uniswap';
 import { bighs, bigi, bigs } from './utils';
 import { safeNewNugg } from './safeload';
 import { _mint } from './nuggft';
+import { xNuggftV1 } from '../generated/NuggftV1/xNuggftV1';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
     let nuggft = NuggftV1.bind(nuggftAddress);
@@ -42,17 +43,17 @@ export function getPremints(event: Genesis, nuggftAddress: Address, owner: User)
     }
 }
 
-export function getItemURIs(nuggftAddress: Address): void {
+export function getItemURIs(xnuggftAddress: Address): void {
     log.info('handleEvent__Write start ', []);
 
-    let nuggft = NuggftV1.bind(nuggftAddress);
+    let xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
 
     for (let i = 0; i < 8; i++) {
-        let amount = nuggft.featureLength(i);
+        let amount = xnuggftv1.featureSupply(i).toI32();
         for (let j = 1; j < amount + 1; j++) {
             let itemId = i * 1000 + j;
-            let callResult = nuggft.try_itemURI(bigi(itemId));
-            let rarityResult = nuggft.try_rarity(i, j);
+            let callResult = xnuggftv1.try_imageSVG(bigi(itemId));
+            let rarityResult = xnuggftv1.try_rarity(bigi(itemId));
 
             let item = safeNewItem(bigi(itemId));
             item.count = bigi(0);
@@ -71,85 +72,29 @@ export function cacheDotnugg(nugg: Nugg, blockNum: i32): void {
 
     // if (blockNum > 10276528) {
     let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
-    let callResult = dotnugg.try_imageURI(bigi(nugg.idnum));
+    let callResult = dotnugg.try_imageSVG(bigi(nugg.idnum));
 
-    let arr: string[] = [];
+    if (callResult.reverted) {
+        let tmp = proto.nuggsNotCached;
 
-    // if (callResult.reverted) {
-    //     for (var i = 0; i < 5; i++) {
-    //         log.warning('trying chunk for nugg: ' + nugg.id, [i.toString()]);
-    //         callResult = dotnugg.try_chunk(
-    //             Address.fromString(proto.nuggftUser),
-    //             nugg.idnum,
-    //             Address.fromString(nugg.resolver),
-    //             false,
-    //             false,
-    //             false,
-    //             true,
-    //             Bytes.empty(),
-    //             5,
-    //             i,
-    //         );
+        let str = nugg.idnum.toString();
 
-    //         if (callResult.reverted) break;
+        if (!tmp.includes(str)) tmp.push(str);
 
-    //         arr.push(callResult.value);
-    //     }
-    // } else {
-    //     arr.push(callResult.value);
-    // }
+        tmp.push(str);
 
-    if (!callResult.reverted) {
-        arr.push(callResult.value);
+        proto.nuggsNotCached = tmp;
 
-        // nugg.dotnuggRawCache = callResult.value.value1.map<string>((x: BigInt): string => x.toHexString()).join('');
-        nugg.dotnuggRawCache = '';
-        // const svg = drawSvg(callResult.value.value1);
-        if (proto.nuggsNotCached.includes(nugg.id)) {
-            let tmp: string[] = [];
-            for (let i = 0; i < proto.nuggsNotCached.length; i++) {
-                if (proto.nuggsNotCached[i] != nugg.id) {
-                    tmp.push(proto.nuggsNotCached[i]);
-                }
-            }
-            proto.nuggsNotCached = tmp;
-            proto.save();
-        }
+        proto.save();
 
-        nugg.dotnuggRawCache = arr.join('');
-        nugg.dotnuggSvgCache = [];
-        // log.info('ABCD2 ' + svg.length.toString(), []);
-        // if (arr.length == 1) {
-        //     nugg.dotnuggRawCache = callResult.value;
-        //     nugg.dotnuggSvgCache = [];
-        // } else {
-        //     nugg.dotnuggRawCache = '';
-        //     nugg.dotnuggSvgCache = arr;
-        // }
+        log.error('cacheDotnugg reverted with default resolver [NuggId:{}]', [str]);
 
-        // log.info('ABCD3 ' + svg.length.toString(), []);
-
-        log.info('cacheDotnugg updated dotnugg cache', []);
+        nugg.dotnuggRawCache = 'ERROR_WITH_DOTNUGG_CACHE';
     } else {
-        if (nugg.dotnuggRawCache == null || nugg.dotnuggRawCache == '') {
-            nugg.dotnuggRawCache = 'ERROR_WITH_DOTNUGG_CACHE: try getting data on chain';
-            nugg.dotnuggSvgCache = [];
-            let tmp = proto.nuggsNotCached as string[];
-            tmp.push(nugg.id as string);
-            proto.nuggsNotCached = tmp as string[];
-            proto.save();
-        }
-
-        log.info('cacheDotnugg reverted with default resolver', []);
+        nugg.dotnuggRawCache = callResult.value;
     }
 
     nugg.save();
-    // } else {
-    //     let tmp = proto.nuggsNotCached as string[];
-    //     tmp.push(nugg.id as string);
-    //     proto.nuggsNotCached = tmp as string[];
-    //     proto.save();
-    // }
 }
 
 export function updatedStakedSharesAndEth(): void {
