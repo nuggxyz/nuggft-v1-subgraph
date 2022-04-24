@@ -247,7 +247,9 @@ export function handleBlock__every(block: ethereum.Block): void {
             updateProof(nugg, bigi(0), true);
             break;
         }
-        case 8:
+        case 12:
+            onSwapInit(currentEpochId.plus(bigi(1)), proto);
+
             let nugg = safeLoadNuggNull(currentEpochId.plus(bigi(1)));
             if (nugg == null) {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);
@@ -256,9 +258,9 @@ export function handleBlock__every(block: ethereum.Block): void {
             cacheDotnugg(nugg, 0);
             updateProof(nugg, bigi(0), true);
             break;
-        case 16:
-            onSwapInit(currentEpochId.plus(bigi(1)), proto);
-            break;
+        // case 12:
+        //     onSwapInit(currentEpochId.plus(bigi(1)), proto);
+        //     break;
     }
 
     // if (block.number.toI32() === 10276528)
