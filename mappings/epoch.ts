@@ -17,6 +17,7 @@ import {
     unsafeLoadItem,
     safeRemoveItemActiveSwap,
     unsafeIncrementItemActiveSwap,
+    safeRemoveNuggFromProtcol,
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { unsafeLoadNuggItem, safeSetNuggActiveSwap } from './safeload';
@@ -152,8 +153,17 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     let workingRemoval = proto.nuggsPendingRemoval;
 
     for (let i = 0; i < proto.nuggsPendingRemoval.length; i++) {
-        store.remove('Nugg', workingRemoval[i]);
-        store.remove('Swap', workingRemoval[i] + '-0');
+        let nugg = safeLoadNugg(bigs(workingRemoval[i]));
+
+        safeRemoveNuggFromProtcol(nugg);
+
+        // let itm = nugg._items;
+
+        // for (let abc = 0; abc < itm.length; abc++) {
+        //     store.remove('NuggItem', `${itm[abc]}-${workingRemoval[i]}`);
+        // }
+        // store.remove('Nugg', workingRemoval[i]);
+        // store.remove('Swap', workingRemoval[i] + '-0');
         // TODO maybe we kill the cached svg here too?\
     }
 

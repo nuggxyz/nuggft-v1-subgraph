@@ -43,6 +43,37 @@ export function safeLoadEpoch(id: BigInt): Epoch {
     return epoch as Epoch;
 }
 
+export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
+    let proto = safeLoadProtocol();
+    proto.totalNuggs = proto.totalNuggs.minus(bigi(1));
+    proto.totalSwaps = proto.totalSwaps.minus(bigi(1));
+
+    let itm = nugg._items;
+
+    for (let abc = 0; abc < itm.length; abc++) {
+        let item = safeLoadItem(bigi(itm[abc]));
+
+        item.count = item.count.minus(bigi(1));
+
+        item.save();
+
+        store.remove('NuggItem', `${itm[abc]}-${nugg.id}`);
+    }
+
+    proto.totalItems = proto.totalItems.minus(bigi(itm.length));
+
+    proto.save();
+
+    store.remove('Nugg', nugg.id);
+
+    store.remove('Swap', nugg.id + '-0');
+}
+export function safeRemoveNuggItemFromProtcol(nuggItem: NuggItem): void {
+    let loaded = safeLoadProtocol();
+    loaded.totalItems = loaded.totalItems.minus(bigi(1));
+    loaded.save();
+}
+
 export function safeNewEpoch(id: BigInt): Epoch {
     let epoch = new Epoch(id.toString());
     epoch.idnum = id;
@@ -53,6 +84,7 @@ export function safeAddNuggToProtcol(): void {
     loaded.totalNuggs = loaded.totalNuggs.plus(bigi(1));
     loaded.save();
 }
+
 export function safeAddUserToProtcol(): void {
     let loaded = safeLoadProtocol();
     loaded.totalUsers = loaded.totalUsers.plus(bigi(1));
@@ -74,6 +106,7 @@ export function safeAddItemToProtcol(): void {
     loaded.totalItems = loaded.totalItems.plus(bigi(1));
     loaded.save();
 }
+
 export function safeAddItemSwapToProtcol(): void {
     let loaded = safeLoadProtocol();
     loaded.totalItemSwaps = loaded.totalItemSwaps.plus(bigi(1));
