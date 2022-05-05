@@ -8,8 +8,10 @@ import {
     safeLoadNuggItemHelper,
     safeLoadNuggItemHelperNull,
     safeLoadProtocol,
+    safeNewActiveNuggSnapshot,
     safeNewItem,
     safeNewNuggItem,
+    safeSetNewActiveItemSnapshot,
 } from './safeload';
 import { safeDiv } from './uniswap';
 import { bighs, bigi, bigs } from './utils';
@@ -36,9 +38,9 @@ export function getPremints(event: Genesis, nuggftAddress: Address, owner: User)
     let eps = nuggft.eps();
 
     for (let i = first; i <= last; i++) {
-        let nugg = safeNewNugg(bigi(i), owner.id, bigi(0));
+        let nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block.number);
 
-        _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps);
+        _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps, event);
         updateProof(nugg, bigi(0), true);
     }
 }
@@ -57,44 +59,113 @@ export function getItemURIs(xnuggftAddress: Address): void {
 
             let item = safeNewItem(bigi(itemId));
             item.count = bigi(0);
-            item.dotnuggRawCache = callResult.reverted ? 'oops' : callResult.value;
+            item.dotnuggRawCache = callResult.reverted ? 'ERROR' : callResult.value;
+
             item.feature = bigi(i);
             item.position = bigi(j);
             item.idnum = itemId;
             item.rarityX16 = rarityResult.reverted ? bigi(0) : bigi(rarityResult.value);
             item.save();
+
+            if (!callResult.reverted) safeSetNewActiveItemSnapshot(item, callResult.value);
+            else safeSetNewActiveItemSnapshot(item, 'ERROR');
         }
     }
 }
 
-export function cacheDotnugg(nugg: Nugg, blockNum: i32): void {
+export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
     let proto = safeLoadProtocol();
+
+    let snap = safeNewActiveNuggSnapshot(nugg, nugg.user, blocknum);
+
+    if (snap === null) return nugg;
 
     // if (blockNum > 10276528) {
     let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
     let callResult = dotnugg.try_imageSVG(bigi(nugg.idnum));
 
-    if (callResult.reverted) {
-        let tmp = proto.nuggsNotCached;
+    let str = '';
 
-        let str = nugg.idnum.toString();
-
-        if (!tmp.includes(str)) tmp.push(str);
-
-        tmp.push(str);
-
-        proto.nuggsNotCached = tmp;
-
-        proto.save();
-
-        log.error('cacheDotnugg reverted with default resolver [NuggId:{}]', [str]);
-
-        nugg.dotnuggRawCache = 'ERROR_WITH_DOTNUGG_CACHE';
+    if (!callResult.reverted) {
+        str = callResult.value;
     } else {
-        nugg.dotnuggRawCache = callResult.value;
+        let value = new Bytes(0);
+        for (let a = 1; a <= 3; a++) {
+            let callResult = dotnugg.try_image123(bigi(nugg.idnum), false, a, value);
+
+            if (callResult.reverted) {
+                log.error('cacheDotnugg reverted trying to 123 [NuggId:{}] [chunk:{}/3]', [
+                    nugg.id,
+                    a.toString(),
+                ]);
+                snap.chunk = 'ERROR';
+                snap.chunkError = true;
+                snap.save();
+
+                nugg.dotnuggRawCache = 'ERROR';
+                nugg.activeSnapshot = snap.id;
+                nugg.save();
+
+                return nugg;
+            }
+
+            value = callResult.value;
+        }
+
+        str = value.toString();
+
+        // callResult = dotnugg.try_image123(bigi(nugg.idnum), false, 2, new Bytes(0));
+
+        // if (callResult.reverted) {
+        //     log.error('cacheDotnugg reverted trying to 123 [NuggId:{}] [chunk:{}/3]', [
+        //         nugg.id,
+        //         '1',
+        //     ]);
+        //     snap.chunkError = true;
+        //     snap.save();
+
+        //     return nugg;
+        // }
+
+        // for (let a = 0; a < CHUNK_SIZE; a++) {
+        //     let callResult = dotnugg.try_imageSVG1(bigi(nugg.idnum), false, CHUNK_SIZE, a);
+
+        //     if (!callResult.reverted) safeSetNewDotnuggChunk(snap.id, a, callResult.value);
+        //     else {
+        // log.error('cacheDotnugg reverted trying to chunk [NuggId:{}] [chunk:{}/{}]', [
+        //     nugg.id,
+        //     a.toString(),
+        //     CHUNK_SIZE.toString(),
+        // ]);
+        // snap.chunkError = true;
+        // snap.save();
+        //     }
+        // }
+        // let tmp = proto.nuggsNotCached;
+
+        // let str = nugg.idnum.toString();
+
+        // if (!tmp.includes(str)) tmp.push(str);
+
+        // tmp.push(str);
+
+        // proto.nuggsNotCached = tmp;
+
+        // proto.save();
+
+        // log.error('cacheDotnugg reverted with default resolver [NuggId:{}]', [str]);
     }
 
+    nugg.dotnuggRawCache = str;
+
+    snap.chunk = str;
+    snap.chunkError = false;
+    snap.save();
+    nugg.activeSnapshot = snap.id;
+
     nugg.save();
+
+    return nugg;
 }
 
 export function updatedStakedSharesAndEth(): void {
@@ -106,7 +177,7 @@ export function updatedStakedSharesAndEth(): void {
     proto.save();
 }
 
-export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boolean): void {
+export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boolean): Nugg {
     log.info('updateProof IN args:[{}]', [nugg.id]);
     let proto = safeLoadProtocol();
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
@@ -114,7 +185,7 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
     if (preload.equals(BigInt.fromI32(0))) {
         let res = nuggft.try_proofOf(nugg.idnum);
 
-        if (res.reverted) return;
+        if (res.reverted) return nugg;
 
         preload = res.value;
     }
@@ -191,7 +262,7 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
     }
 
     nugg._items = items;
-
+    nugg.proof = preload;
     nugg.save();
 
     proto.save();
@@ -213,6 +284,8 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
         }
     }
     log.info('updateProof OUT args:[{}]', [nugg.id]);
+
+    return nugg;
 }
 export function difference(arr1: i32[], arr2: i32[]): i32[] {
     let tmp: i32[] = [];

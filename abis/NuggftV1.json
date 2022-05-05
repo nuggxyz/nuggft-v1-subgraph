@@ -1035,6 +1035,40 @@
                 "internalType": "uint256",
                 "name": "tokenId",
                 "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "base64",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint8",
+                "name": "chunk",
+                "type": "uint8"
+            },
+            {
+                "internalType": "bytes",
+                "name": "prev",
+                "type": "bytes"
+            }
+        ],
+        "name": "image123",
+        "outputs": [
+            {
+                "internalType": "bytes",
+                "name": "res",
+                "type": "bytes"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
             }
         ],
         "name": "imageSVG",

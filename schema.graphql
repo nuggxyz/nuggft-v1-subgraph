@@ -104,6 +104,9 @@ type Item @entity {
 
     protocol: Protocol
 
+    # just to keep in the same format as the nuggs
+    activeSnapshot: ItemSnapshot!
+
     activeSwap: ItemSwap
     upcomingActiveSwap: ItemSwap
 
@@ -146,9 +149,15 @@ type Nugg @entity {
 
     dotnuggRawCache: String!
 
+    activeSnapshot: NuggSnapshot!
+
+    snapshots: [NuggSnapshot!]! @derivedFrom(field: "nugg")
+
     numSwaps: BigInt!
 
     _items: [Int!]!
+
+    proof: BigInt!
 
     burned: Boolean! #update
     swaps: [Swap!]! @derivedFrom(field: "nugg")
@@ -270,6 +279,56 @@ type ItemSwap @entity {
 
     leader: Nugg
 }
+
+type ItemSnapshot @entity {
+    id: ID!
+
+    item: Item!
+
+    chunkError: Boolean!
+
+    chunk: String!
+}
+
+type NuggSnapshot @entity {
+    id: ID!
+
+    snapshotNum: Int!
+
+    block: BigInt!
+
+    user: User!
+
+    nugg: Nugg!
+
+    _items: [Int!]!
+
+    proof: BigInt!
+
+    chunkError: Boolean!
+
+    chunk: String!
+}
+
+# type DotnuggItemChunk @entity {
+#     id: ID!
+
+#     index: Int!
+
+#     snapshot: ItemSnapshot!
+
+#     data: String!
+# }
+
+# type DotnuggChunk @entity {
+#     id: ID!
+
+#     index: Int!
+
+#     snapshot: NuggSnapshot!
+
+#     data: String!
+# }
 
 type NuggActiveItemSwap @entity {
     id: ID!

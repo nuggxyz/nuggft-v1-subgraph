@@ -47,6 +47,7 @@ export function handleEvent__Mint(event: Mint): void {
         b32toBigEndian(event.params.agency),
         event.transaction.hash,
         event.params.value,
+        event,
     );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
     _stake(event.params.stake);
@@ -67,7 +68,7 @@ export function handleEvent__Rotate(event: Rotate): void {
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, false);
 }
 
-export function _transfer(from: Address, to: Address, tokenId: BigInt): Nugg {
+export function _transfer(from: Address, to: Address, tokenId: BigInt, blockNum: BigInt): Nugg {
     log.info('handleEvent__Transfer start', []);
 
     let proto = safeLoadProtocol();
@@ -75,7 +76,7 @@ export function _transfer(from: Address, to: Address, tokenId: BigInt): Nugg {
     let nugg = safeLoadNuggNull(tokenId);
 
     if (nugg == null) {
-        nugg = safeNewNugg(tokenId, proto.nullUser, BigInt.fromString(proto.epoch));
+        nugg = safeNewNugg(tokenId, proto.nullUser, BigInt.fromString(proto.epoch), blockNum);
     }
 
     let sender = safeLoadUser(from);
@@ -103,7 +104,7 @@ export function _transfer(from: Address, to: Address, tokenId: BigInt): Nugg {
         nugg.save();
         sender.save();
 
-        cacheDotnugg(nugg, 0);
+        // cacheDotnugg(nugg, 0);
     } else {
         // if prepocessed, we mark nugg as
         nugg.pendingClaim = false;
@@ -128,7 +129,7 @@ export function _rotate(
 
     let nugg = safeLoadNugg(tokenId);
 
-    cacheDotnugg(nugg, block.number.toI32());
+    cacheDotnugg(nugg, block.number);
 
     updateProof(nugg, b32toBigEndian(proof), increment);
 

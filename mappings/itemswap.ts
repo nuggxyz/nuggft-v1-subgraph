@@ -231,9 +231,9 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
     const proof = b32toBigEndian(event.params.proof);
 
     if (proof.notEqual(bigi(0))) {
-        updateProof(buyingNugg, proof, false);
+        buyingNugg = updateProof(buyingNugg, proof, false);
 
-        cacheDotnugg(buyingNugg, 0);
+        buyingNugg = cacheDotnugg(buyingNugg, event.block.number);
     }
 }
 
@@ -290,7 +290,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     log.info('handleEvent__SellItem end', []);
 
-    updateProof(sellingNugg, b32toBigEndian(event.params.proof), false);
+    sellingNugg = updateProof(sellingNugg, b32toBigEndian(event.params.proof), false);
 
-    cacheDotnugg(sellingNugg, 0);
+    sellingNugg = cacheDotnugg(sellingNugg, event.block.number);
 }

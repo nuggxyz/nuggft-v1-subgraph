@@ -13,8 +13,10 @@ import {
     Loan,
     UserActiveSwap,
     NuggActiveItemSwap,
+    NuggSnapshot,
+    ItemSnapshot,
 } from '../generated/schema';
-import { cacheDotnugg } from './dotnugg';
+import { cacheDotnugg, updateProof } from './dotnugg';
 import { panicFatal } from './uniswap';
 import { bigi } from './utils';
 
@@ -171,7 +173,7 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
     nugg.save();
 }
 
-export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt): Nugg {
+export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt, blocknum: BigInt): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id.toI32();
     loaded.burned = false;
@@ -187,9 +189,70 @@ export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt): Nugg {
 
     safeAddNuggToProtcol();
 
-    cacheDotnugg(loaded, 0);
+    loaded = updateProof(loaded, bigi(0), true);
+
+    loaded = cacheDotnugg(loaded, blocknum);
 
     return loaded;
+}
+
+export function safeNewActiveNuggSnapshot(
+    nugg: Nugg,
+    userId: string,
+    blocknum: BigInt,
+): NuggSnapshot | null {
+    let curr = NuggSnapshot.load(nugg.activeSnapshot);
+    let num = 0;
+    if (curr !== null) {
+        num = curr.snapshotNum + 1;
+        if (curr.proof.equals(nugg.proof)) return null;
+    }
+
+    let next = new NuggSnapshot(nugg.id + '-' + num.toString());
+    next.nugg = nugg.id;
+    next.block = blocknum;
+    next.user = userId;
+    next._items = nugg._items;
+    next.snapshotNum = num;
+    next.proof = nugg.proof;
+    next.chunkError = false;
+    next.chunk = 'pending';
+    next.save();
+
+    return next;
+}
+
+// export function safeSetNewDotnuggChunk(version: string, index: u32, data: string): void {
+//     let a = new DotnuggChunk(version + '-' + index.toString());
+
+//     a.data = data;
+
+//     a.index = index;
+
+//     a.save();
+// }
+
+export function safeSetNewActiveItemSnapshot(item: Item, data: string): Item {
+    let id = item.id + '-' + '0';
+
+    let next = new ItemSnapshot(id);
+
+    next.item = item.id;
+    next.chunkError = !!data.startsWith('ERROR');
+    next.chunk = data;
+    next.save();
+
+    // let chunk = new DotnuggItemChunk(id + '-' + '0');
+
+    // chunk.index = 0;
+
+    // chunk.data = data;
+
+    item.activeSnapshot = next.id;
+
+    item.save();
+
+    return item;
 }
 
 export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {

@@ -1,4 +1,4 @@
-import { Address, log, Bytes } from '@graphprotocol/graph-ts';
+import { Address, log, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import { BigInt } from '@graphprotocol/graph-ts';
 import { Genesis, Mint, Stake, Transfer } from '../generated/NuggftV1/NuggftV1';
 import { safeDiv, wethToUsdc } from './uniswap';
@@ -160,13 +160,18 @@ function handleEvent__Stake(event: Stake): void {
 }
 
 export function _stake(cache: Bytes): void {
-    log.info('handleEvent__Stake start', []);
-
     let agency = b32toBigEndian(cache);
 
     // let protocolEth = event.params.stake.bitAnd(mask(96));
     let eth = agency.rightShift(96).bitAnd(mask(96));
     let shares = agency.rightShift(192);
+
+    log.info('handleEvent__Stake start [Bytes:{}] [Hex:{}] [eth:{}] [shares:{}]', [
+        cache.toHexString(),
+        agency.toHexString(),
+        eth.toString(),
+        shares.toString(),
+    ]);
 
     let proto = safeLoadProtocol();
 
@@ -180,10 +185,16 @@ export function _stake(cache: Bytes): void {
 }
 
 function handleEvent__Transfer(event: Transfer): void {
-    _transfer(event.params._from, event.params._to, event.params._tokenId);
+    _transfer(event.params._from, event.params._to, event.params._tokenId, event.block.number);
 }
 
-export function _mint(tokenId: i32, agency: BigInt, hash: Bytes, value: BigInt): void {
+export function _mint(
+    tokenId: i32,
+    agency: BigInt,
+    hash: Bytes,
+    value: BigInt,
+    event: ethereum.Event,
+): void {
     log.info('handleEvent__Mint start', []);
 
     let proto = safeLoadProtocol();
@@ -195,6 +206,7 @@ export function _mint(tokenId: i32, agency: BigInt, hash: Bytes, value: BigInt):
             bigi(tokenId),
             agency.bitAnd(mask(160)).toHexString(),
             bigs(proto.epoch),
+            event.block.number,
         );
     }
 

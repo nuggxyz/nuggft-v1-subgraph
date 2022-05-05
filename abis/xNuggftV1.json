@@ -214,6 +214,40 @@
                 "internalType": "uint256",
                 "name": "tokenId",
                 "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "base64",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint8",
+                "name": "chunks",
+                "type": "uint8"
+            },
+            {
+                "internalType": "uint8",
+                "name": "index",
+                "type": "uint8"
+            }
+        ],
+        "name": "imageSVG",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "res",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
             }
         ],
         "name": "imageURI",
