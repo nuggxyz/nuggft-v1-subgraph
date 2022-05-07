@@ -148,7 +148,7 @@ function handleEvent__Genesis(event: Genesis): void {
         bigi(event.params.offset),
     );
 
-    getPremints(event, event.address, nuggft);
+    getPremints(event, event.address, nuggft, event.block);
 
     _stake(event.params.stake);
 
@@ -185,7 +185,7 @@ export function _stake(cache: Bytes): void {
 }
 
 function handleEvent__Transfer(event: Transfer): void {
-    _transfer(event.params._from, event.params._to, event.params._tokenId, event.block.number);
+    _transfer(event.params._from, event.params._to, event.params._tokenId, event.block);
 }
 
 export function _mint(
@@ -193,7 +193,7 @@ export function _mint(
     agency: BigInt,
     hash: Bytes,
     value: BigInt,
-    event: ethereum.Event,
+    block: ethereum.Block,
 ): void {
     log.info('handleEvent__Mint start', []);
 
@@ -206,7 +206,7 @@ export function _mint(
             bigi(tokenId),
             agency.bitAnd(mask(160)).toHexString(),
             bigs(proto.epoch),
-            event.block.number,
+            block,
         );
     }
 
@@ -218,8 +218,8 @@ export function _mint(
 
     nugg.save();
 
-    swap.eth = bigi(0); // handled by Mint or Offer
-    swap.ethUsd = bigi(0);
+    swap.top = bigi(0); // handled by Mint or Offer
+    swap.topUsd = bigi(0);
     swap.owner = proto.nullUser;
     swap.leader = user.id;
     swap.nugg = nugg.id;
@@ -228,6 +228,9 @@ export function _mint(
     swap.startingEpoch = proto.epoch;
     swap.nextDelegateType = 'None';
     swap.bottom = bigi(0);
+    swap.bottomUsd = bigi(0);
+    swap.startUnix = block.timestamp;
+
     swap.save();
 
     let offer = safeNewOfferHelper(swap, user);
@@ -242,8 +245,8 @@ export function _mint(
     // offer.save();
 
     // let offer = safeLoadOfferHelper(swap, user);
-    swap.eth = value;
-    swap.ethUsd = value;
+    swap.top = value;
+    swap.topUsd = value;
     offer.eth = value;
     offer.ethUsd = value;
 

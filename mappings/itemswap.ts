@@ -60,6 +60,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
             nuggitem,
             itemswap,
             event.transaction.value,
+            event.block.timestamp,
         );
     } else if (itemswap.nextDelegateType == 'Carry') {
         _offerOfferItem(
@@ -90,6 +91,7 @@ function _offerCommitItem(
     nuggItem: NuggItem,
     itemswap: ItemSwap,
     eth: BigInt,
+    time: BigInt,
 ): void {
     log.info('_offerCommitItem start', []);
 
@@ -154,8 +156,9 @@ function _offerCommitItem(
     itemoffer.txhash = hash;
     itemoffer.save();
 
-    itemswap.eth = itemoffer.eth;
-    itemswap.ethUsd = itemoffer.ethUsd;
+    itemswap.startUnix = time;
+    itemswap.top = itemoffer.eth;
+    itemswap.topUsd = itemoffer.ethUsd;
     itemswap.nextDelegateType = 'Carry';
     itemswap.leader = buyerNugg.id;
 
@@ -197,8 +200,8 @@ function _offerOfferItem(
     itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
     itemoffer.save();
 
-    itemswap.eth = itemoffer.eth;
-    itemswap.ethUsd = itemoffer.ethUsd;
+    itemswap.top = itemoffer.eth;
+    itemswap.topUsd = itemoffer.ethUsd;
     itemswap.leader = buyerNugg.id;
     itemswap.save();
 
@@ -231,7 +234,7 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
     const proof = b32toBigEndian(event.params.proof);
 
     if (proof.notEqual(bigi(0))) {
-        buyingNugg = updateProof(buyingNugg, proof, false);
+        buyingNugg = updateProof(buyingNugg, proof, false, event.block);
 
         buyingNugg = cacheDotnugg(buyingNugg, event.block.number);
     }
@@ -263,9 +266,11 @@ export function handleEvent__SellItem(event: SellItem): void {
     itemSwap.sellingNuggItem = nuggitem.id;
     itemSwap.sellingItem = nuggitem.item;
     itemSwap.bottom = agency__eth;
-    itemSwap.eth = agency__eth;
+    itemSwap.eth = bigi(0);
+    itemSwap.ethUsd = bigi(0);
+    itemSwap.top = agency__eth;
     itemSwap.bottomUsd = wethToUsdc(agency__eth);
-    itemSwap.ethUsd = itemSwap.bottomUsd;
+    itemSwap.topUsd = itemSwap.bottomUsd;
     itemSwap.owner = sellingNugg.id;
     itemSwap.leader = sellingNugg.id;
     itemSwap.nextDelegateType = 'Commit';
@@ -290,7 +295,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     log.info('handleEvent__SellItem end', []);
 
-    sellingNugg = updateProof(sellingNugg, b32toBigEndian(event.params.proof), false);
+    sellingNugg = updateProof(sellingNugg, b32toBigEndian(event.params.proof), false, event.block);
 
     sellingNugg = cacheDotnugg(sellingNugg, event.block.number);
 }

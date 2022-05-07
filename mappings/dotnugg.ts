@@ -25,7 +25,12 @@ export function getDotnuggUserId(nuggftAddress: Address): Address {
     return callResult;
 }
 
-export function getPremints(event: Genesis, nuggftAddress: Address, owner: User): void {
+export function getPremints(
+    event: Genesis,
+    nuggftAddress: Address,
+    owner: User,
+    block: ethereum.Block,
+): void {
     log.info('handleEvent__Write start ', []);
 
     let nuggft = NuggftV1.bind(nuggftAddress);
@@ -38,10 +43,10 @@ export function getPremints(event: Genesis, nuggftAddress: Address, owner: User)
     let eps = nuggft.eps();
 
     for (let i = first; i <= last; i++) {
-        let nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block.number);
+        let nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block);
 
-        _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps, event);
-        updateProof(nugg, bigi(0), true);
+        _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps, block);
+        updateProof(nugg, bigi(0), true, block);
     }
 }
 
@@ -177,7 +182,12 @@ export function updatedStakedSharesAndEth(): void {
     proto.save();
 }
 
-export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boolean): Nugg {
+export function updateProof(
+    nugg: Nugg,
+    preload: BigInt,
+    incrementItemCount: boolean,
+    block: ethereum.Block,
+): Nugg {
     log.info('updateProof IN args:[{}]', [nugg.id]);
     let proto = safeLoadProtocol();
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
@@ -274,11 +284,15 @@ export function updateProof(nugg: Nugg, preload: BigInt, incrementItemCount: boo
         if (_displayed.includes(items[i])) {
             if (!nuggItem.displayed) {
                 nuggItem.displayed = true;
+                nuggItem.displayedSinceBlock = block.number;
+                nuggItem.displayedSinceUnix = block.timestamp;
                 nuggItem.save();
             }
         } else {
             if (nuggItem.displayed) {
                 nuggItem.displayed = false;
+                nuggItem.displayedSinceBlock = null;
+                nuggItem.displayedSinceUnix = null;
                 nuggItem.save();
             }
         }

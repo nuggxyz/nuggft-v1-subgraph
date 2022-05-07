@@ -51,7 +51,7 @@ export function onEpochGenesis(
 
     let nugg = safeLoadNugg(currentEpochId);
 
-    nugg = updateProof(nugg, bigi(0), true);
+    nugg = updateProof(nugg, bigi(0), true, block);
     nugg = cacheDotnugg(nugg, block.number);
     onEpochStart(currentEpochId, proto, block);
 
@@ -176,7 +176,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
             workingRemoval.push(nugg.id);
         } else {
             nugg = safeRemoveNuggActiveSwap(nugg);
-            nugg = _transfer(addrs(proto.nuggftUser), addrs(s.leader), bigs(nugg.id), block.number);
+            nugg = _transfer(addrs(proto.nuggftUser), addrs(s.leader), bigs(nugg.id), block);
             nugg.pendingClaim = true;
             nugg.save();
         }
@@ -253,7 +253,7 @@ export function handleBlock__every(block: ethereum.Block): void {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);
                 nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
             }
-            nugg = updateProof(nugg, bigi(0), true);
+            nugg = updateProof(nugg, bigi(0), true, block);
             // SWITCHED THESE
             nugg = cacheDotnugg(nugg, block.number.plus(bigi(2)));
 
@@ -267,7 +267,7 @@ export function handleBlock__every(block: ethereum.Block): void {
                 onSwapInit(currentEpochId.plus(bigi(1)), proto);
                 nugg = safeLoadNugg(currentEpochId.plus(bigi(1)));
             }
-            nugg = updateProof(nugg, bigi(0), true);
+            nugg = updateProof(nugg, bigi(0), true, block);
             // SWITCHED THESE
             nugg = cacheDotnugg(nugg, block.number.plus(bigi(2)));
             break;

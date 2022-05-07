@@ -173,7 +173,12 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
     nugg.save();
 }
 
-export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt, blocknum: BigInt): Nugg {
+export function safeNewNugg(
+    id: BigInt,
+    userId: string,
+    epoch: BigInt,
+    block: ethereum.Block,
+): Nugg {
     let loaded = new Nugg(id.toString());
     loaded.idnum = id.toI32();
     loaded.burned = false;
@@ -189,9 +194,9 @@ export function safeNewNugg(id: BigInt, userId: string, epoch: BigInt, blocknum:
 
     safeAddNuggToProtcol();
 
-    loaded = updateProof(loaded, bigi(0), true);
+    loaded = updateProof(loaded, bigi(0), true, block);
 
-    loaded = cacheDotnugg(loaded, blocknum);
+    loaded = cacheDotnugg(loaded, block.number);
 
     return loaded;
 }
@@ -529,6 +534,7 @@ export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
     safeAddItemSwapToProtcol();
     let swap = new ItemSwap(id);
     swap.num = sellingNuggItem.numSwaps;
+
     // swap.endingEpoch = endingEpoch;
     sellingNuggItem.activeSwap = swap.id;
     sellingNuggItem.save();

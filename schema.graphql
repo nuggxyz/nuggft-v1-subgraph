@@ -119,6 +119,9 @@ type NuggItem @entity {
     item: Item!
     nugg: Nugg!
 
+    displayedSinceBlock: BigInt
+    displayedSinceUnix: BigInt
+
     numSwaps: BigInt!
     displayed: Boolean!
     count: BigInt!
@@ -179,6 +182,11 @@ type Swap @entity {
     epoch: Epoch
     endingEpoch: BigInt
     startingEpoch: Epoch
+
+    top: BigInt!
+    topUsd: BigInt!
+
+    startUnix: BigInt
 
     num: BigInt!
     bottom: BigInt!
@@ -265,6 +273,11 @@ type ItemSwap @entity {
     epoch: Epoch
     endingEpoch: BigInt
     startingEpoch: Epoch
+
+    top: BigInt!
+    topUsd: BigInt!
+    startUnix: BigInt
+
     bottom: BigInt!
     bottomUsd: BigInt!
 
