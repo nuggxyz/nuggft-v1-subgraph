@@ -26,6 +26,7 @@ import { ClaimItem, OfferItem, SellItem } from '../generated/NuggftV1/NuggftV1';
 import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
 import { mask, _stake } from './nuggft';
 import { updateProof, cacheDotnugg } from './dotnugg';
+import { LOSS } from './constants';
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol();
@@ -245,7 +246,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     let agency = b32toBigEndian(event.params.agency);
 
-    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(LOSS);
 
     let sellingNuggId = event.params.sellingTokenId;
 
@@ -257,8 +258,27 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     let nuggitem = safeLoadNuggItemHelper(sellingNugg, item);
 
-    if (nuggitem.activeSwap != null) {
-        panicFatal('handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL');
+    if (nuggitem.activeSwap !== null) {
+        let swap = safeLoadActiveNuggItemSwap(nuggitem);
+
+        if (swap.endingEpoch !== null) {
+            panicFatal(
+                'handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL if seller is not owner',
+            );
+        }
+
+        swap.top = agency__eth;
+        swap.topUsd = agency__eth;
+        swap.bottom = wethToUsdc(agency__eth);
+        swap.bottomUsd = wethToUsdc(agency__eth);
+        swap.save();
+
+        let itemoffer = safeLoadItemOfferHelper(swap, sellingNugg);
+
+        itemoffer.eth = agency__eth;
+        itemoffer.ethUsd = wethToUsdc(agency__eth);
+        itemoffer.txhash = event.transaction.hash.toHexString();
+        itemoffer.save();
     }
 
     let itemSwap = safeNewItemSwap(nuggitem);
@@ -280,9 +300,6 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     safeSetNuggActiveItemSwap(sellingNugg, nuggitem, itemSwap);
 
-    // nuggitem.count = nuggitem.count.minus(BigInt.fromString('1'));
-    // nuggitem.save();
-
     let itemoffer = safeNewItemOffer(itemSwap, sellingNugg);
 
     itemoffer.claimed = false;
@@ -291,6 +308,7 @@ export function handleEvent__SellItem(event: SellItem): void {
     itemoffer.owner = true;
     itemoffer.nugg = sellingNugg.id;
     itemoffer.swap = itemSwap.id;
+    itemoffer.txhash = event.transaction.hash.toHexString();
     itemoffer.save();
 
     log.info('handleEvent__SellItem end', []);

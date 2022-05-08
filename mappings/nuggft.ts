@@ -87,7 +87,7 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.nuggftStakedEth = bigi(0);
     proto.nuggftStakedUsd = bigi(0);
     proto.nuggftStakedUsdPerShare = bigi(0);
-
+    proto.featureTotals = [0, 0, 0, 0, 0, 0, 0, 0];
     proto.nuggftStakedShares = bigi(0);
 
     let epoch = new Epoch('NOTLIVE');

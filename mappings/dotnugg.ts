@@ -192,7 +192,9 @@ export function updateProof(
     let proto = safeLoadProtocol();
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
-    if (preload.equals(BigInt.fromI32(0))) {
+    let tmpFeatureTotals = proto.featureTotals;
+
+    if (preload.equals(BigInt.zero())) {
         let res = nuggft.try_proofOf(nugg.idnum);
 
         if (res.reverted) return nugg;
@@ -247,6 +249,9 @@ export function updateProof(
         nuggItem = nuggItem as NuggItem;
 
         if (incrementItemCount) {
+            let feature = bigi(item.idnum).div(bigi(1000)).toI32();
+
+            tmpFeatureTotals[feature]++;
             item.count = item.count.plus(BigInt.fromString('1'));
             item.save();
         }
@@ -274,7 +279,7 @@ export function updateProof(
     nugg._items = items;
     nugg.proof = preload;
     nugg.save();
-
+    proto.featureTotals = tmpFeatureTotals;
     proto.save();
 
     for (let i = 0; i < items.length; i++) {

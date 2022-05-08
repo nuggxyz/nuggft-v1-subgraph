@@ -49,11 +49,15 @@ export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
     let proto = safeLoadProtocol();
     proto.totalNuggs = proto.totalNuggs.minus(bigi(1));
     proto.totalSwaps = proto.totalSwaps.minus(bigi(1));
+    let tmpFeatureTotals = proto.featureTotals;
 
     let itm = nugg._items;
 
     for (let abc = 0; abc < itm.length; abc++) {
         let item = safeLoadItem(bigi(itm[abc]));
+
+        let feature = bigi(item.idnum).div(bigi(1000)).toI32();
+        tmpFeatureTotals[feature]--;
 
         item.count = item.count.minus(bigi(1));
 
@@ -61,6 +65,8 @@ export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
 
         store.remove('NuggItem', `${itm[abc]}-${nugg.id}`);
     }
+
+    proto.featureTotals = tmpFeatureTotals;
 
     proto.totalItems = proto.totalItems.minus(bigi(itm.length));
 

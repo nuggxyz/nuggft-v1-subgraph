@@ -15,7 +15,7 @@ import {
     safeRemoveNuggActiveSwap,
     safeSetUserActiveSwap,
 } from './safeload';
-import { wethToUsdc } from './uniswap';
+import { panicFatal, wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
@@ -156,9 +156,9 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt): vo
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
+    // let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
 
-    let agency__flag = agency.rightShift(254);
+    // let agency__flag = agency.rightShift(254);
 
     let proto = safeLoadProtocol();
 
@@ -193,8 +193,11 @@ export function handleEvent__Sell(event: Sell): void {
 
     let nugg = safeLoadNugg(bigi(event.params.tokenId));
 
-    if (nugg.activeSwap) {
+    if (nugg.activeSwap !== null) {
         let swap = safeLoadActiveSwap(nugg);
+        if (swap.endingEpoch !== null) {
+            panicFatal('handleEvent__Sell: nugg.activeSwap MUST BE NULL if seller is not owner');
+        }
         swap.bottom = agency__eth;
         swap.bottomUsd = wethToUsdc(agency__eth);
         swap.top = agency__eth;
@@ -274,7 +277,7 @@ export function handleEvent__Claim(event: Claim): void {
     if (swap.leader == user.id) {
         if (swap.owner == user.id) {
             safeRemoveNuggActiveSwap(nugg);
-            swap.endingEpoch = BigInt.fromString(proto.epoch);
+            swap.canceledEpoch = BigInt.fromString(proto.epoch);
             swap.save();
         }
     }
