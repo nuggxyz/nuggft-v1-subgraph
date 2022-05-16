@@ -28,10 +28,22 @@ import {
     Rotate,
     Sell,
 } from '../generated/NuggftV1/NuggftV1';
-import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160 } from './utils';
+import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160, addrs } from './utils';
 import { mask, _mint, _stake } from './nuggft';
 
-export function handleEvent__PreMint(event: PreMint): void {}
+export function handleEvent__PreMint(event: PreMint): void {
+    log.debug('handleEvent__PreMint start', []);
+    let proto = safeLoadProtocol();
+
+    _transfer(
+        addrs(proto.nuggftUser),
+        addr_i(b32toBigEndian(event.params.agency).bitAnd(mask(160))),
+        bigi(event.params.tokenId),
+        event.block,
+    );
+
+    log.debug('handleEvent__PreMint end', []);
+}
 
 export function handleEvent__Mint(event: Mint): void {
     _mint(

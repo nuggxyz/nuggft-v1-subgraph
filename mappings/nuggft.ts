@@ -28,6 +28,7 @@ import {
     handleEvent__Mint,
     handleEvent__Offer,
     handleEvent__OfferMint,
+    handleEvent__PreMint,
     handleEvent__Rotate,
     handleEvent__Sell,
     _transfer,
@@ -51,6 +52,7 @@ export {
     handleEvent__Sell,
     handleEvent__Claim,
     handleEvent__OfferMint,
+    handleEvent__PreMint,
 };
 
 export let ONE = BigInt.fromString('1');
@@ -195,7 +197,7 @@ export function _mint(
     value: BigInt,
     block: ethereum.Block,
 ): void {
-    log.info('handleEvent__Mint start', []);
+    log.debug('handleEvent__Mint start', []);
 
     let proto = safeLoadProtocol();
 
@@ -253,7 +255,7 @@ export function _mint(
     swap.save();
     offer.save();
 
-    log.info('handleEvent__Mint end', []);
+    log.debug('handleEvent__Mint end', []);
 }
 
 // 6286335;

@@ -94,7 +94,7 @@ function _offerCommitItem(
     eth: BigInt,
     time: BigInt,
 ): void {
-    log.info('_offerCommitItem start', []);
+    log.debug('_offerCommitItem start', []);
 
     if (itemswap.epoch !== null) panicFatal('_offerOfferItem: ITEMSWAP.epoch MUST BE NULL');
 
@@ -165,7 +165,7 @@ function _offerCommitItem(
 
     itemswap.save();
 
-    log.info('_offerCommitItem end', []);
+    log.debug('_offerCommitItem end', []);
 }
 
 function _offerOfferItem(
@@ -178,8 +178,8 @@ function _offerOfferItem(
     itemswap: ItemSwap,
     eth: BigInt,
 ): void {
-    log.info('_offerOfferItem start', []);
-    log.info('_offerOfferItem start', []);
+    log.debug('_offerOfferItem start', []);
+    log.debug('_offerOfferItem start', []);
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
 
@@ -206,7 +206,7 @@ function _offerOfferItem(
     itemswap.leader = buyerNugg.id;
     itemswap.save();
 
-    log.info('handleOffer end', []);
+    log.debug('handleOffer end', []);
 }
 
 export function handleEvent__ClaimItem(event: ClaimItem): void {
@@ -242,7 +242,7 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 }
 
 export function handleEvent__SellItem(event: SellItem): void {
-    log.info('handleEvent__SellItem start', []);
+    log.debug('handleEvent__SellItem start', []);
 
     let agency = b32toBigEndian(event.params.agency);
 
@@ -260,7 +260,7 @@ export function handleEvent__SellItem(event: SellItem): void {
 
     if (nuggitem.activeSwap !== null) {
         let swap = safeLoadActiveNuggItemSwap(nuggitem);
-
+        //
         if (swap.endingEpoch !== null) {
             panicFatal(
                 'handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL if seller is not owner',
@@ -279,6 +279,10 @@ export function handleEvent__SellItem(event: SellItem): void {
         itemoffer.ethUsd = wethToUsdc(agency__eth);
         itemoffer.txhash = event.transaction.hash.toHexString();
         itemoffer.save();
+
+        log.debug('handleEvent__SellItem end EARLY', []);
+
+        return;
     }
 
     let itemSwap = safeNewItemSwap(nuggitem);
@@ -310,10 +314,14 @@ export function handleEvent__SellItem(event: SellItem): void {
     itemoffer.swap = itemSwap.id;
     itemoffer.txhash = event.transaction.hash.toHexString();
     itemoffer.save();
-
-    log.info('handleEvent__SellItem end', []);
+    log.debug('handleEvent__SellItem a', []);
 
     sellingNugg = updateProof(sellingNugg, b32toBigEndian(event.params.proof), false, event.block);
+    log.debug('handleEvent__SellItem b', []);
 
     sellingNugg = cacheDotnugg(sellingNugg, event.block.number);
+
+    log.debug('handleEvent__SellItem end', []);
 }
+
+// https://eth-rinkeby.alchemyapi.io/v2/MbPzjkEmyF891zBE51Q1c5M4IQAEXZ-9

@@ -46,7 +46,7 @@ export function getPremints(
         let nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block);
 
         _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps, block);
-        updateProof(nugg, bigi(0), true, block);
+        // updateProof(nugg, bigi(0), true, block);
     }
 }
 
@@ -188,7 +188,7 @@ export function updateProof(
     incrementItemCount: boolean,
     block: ethereum.Block,
 ): Nugg {
-    log.info('updateProof IN args:[{}]', [nugg.id]);
+    log.debug('updateProof IN args:[{}]', [nugg.id]);
     let proto = safeLoadProtocol();
     let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
@@ -302,7 +302,7 @@ export function updateProof(
             }
         }
     }
-    log.info('updateProof OUT args:[{}]', [nugg.id]);
+    log.debug('updateProof OUT args:[{}]', [nugg.id]);
 
     return nugg;
 }
