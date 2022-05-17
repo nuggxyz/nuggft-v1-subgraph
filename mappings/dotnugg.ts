@@ -278,6 +278,8 @@ export function updateProof(
 
     nugg._items = items;
     nugg.proof = preload;
+    nugg._displayed = _displayed;
+
     nugg.save();
     proto.featureTotals = tmpFeatureTotals;
     proto.save();

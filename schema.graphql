@@ -161,6 +161,7 @@ type Nugg @entity {
     numSwaps: BigInt!
 
     _items: [Int!]!
+    _displayed: [Int!]!
 
     proof: BigInt!
 
@@ -319,6 +320,7 @@ type NuggSnapshot @entity {
     nugg: Nugg!
 
     _items: [Int!]!
+    _displayed: [Int!]!
 
     proof: BigInt!
 

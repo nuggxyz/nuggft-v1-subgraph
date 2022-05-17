@@ -1,4 +1,4 @@
-import { log, BigInt, ethereum, Address, store } from '@graphprotocol/graph-ts';
+import { log, BigInt, ethereum, Address, store, JSONValue } from '@graphprotocol/graph-ts';
 import {
     Epoch,
     Item,
@@ -16,7 +16,7 @@ import {
     NuggSnapshot,
     ItemSnapshot,
 } from '../generated/schema';
-import { cacheDotnugg, updateProof } from './dotnugg';
+import { cacheDotnugg, updateProof, difference } from './dotnugg';
 import { panicFatal } from './uniswap';
 import { bigi } from './utils';
 
@@ -216,7 +216,25 @@ export function safeNewActiveNuggSnapshot(
     let num = 0;
     if (curr !== null) {
         num = curr.snapshotNum + 1;
-        if (curr.proof.equals(nugg.proof)) return null;
+        // let missmatch = false;
+
+        const _displayed = nugg._displayed;
+
+        const diff = difference(_displayed, curr._displayed);
+
+        if (diff.length === 0 && _displayed.length === curr._displayed.length) return null;
+
+        // if (curr._displayed.length !== _displayed.length) missmatch = true;
+
+        // for (let a = 0; a < _displayed.length && !missmatch; a++) {
+        //     let ok = false;
+        //     for (let b = 0; b < _displayed.length; b++) {
+        //         if (_displayed[a] === curr._displayed[b]) ok = true;
+        //     }
+        //     if (!ok) missmatch = true;
+        // }
+
+        // if (!missmatch)
     }
 
     let next = new NuggSnapshot(nugg.id + '-' + num.toString());
@@ -224,6 +242,8 @@ export function safeNewActiveNuggSnapshot(
     next.block = blocknum;
     next.user = userId;
     next._items = nugg._items;
+    next._displayed = nugg._displayed;
+
     next.snapshotNum = num;
     next.proof = nugg.proof;
     next.chunkError = false;
