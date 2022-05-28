@@ -11,13 +11,18 @@ import {
     safeNewActiveNuggSnapshot,
     safeNewItem,
     safeNewNuggItem,
+    safeNewSwapHelper,
     safeSetNewActiveItemSnapshot,
+    safeSetNuggActiveSwap,
 } from './safeload';
 import { safeDiv } from './uniswap';
-import { bighs, bigi, bigs } from './utils';
-import { safeNewNugg } from './safeload';
-import { _mint } from './nuggft';
+import { bighs, bigi, bigs, b32toBigEndian } from './utils';
+import { safeNewNugg, safeNewItemSwap } from './safeload';
+import { _epsFromStake, _mint } from './nuggft';
 import { xNuggftV1 } from '../generated/NuggftV1/xNuggftV1';
+import { _sell } from './swap';
+import { _sellItem } from './itemswap';
+import { LOSS } from './constants';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
     let nuggft = NuggftV1.bind(nuggftAddress);
@@ -45,8 +50,42 @@ export function getPremints(
     for (let i = first; i <= last; i++) {
         let nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block);
 
-        _mint(i, bigi(1).leftShift(254).plus(bighs(owner.id)), event.transaction.hash, eps, block);
-        // updateProof(nugg, bigi(0), true, block);
+        nugg.pendingClaim = true;
+
+        nugg.save();
+
+        const value = _epsFromStake(b32toBigEndian(event.params.stake));
+
+        let agency = bigi(1).leftShift(254).plus(bighs(owner.id));
+
+        _mint(i, agency, event.transaction.hash, eps, block);
+
+        const itemAgency = bigi(3)
+            .leftShift(254)
+            .plus(bigi(i))
+            .plus(value.div(LOSS).rightShift(160));
+
+        _sellItem(event, itemAgency, i, nugg._tmp, BigInt.zero());
+
+        agency = bigi(3).plus(value.div(LOSS).rightShift(160)).plus(bighs(owner.id));
+
+        _sell(event, agency, i);
+
+        // //     let nextSwap = safeNewSwapHelper(nugg);
+
+        // //    nugg =  safeSetNuggActiveSwap(nugg, nextSwap);
+
+        // let itemId = nugg._tmp;
+
+        // let item = safeLoadItem(bigi(itemId));
+
+        // let nuggItem = safeLoadNuggItemHelper(nugg, item);
+
+        // const itemSwap = safeNewItemSwap(nuggItem);
+
+        // // let item =
+
+        // // updateProof(nugg, bigi(0), true, block);
     }
 }
 
@@ -210,7 +249,7 @@ export function updateProof(
     let seen = [false, false, false, false, false, false, false, false];
 
     let index = 0;
-
+    let aWittleBittyHack = 0;
     do {
         let curr = proof.bitAnd(BigInt.fromString('65535'));
         if (!curr.isZero()) {
@@ -219,6 +258,8 @@ export function updateProof(
             if (index < 8 && !seen[feature]) {
                 _displayed.push(curr.toI32());
                 seen[feature] = true;
+            } else if (index === 9) {
+                aWittleBittyHack = curr.toI32();
             }
         }
         index++;
@@ -275,7 +316,7 @@ export function updateProof(
         nuggItem.save();
         // }
     }
-
+    nugg._tmp = aWittleBittyHack;
     nugg._items = items;
     nugg.proof = preload;
     nugg._displayed = _displayed;

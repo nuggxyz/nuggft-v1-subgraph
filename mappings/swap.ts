@@ -33,14 +33,14 @@ import { mask, _mint, _stake } from './nuggft';
 
 export function handleEvent__PreMint(event: PreMint): void {
     log.debug('handleEvent__PreMint start', []);
-    let proto = safeLoadProtocol();
+    // let proto = safeLoadProtocol();
 
-    _transfer(
-        addrs(proto.nuggftUser),
-        addr_i(b32toBigEndian(event.params.agency).bitAnd(mask(160))),
-        bigi(event.params.tokenId),
-        event.block,
-    );
+    // _transfer(
+    //     addrs(proto.nuggftUser),
+    //     addr_i(b32toBigEndian(event.params.nuggAgency).bitAnd(mask(160))),
+    //     bigi(event.params.tokenId),
+    //     event.block,
+    // );
 
     log.debug('handleEvent__PreMint end', []);
 }
@@ -197,13 +197,15 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt): vo
 }
 
 export function handleEvent__Sell(event: Sell): void {
-    log.info('handleEvent__Sell start', []);
+    _sell(event, b32toBigEndian(event.params.agency), event.params.tokenId);
+}
 
-    let agency = b32toBigEndian(event.params.agency);
+export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void {
+    log.info('handleEvent__Sell start', []);
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    let nugg = safeLoadNugg(bigi(event.params.tokenId));
+    let nugg = safeLoadNugg(bigi(tokenId));
 
     if (nugg.activeSwap !== null) {
         let swap = safeLoadActiveSwap(nugg);

@@ -152,10 +152,11 @@ export function safeLoadNuggNull(id: BigInt): Nugg | null {
 //     nuggItem.save();
 // }
 
-export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): void {
+export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): Nugg {
     nugg.activeSwap = swap.id;
     nugg.protocol = '0x42069';
     nugg.save();
+    return nugg;
 }
 
 export function safeSetNuggActiveLoan(nugg: Nugg, loan: Loan): void {

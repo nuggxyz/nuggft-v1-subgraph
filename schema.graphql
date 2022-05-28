@@ -148,6 +148,8 @@ type Nugg @entity {
     lastTransfer: Int!
     pendingClaim: Boolean!
 
+    _tmp: Int!
+
     resolver: String!
 
     dotnuggUtfCache: String!

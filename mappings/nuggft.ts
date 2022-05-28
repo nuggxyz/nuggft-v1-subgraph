@@ -161,6 +161,13 @@ function handleEvent__Stake(event: Stake): void {
     _stake(event.params.stake);
 }
 
+export function _epsFromStake(cache: BigInt): BigInt {
+    let eth = cache.rightShift(96).bitAnd(mask(96));
+    let shares = cache.rightShift(192);
+
+    return safeDiv(eth, shares);
+}
+
 export function _stake(cache: Bytes): void {
     let agency = b32toBigEndian(cache);
 

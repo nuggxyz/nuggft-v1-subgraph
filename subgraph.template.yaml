@@ -34,7 +34,7 @@ dataSources:
                 handler: handleEvent__Genesis
               - event: Mint(indexed uint24,uint96,bytes32,bytes32,bytes32)
                 handler: handleEvent__Mint
-              - event: PreMint(indexed uint24,uint96,bytes32,bytes32)
+              - event: PreMint(indexed uint24,bytes32,bytes32,indexed uint16,bytes32)
                 handler: handleEvent__PreMint
               - event: Transfer(indexed address,indexed address,indexed uint256)
                 handler: handleEvent__Transfer

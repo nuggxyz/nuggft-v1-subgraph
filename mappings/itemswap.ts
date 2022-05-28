@@ -1,4 +1,4 @@
-import { log, BigInt } from '@graphprotocol/graph-ts';
+import { log, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { wethToUsdc, panicFatal } from './uniswap';
 import {
     safeNewItemSwap,
@@ -242,15 +242,27 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 }
 
 export function handleEvent__SellItem(event: SellItem): void {
-    log.debug('handleEvent__SellItem start', []);
+    _sellItem(
+        event,
+        b32toBigEndian(event.params.agency),
+        event.params.sellingTokenId,
+        event.params.itemId,
+        b32toBigEndian(event.params.proof),
+    );
+}
 
-    let agency = b32toBigEndian(event.params.agency);
+export function _sellItem(
+    event: ethereum.Event,
+    agency: BigInt,
+    sellingNuggId: i32,
+    _sellingItemId: i32,
+    proof: BigInt,
+): void {
+    log.debug('handleEvent__SellItem start', []);
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(LOSS);
 
-    let sellingNuggId = event.params.sellingTokenId;
-
-    let sellingItemId = bigi(event.params.itemId);
+    let sellingItemId = bigi(_sellingItemId);
 
     let sellingNugg = safeLoadNugg(bigi(sellingNuggId));
 
@@ -316,7 +328,7 @@ export function handleEvent__SellItem(event: SellItem): void {
     itemoffer.save();
     log.debug('handleEvent__SellItem a', []);
 
-    sellingNugg = updateProof(sellingNugg, b32toBigEndian(event.params.proof), false, event.block);
+    sellingNugg = updateProof(sellingNugg, proof, false, event.block);
     log.debug('handleEvent__SellItem b', []);
 
     sellingNugg = cacheDotnugg(sellingNugg, event.block.number);
