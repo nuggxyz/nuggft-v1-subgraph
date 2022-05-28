@@ -60,16 +60,13 @@ export function getPremints(
 
         _mint(i, agency, event.transaction.hash, eps, block);
 
-        const itemAgency = bigi(3)
-            .leftShift(254)
-            .plus(bigi(i))
-            .plus(value.div(LOSS).rightShift(160));
+        // const itemAgency = bigi(3).leftShift(254).plus(bigi(i));
 
-        _sellItem(event, itemAgency, i, nugg._tmp, BigInt.zero());
+        _sellItem(event, BigInt.zero(), i, nugg._tmp, BigInt.zero());
 
-        agency = bigi(3).plus(value.div(LOSS).rightShift(160)).plus(bighs(owner.id));
+        // agency = bigi(3).leftShift(254).plus(bighs(owner.id));
 
-        _sell(event, agency, i);
+        _sell(event, BigInt.zero(), i);
 
         // //     let nextSwap = safeNewSwapHelper(nugg);
 
