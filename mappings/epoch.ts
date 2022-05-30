@@ -78,7 +78,6 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     nextSwap.nextDelegateType = 'Mint';
     nextSwap.bottom = bigi(0);
     nextSwap.bottomUsd = bigi(0);
-
     nextSwap.save();
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
@@ -95,6 +94,7 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
 
     nextEpoch.status = 'ACTIVE';
     nextEpoch.starttime = block.timestamp;
+    nextSwap.startUnix = block.timestamp;
 
     let _s = nextEpoch._activeSwaps as string[];
     _s.push(nextSwap.id as string);
@@ -111,6 +111,7 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
 
     nextEpoch._upcomingActiveItemSwaps = [];
     nextEpoch.save();
+    nextSwap.save();
     proto.epoch = nextEpoch.id;
     proto.nextEpoch = id.plus(bigi(1)).toString();
     proto.defaultActiveNugg = nextNugg.id;
