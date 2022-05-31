@@ -81,7 +81,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
 
     // updatedStakedSharesAndEth();
 
-    _stake(event.params.stake);
+    _stake(b32toBigEndian(event.params.stake));
 }
 
 function _offerCommitItem(

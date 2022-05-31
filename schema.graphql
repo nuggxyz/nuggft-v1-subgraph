@@ -204,6 +204,8 @@ type Swap @entity {
 
     leader: User!
 
+    # incrementX64: BigInt!
+
     nextDelegateType: NextOfferType!
 }
 
@@ -293,6 +295,7 @@ type ItemSwap @entity {
 
     eth: BigInt!
     ethUsd: BigInt!
+    # incrementX64: BigInt!
 
     owner: Nugg!
 

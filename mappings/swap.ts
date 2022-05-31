@@ -29,7 +29,7 @@ import {
     Sell,
 } from '../generated/NuggftV1/NuggftV1';
 import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160, addrs } from './utils';
-import { mask, _mint, _stake } from './nuggft';
+import { mask, _mint, _stake, _mspFromStake } from './nuggft';
 
 export function handleEvent__PreMint(event: PreMint): void {
     log.debug('handleEvent__PreMint start', []);
@@ -46,37 +46,44 @@ export function handleEvent__PreMint(event: PreMint): void {
 }
 
 export function handleEvent__Mint(event: Mint): void {
+    const inter = b32toBigEndian(event.params.stake);
+
     _mint(
         event.params.tokenId,
         b32toBigEndian(event.params.agency),
         event.transaction.hash,
-        b32toBigEndian(event.params.stake),
+        inter,
         event.params.value,
         event.block,
     );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
-    _stake(event.params.stake);
+    _stake(inter);
 }
 
 export function handleEvent__OfferMint(event: OfferMint): void {
+    const inter = b32toBigEndian(event.params.stake);
     _offer(
         event.transaction.hash.toHexString(),
         bigi(event.params.tokenId),
         event.params.agency,
         event.block.timestamp,
+        inter,
     );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
-    _stake(event.params.stake);
+    _stake(inter);
 }
 
 export function handleEvent__Offer(event: Offer): void {
+    const inter = b32toBigEndian(event.params.stake);
+
     _offer(
         event.transaction.hash.toHexString(),
         bigi(event.params.tokenId),
         event.params.agency,
         event.block.timestamp,
+        inter,
     );
-    _stake(event.params.stake);
+    _stake(inter);
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
@@ -156,7 +163,7 @@ export function _rotate(
     log.info('handleEvent__Rotate end', []);
 }
 
-function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt): void {
+function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt, stake: BigInt): void {
     // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
 
     // transform bytes to Big-Endian
@@ -184,7 +191,7 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt): vo
     safeSetUserActiveSwap(user, nugg, swap);
 
     if (swap.nextDelegateType == 'Commit') {
-        __offerCommit(hash, proto, user, nugg, swap, agency__eth, time);
+        __offerCommit(hash, proto, user, nugg, swap, agency__eth, time, stake);
     } else if (swap.nextDelegateType == 'Carry') {
         __offerCarry(hash, proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Mint') {
@@ -376,6 +383,7 @@ export function __offerCommit(
     swap: Swap,
     lead: BigInt,
     time: BigInt,
+    stake: BigInt,
 ): void {
     log.info('__offerCommit start', []);
 
@@ -383,7 +391,12 @@ export function __offerCommit(
         log.critical('__offerCommit: SWAP.epochId MUST BE NULL', []);
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
-
+    if (swap.bottom.equals(bigi(0))) {
+        swap.top = _mspFromStake(stake);
+        swap.topUsd = wethToUsdc(swap.bottom);
+        swap.top = swap.bottom;
+        swap.topUsd = swap.bottomUsd;
+    }
     swap.epoch = epoch.id;
     swap.startingEpoch = proto.epoch;
     swap.endingEpoch = BigInt.fromString(epoch.id);

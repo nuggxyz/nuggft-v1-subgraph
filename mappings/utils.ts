@@ -27,7 +27,12 @@ export function addrs(num: string): Address {
     return Address.fromString(num);
 }
 export function b32toBigEndian(num: Bytes): BigInt {
-    return BigInt.fromUnsignedBytes(Bytes.fromUint8Array(num.reverse()));
+    const abc = Bytes.fromUint8Array(num.reverse());
+    return BigInt.fromUnsignedBytes(abc);
+    // // return changetype<BigInt>(num.reverse());
+
+    // num.to
+    // return BigInt.fromByteArray(Bytes.fromHexString(num.toHexString()));
 }
 
 export const MAX_UINT160 = BigInt.fromString('1').leftShift(160).minus(BigInt.fromString('1'));

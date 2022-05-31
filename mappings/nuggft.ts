@@ -171,13 +171,13 @@ function handleEvent__Genesis(event: Genesis): void {
 
     getPremints(event, event.address, nuggft, event.block);
 
-    _stake(event.params.stake);
+    _stake(b32toBigEndian(event.params.stake));
 
     log.info('handleEvent__Genesis end {}', [proto.epoch]);
 }
 
 function handleEvent__Stake(event: Stake): void {
-    _stake(event.params.stake);
+    _stake(b32toBigEndian(event.params.stake));
 }
 
 export function _epsFromStake(cache: BigInt): BigInt {
@@ -199,16 +199,18 @@ export const _mspFromStake = (cache: BigInt): BigInt => {
     return final.div(BigInt.fromI64(10).pow(18));
 };
 
-export function _stake(cache: Bytes): void {
-    let agency = b32toBigEndian(cache);
+export function _stake(agency: BigInt): void {
+    // let copy = Bytes.fromHexString(cache.toHexString());
+    // let agency = b32toBigEndian(copy);
 
     // let protocolEth = event.params.stake.bitAnd(mask(96));
     let eth = agency.rightShift(96).bitAnd(mask(96));
     let shares = agency.rightShift(192);
 
-    log.info('handleEvent__Stake start [Bytes:{}] [Hex:{}] [eth:{}] [shares:{}]', [
-        cache.toHexString(),
+    log.warning('handleEvent__Stake start [Hex:{}] [eth:{}] [shares:{}]', [
+        // BigInt.fromUnsignedBytes(agency).reverse().toString(),
         agency.toHexString(),
+        // agency.toHexString(),
         eth.toString(),
         shares.toString(),
     ]);
