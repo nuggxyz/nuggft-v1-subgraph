@@ -15,7 +15,7 @@ import {
     safeRemoveNuggActiveSwap,
     safeSetUserActiveSwap,
 } from './safeload';
-import { panicFatal, wethToUsdc } from './uniswap';
+import { panicFatal, safeDiv, wethToUsdc } from './uniswap';
 import { safeLoadEpoch, safeLoadOfferHelper, safeSetNuggActiveSwap } from './safeload';
 import { Nugg, Protocol, Swap, User } from '../generated/schema';
 import { cacheDotnugg, updatedStakedSharesAndEth, updateProof } from './dotnugg';
@@ -50,6 +50,7 @@ export function handleEvent__Mint(event: Mint): void {
         event.params.tokenId,
         b32toBigEndian(event.params.agency),
         event.transaction.hash,
+        b32toBigEndian(event.params.stake),
         event.params.value,
         event.block,
     );
@@ -225,7 +226,7 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
         offer.eth = agency__eth;
         offer.ethUsd = wethToUsdc(agency__eth);
         offer.txhash = event.transaction.hash.toHexString();
-
+        offer.incrementX64 = BigInt.fromString('0');
         offer.save();
         log.info('handleEvent__Sell end', []);
 
@@ -262,6 +263,8 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
     offer.user = user.id;
     offer.claimer = user.id;
     offer.swap = swap.id;
+    offer.incrementX64 = BigInt.fromString('0');
+
     offer.txhash = event.transaction.hash.toHexString();
 
     offer.save();
@@ -300,6 +303,19 @@ export function handleEvent__Claim(event: Claim): void {
 
     log.info('handleEvent__Claim end', []);
 }
+
+export const calculateMsp = (shares: BigInt, eth: BigInt): BigInt => {
+    const ethPerShare = safeDiv(
+        eth.times(BigInt.fromI64(10).pow(18)),
+
+        shares,
+    );
+    const protocolFee = ethPerShare.div(BigInt.fromString('1'));
+    const premium = ethPerShare.times(shares).div(BigInt.fromString('2000'));
+    const final = ethPerShare.plus(protocolFee).plus(premium);
+
+    return final.div(BigInt.fromI64(10).pow(18));
+};
 
 export function __offerMint(
     hash: string,
@@ -346,6 +362,7 @@ export function __offerMint(
     offer.user = user.id;
     offer.swap = swap.id;
     offer.claimer = user.id;
+    offer.incrementX64 = BigInt.fromString('0');
     offer.save();
 
     log.info('__offerMint end', []);
@@ -381,10 +398,13 @@ export function __offerCommit(
     epoch.save();
 
     safeSetNuggActiveSwap(nugg, swap);
-
+    // makeIncrementX64 [lead:2760000000000000,last:2404156500000000], data_source: NuggftV1
+    // 2760000000000000
+    // 2404156500000000
     let offer = safeLoadOfferHelperNull(swap, user, hash);
 
     offer.txhash = hash;
+    offer.incrementX64 = makeIncrementX64(lead, swap.top);
 
     offer.eth = lead;
     offer.ethUsd = wethToUsdc(offer.eth);
@@ -398,6 +418,16 @@ export function __offerCommit(
     swap.save();
 
     log.info('__offerCommit end', []);
+}
+
+export function makeIncrementX64(lead: BigInt, last: BigInt): BigInt {
+    log.info('makeIncrementX64 [lead:{},last:{}]', [lead.toString(), last.toString()]);
+
+    if (last.isZero()) return last;
+
+    const a = lead.minus(last);
+    const b = a.times(mask(64));
+    return b.div(last);
 }
 
 export function __offerCarry(
@@ -417,6 +447,8 @@ export function __offerCarry(
     // offer.eth = getCurrentUserOffer(user, nugg);
     offer.eth = lead;
     offer.ethUsd = wethToUsdc(offer.eth);
+    offer.incrementX64 = makeIncrementX64(lead, swap.top);
+
     swap.top = offer.eth;
     swap.topUsd = offer.ethUsd;
 

@@ -19,7 +19,7 @@ import {
     safeLoadProtocol,
     safeLoadEpoch,
 } from './safeload';
-import { Epoch, Protocol, User } from '../generated/schema';
+import { Epoch, NuggSnapshot, Protocol, User } from '../generated/schema';
 import { cacheDotnugg, getDotnuggUserId, getItemURIs, getPremints } from './dotnugg';
 import { handleEvent__Liquidate, handleEvent__Loan, handleEvent__Rebalance } from './loan';
 import { handleEvent__OfferItem, handleEvent__ClaimItem, handleEvent__SellItem } from './itemswap';
@@ -31,6 +31,7 @@ import {
     handleEvent__PreMint,
     handleEvent__Rotate,
     handleEvent__Sell,
+    makeIncrementX64,
     _transfer,
 } from './swap';
 import { b32toBigEndian, bigb, bigi, bigs } from './utils';
@@ -64,7 +65,21 @@ export function mask(bits: number): BigInt {
 }
 
 function handleEvent__Genesis(event: Genesis): void {
-    log.info('handleEvent__Genesis start ', []);
+    log.info('BRUH', []);
+    log.info(
+        `handleEvent__Genesis start
+    [blocknum:{},dotnugg:{},early:{},interval:{},intervalOffset:{},offset:{},stake:{},xnuggftv1:{}]`,
+        [
+            event.params.blocknum.toString(),
+            event.params.dotnugg.toHex(),
+            event.params.early.toString(),
+            event.params.interval.toString(),
+            event.params.intervalOffset.toString(),
+            event.params.offset.toString(),
+            event.params.stake.toHexString(),
+            event.params.xnuggftv1.toHexString(),
+        ],
+    );
 
     let proto = new Protocol('0x42069');
 
@@ -83,8 +98,10 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.totalUsers = bigi(0);
     proto.totalNuggs = bigi(0);
     proto.totalItems = bigi(0);
-    proto.totalItemSwaps = bigi(0);
+    proto.totalLoans = bigi(0);
 
+    proto.totalItemSwaps = bigi(0);
+    proto.epochOffset = bigi(event.params.offset);
     proto.nuggftStakedEthPerShare = bigi(0);
     proto.nuggftStakedEth = bigi(0);
     proto.nuggftStakedUsd = bigi(0);
@@ -96,6 +113,7 @@ function handleEvent__Genesis(event: Genesis): void {
     epoch.startblock = bigi(0);
     epoch.endblock = bigi(0);
     epoch.status = 'PENDING';
+    epoch.idnum = bigi(0);
     epoch._activeItemSwaps = [];
     epoch._activeSwaps = [];
     epoch._upcomingActiveItemSwaps = [];
@@ -117,6 +135,7 @@ function handleEvent__Genesis(event: Genesis): void {
     proto.nullUser = nil.id;
     proto.nuggsPendingRemoval = [];
     proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
+    proto.nuggsNotCached = [];
 
     proto.save();
 
@@ -168,6 +187,18 @@ export function _epsFromStake(cache: BigInt): BigInt {
     return safeDiv(eth, shares);
 }
 
+export const _mspFromStake = (cache: BigInt): BigInt => {
+    let eth = cache.rightShift(96).bitAnd(mask(96));
+    let shares = cache.rightShift(192);
+
+    const ethPerShare = safeDiv(eth.times(BigInt.fromI64(10).pow(18)), shares);
+    const protocolFee = ethPerShare.div(BigInt.fromString('1'));
+    const premium = ethPerShare.times(shares).div(BigInt.fromString('2000'));
+    const final = ethPerShare.plus(protocolFee).plus(premium);
+
+    return final.div(BigInt.fromI64(10).pow(18));
+};
+
 export function _stake(cache: Bytes): void {
     let agency = b32toBigEndian(cache);
 
@@ -202,6 +233,7 @@ export function _mint(
     agency: BigInt,
     hash: Bytes,
     value: BigInt,
+    stake: BigInt,
     block: ethereum.Block,
 ): void {
     log.debug('handleEvent__Mint start', []);
@@ -226,6 +258,8 @@ export function _mint(
     nugg.numSwaps = BigInt.fromString('1');
 
     nugg.save();
+    swap.eth = bigi(0); // handled by Mint or Offer
+    swap.ethUsd = bigi(0); // handled by Mint or Offer
 
     swap.top = bigi(0); // handled by Mint or Offer
     swap.topUsd = bigi(0);
@@ -236,8 +270,10 @@ export function _mint(
     swap.epoch = proto.epoch;
     swap.startingEpoch = proto.epoch;
     swap.nextDelegateType = 'None';
-    swap.bottom = bigi(0);
-    swap.bottomUsd = bigi(0);
+
+    const msp = _mspFromStake(stake);
+    swap.bottom = msp;
+    swap.bottomUsd = msp;
     swap.startUnix = block.timestamp;
 
     swap.save();
@@ -258,6 +294,7 @@ export function _mint(
     swap.topUsd = value;
     offer.eth = value;
     offer.ethUsd = value;
+    offer.incrementX64 = makeIncrementX64(value, msp);
 
     swap.save();
     offer.save();
@@ -267,3 +304,9 @@ export function _mint(
 
 // 6286335;
 // 6286336;
+// {
+//     offers (first:1000, where:{incrementX64_not:0}){
+//       id
+//       incrementX64
+//     }
+//   }

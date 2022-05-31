@@ -27,6 +27,7 @@ import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
 import { mask, _stake } from './nuggft';
 import { updateProof, cacheDotnugg } from './dotnugg';
 import { LOSS } from './constants';
+import { makeIncrementX64 } from './swap';
 
 export function handleEvent__OfferItem(event: OfferItem): void {
     let proto = safeLoadProtocol();
@@ -155,6 +156,7 @@ function _offerCommitItem(
     itemoffer.nugg = buyerNugg.id;
     itemoffer.swap = itemswap.id;
     itemoffer.txhash = hash;
+    itemoffer.incrementX64 = bigi(0);
     itemoffer.save();
 
     itemswap.startUnix = time;
@@ -199,6 +201,9 @@ function _offerOfferItem(
     itemoffer.txhash = hash;
     itemoffer.eth = itemoffer.eth.plus(eth);
     itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
+
+    itemoffer.incrementX64 = makeIncrementX64(itemoffer.eth, itemswap.top);
+
     itemoffer.save();
 
     itemswap.top = itemoffer.eth;
@@ -278,7 +283,8 @@ export function _sellItem(
                 'handleEvent__SellItem: nuggitem.activeSwap MUST BE NULL if seller is not owner',
             );
         }
-
+        swap.sellingNuggItem = nuggitem.id;
+        swap.sellingItem = nuggitem.item;
         swap.top = agency__eth;
         swap.topUsd = agency__eth;
         swap.bottom = wethToUsdc(agency__eth);
@@ -325,6 +331,8 @@ export function _sellItem(
     itemoffer.nugg = sellingNugg.id;
     itemoffer.swap = itemSwap.id;
     itemoffer.txhash = event.transaction.hash.toHexString();
+    itemoffer.incrementX64 = BigInt.fromString('0');
+
     itemoffer.save();
     log.debug('handleEvent__SellItem a', []);
 

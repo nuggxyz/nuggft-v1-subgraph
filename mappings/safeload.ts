@@ -122,7 +122,7 @@ export function safeAddItemSwapToProtcol(): void {
 }
 
 export function safeLoadProtocol(): Protocol {
-    let loaded = Protocol.load('' + '0x42069');
+    let loaded = Protocol.load('0x42069');
     if (loaded == null) panicFatal('safeLoadProtocol: Protocol CANNOT BE NULL:');
     return loaded as Protocol;
 }
@@ -192,11 +192,13 @@ export function safeNewNugg(
     loaded.numSwaps = BigInt.fromString('0');
     loaded.user = userId;
     loaded.lastUser = userId;
-    loaded.resolver = '0x0000000000000000000000000000000000000000';
     loaded.lastTransfer = epoch.toI32();
     loaded.pendingClaim = false;
     loaded.dotnuggRawCache = '';
-    loaded.dotnuggUtfCache = '';
+    loaded._tmp = 0;
+    loaded._items = [];
+    loaded._displayed = [];
+
     loaded.save();
 
     safeAddNuggToProtcol();
@@ -213,9 +215,23 @@ export function safeNewActiveNuggSnapshot(
     userId: string,
     blocknum: BigInt,
 ): NuggSnapshot | null {
-    let curr = NuggSnapshot.load(nugg.activeSnapshot);
+    log.info('safeNewActiveNuggSnapshot IN [Nugg:{},userId:{},blocknum:{}]', [
+        nugg.id,
+        userId,
+        blocknum.toString(),
+    ]);
+
+    let curr: NuggSnapshot | null = null;
+
+    if (nugg.activeSnapshot !== null) {
+        curr = NuggSnapshot.load(nugg.activeSnapshot as string);
+    }
+
+    log.info('b-A', []);
     let num = 0;
     if (curr !== null) {
+        log.info('b-B', []);
+
         num = curr.snapshotNum + 1;
         // let missmatch = false;
 
@@ -237,6 +253,7 @@ export function safeNewActiveNuggSnapshot(
 
         // if (!missmatch)
     }
+    log.info('b-C', []);
 
     let next = new NuggSnapshot(nugg.id + '-' + num.toString());
     next.nugg = nugg.id;
@@ -294,9 +311,12 @@ export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
     loaded.numSwaps = BigInt.fromString('0');
     loaded.user = userId;
     loaded.lastUser = userId;
-    loaded.resolver = '0x0000000000000000000000000000000000000000';
     loaded.lastTransfer = id.toI32();
     loaded.pendingClaim = false;
+    loaded.dotnuggRawCache = '';
+    loaded._tmp = 0;
+    loaded._items = [];
+    loaded._displayed = [];
     loaded.save();
 
     safeAddNuggToProtcol();
@@ -565,7 +585,7 @@ export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
     // swap.endingEpoch = endingEpoch;
     sellingNuggItem.activeSwap = swap.id;
     sellingNuggItem.save();
-    swap.save();
+    // swap.save();
     return swap;
 }
 export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void {
@@ -691,6 +711,7 @@ export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): O
         loaded.swap = swap.id;
         loaded.claimer = user.id;
         loaded.txhash = hash;
+        loaded.incrementX64 = bigi(0);
         loaded.save();
     }
     return loaded;

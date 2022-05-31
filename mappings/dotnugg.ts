@@ -11,7 +11,6 @@ import {
     safeNewActiveNuggSnapshot,
     safeNewItem,
     safeNewNuggItem,
-    safeNewSwapHelper,
     safeSetNewActiveItemSnapshot,
     safeSetNuggActiveSwap,
 } from './safeload';
@@ -54,35 +53,13 @@ export function getPremints(
 
         nugg.save();
 
-        const value = _epsFromStake(b32toBigEndian(event.params.stake));
-
         let agency = bigi(1).leftShift(254).plus(bighs(owner.id));
 
-        _mint(i, agency, event.transaction.hash, eps, block);
-
-        // const itemAgency = bigi(3).leftShift(254).plus(bigi(i));
+        _mint(i, agency, event.transaction.hash, eps, BigInt.zero(), block);
 
         _sellItem(event, BigInt.zero(), i, nugg._tmp, BigInt.zero());
 
-        // agency = bigi(3).leftShift(254).plus(bighs(owner.id));
-
         _sell(event, BigInt.zero(), i);
-
-        // //     let nextSwap = safeNewSwapHelper(nugg);
-
-        // //    nugg =  safeSetNuggActiveSwap(nugg, nextSwap);
-
-        // let itemId = nugg._tmp;
-
-        // let item = safeLoadItem(bigi(itemId));
-
-        // let nuggItem = safeLoadNuggItemHelper(nugg, item);
-
-        // const itemSwap = safeNewItemSwap(nuggItem);
-
-        // // let item =
-
-        // // updateProof(nugg, bigi(0), true, block);
     }
 }
 
@@ -112,18 +89,32 @@ export function getItemURIs(xnuggftAddress: Address): void {
             else safeSetNewActiveItemSnapshot(item, 'ERROR');
         }
     }
+    log.info('handleEvent__Write end ', []);
 }
 
 export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
+    log.info('cacheDotnugg start [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
+
     let proto = safeLoadProtocol();
 
-    let snap = safeNewActiveNuggSnapshot(nugg, nugg.user, blocknum);
+    log.info('A', []);
 
-    if (snap === null) return nugg;
+    let snap = safeNewActiveNuggSnapshot(nugg, nugg.user, blocknum);
+    log.info('B', []);
+
+    if (snap === null) {
+        log.info('cacheDotnugg end (early) [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
+
+        return nugg;
+    }
+    log.info('C', []);
 
     // if (blockNum > 10276528) {
     let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
+    log.info('D', []);
+
     let callResult = dotnugg.try_imageSVG(bigi(nugg.idnum));
+    log.info('E', []);
 
     let str = '';
 
@@ -154,47 +145,6 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
         }
 
         str = value.toString();
-
-        // callResult = dotnugg.try_image123(bigi(nugg.idnum), false, 2, new Bytes(0));
-
-        // if (callResult.reverted) {
-        //     log.error('cacheDotnugg reverted trying to 123 [NuggId:{}] [chunk:{}/3]', [
-        //         nugg.id,
-        //         '1',
-        //     ]);
-        //     snap.chunkError = true;
-        //     snap.save();
-
-        //     return nugg;
-        // }
-
-        // for (let a = 0; a < CHUNK_SIZE; a++) {
-        //     let callResult = dotnugg.try_imageSVG1(bigi(nugg.idnum), false, CHUNK_SIZE, a);
-
-        //     if (!callResult.reverted) safeSetNewDotnuggChunk(snap.id, a, callResult.value);
-        //     else {
-        // log.error('cacheDotnugg reverted trying to chunk [NuggId:{}] [chunk:{}/{}]', [
-        //     nugg.id,
-        //     a.toString(),
-        //     CHUNK_SIZE.toString(),
-        // ]);
-        // snap.chunkError = true;
-        // snap.save();
-        //     }
-        // }
-        // let tmp = proto.nuggsNotCached;
-
-        // let str = nugg.idnum.toString();
-
-        // if (!tmp.includes(str)) tmp.push(str);
-
-        // tmp.push(str);
-
-        // proto.nuggsNotCached = tmp;
-
-        // proto.save();
-
-        // log.error('cacheDotnugg reverted with default resolver [NuggId:{}]', [str]);
     }
 
     nugg.dotnuggRawCache = str;
@@ -205,6 +155,7 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
     nugg.activeSnapshot = snap.id;
 
     nugg.save();
+    log.info('cacheDotnugg end [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
 
     return nugg;
 }
@@ -269,12 +220,6 @@ export function updateProof(
     for (let i = 0; i < toCreate.length; i++) {
         let item = safeLoadItem(BigInt.fromI32(toCreate[i]));
 
-        // if (item === null) {
-        //     item = safeNewItem(BigInt.fromI32(toCreate[i]));
-        //     item.count = BigInt.fromString('0');
-        //     item.save();
-        // }
-        // item = item as Item;
         let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
 
         if (nuggItem === null) {
@@ -303,15 +248,10 @@ export function updateProof(
 
     for (let i = 0; i < toDelete.length; i++) {
         let item = safeLoadItem(BigInt.fromI32(toDelete[i]));
-
         let nuggItem = safeLoadNuggItemHelper(nugg, item);
-
         nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
-        // if (nuggItem.count.isZero()) {
         nuggItem.displayed = false;
-        // }
         nuggItem.save();
-        // }
     }
     nugg._tmp = aWittleBittyHack;
     nugg._items = items;

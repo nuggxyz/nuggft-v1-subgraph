@@ -21,6 +21,6 @@
         // }
         //////////////// from assemblyscript/tsconfig-base.json /////////////////
     },
-    "include": ["mappings"],
-    "exclude": ["tests", "node_modules"]
+    "include": ["tests", "mappings"],
+    "exclude": ["node_modules"]
 }

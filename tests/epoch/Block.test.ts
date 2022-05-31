@@ -1,12 +1,8 @@
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { Protocol } from '../../generated/schema';
-import { Genesis } from '../../generated/NuggFT/NuggFT';
 import { logStore } from 'matchstick-as/assembly/store';
-import { handleGenesis } from '../../mappings/nuggft';
-import { runGenesisxNugg } from '../xnugg/Genesis.test';
 import { ethereum, BigInt, log } from '@graphprotocol/graph-ts';
-import { handleBlock } from '../../mappings/epoch';
 import { safeLoadProtocol } from '../../mappings/safeload';
+import { handleBlock__every } from '../../mappings/epoch';
 
 export function createBlock(num: string): ethereum.Block {
     let event = newMockEvent();
@@ -15,19 +11,15 @@ export function createBlock(num: string): ethereum.Block {
 }
 
 test('handleGenesis 0', () => {
-    runGenesisxNugg();
-
     let block = createBlock('34');
 
-    handleBlock(block);
+    handleBlock__every(block);
 
-    let proto = safeLoadProtocol();
+    // let proto = safeLoadProtocol();
 
-    logStore();
+    // logStore();
 
-    assert.fieldEquals('Protocol', proto.id, 'epoch', '1');
+    // assert.fieldEquals('Protocol', proto.id, 'epoch', '1');
 
     clearStore();
 });
-
-export { handleGenesis };

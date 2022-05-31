@@ -53,6 +53,7 @@ export function onEpochGenesis(
 
     nugg = updateProof(nugg, bigi(0), true, block);
     nugg = cacheDotnugg(nugg, block.number);
+
     onEpochStart(currentEpochId, proto, block);
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
@@ -78,13 +79,15 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     nextSwap.nextDelegateType = 'Mint';
     nextSwap.bottom = bigi(0);
     nextSwap.bottomUsd = bigi(0);
+    nextSwap.top = bigi(0);
+    nextSwap.topUsd = bigi(0);
     nextSwap.save();
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
     log.info('onSwapInit OUT {}', [id.toString()]);
 }
 export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block): void {
-    log.info('onEpochStart IN [id:{}]', [id.toString()]);
+    log.info('onEpochStart IN  [id:{}]', [id.toString()]);
     let nextEpoch = safeLoadEpoch(id);
     // let nextNextEpoch = safeLoadEpoch(id.plus(bigi(1)));
 
@@ -139,7 +142,8 @@ export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     newEpoch.status = 'PENDING';
     newEpoch._activeItemSwaps = [];
     newEpoch._upcomingActiveItemSwaps = [];
-
+    newEpoch._activeSwaps = [];
+    newEpoch._activeNuggItemSwaps = [];
     newEpoch.save();
     log.info('onEpochInit OUT {}', [id.toString()]);
 
