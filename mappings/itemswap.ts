@@ -36,6 +36,8 @@ export function handleEvent__OfferItem(event: OfferItem): void {
 
     let agency__account = agency.bitAnd(MAX_UINT160);
 
+    let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(LOSS);
+
     let sellingNuggId = event.params.sellingTokenId;
 
     let sellingItemId = bigi(event.params.itemId);
@@ -61,7 +63,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
             item,
             nuggitem,
             itemswap,
-            event.transaction.value,
+            agency__eth,
             event.block.timestamp,
         );
     } else if (itemswap.nextDelegateType == 'Carry') {
@@ -73,7 +75,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
             item,
             nuggitem,
             itemswap,
-            event.transaction.value,
+            agency__eth,
         );
     } else {
         panicFatal('itemswap.nextDelegateType should be Commit or Offer');

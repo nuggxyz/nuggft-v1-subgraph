@@ -97,24 +97,16 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
 
     let proto = safeLoadProtocol();
 
-    log.info('A', []);
-
     let snap = safeNewActiveNuggSnapshot(nugg, nugg.user, blocknum);
-    log.info('B', []);
-
     if (snap === null) {
         log.info('cacheDotnugg end (early) [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
-
         return nugg;
     }
-    log.info('C', []);
 
     // if (blockNum > 10276528) {
     let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
-    log.info('D', []);
 
     let callResult = dotnugg.try_imageSVG(bigi(nugg.idnum));
-    log.info('E', []);
 
     let str = '';
 

@@ -195,7 +195,7 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt, sta
     } else if (swap.nextDelegateType == 'Carry') {
         __offerCarry(hash, proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Mint') {
-        __offerMint(hash, proto, user, nugg, swap, agency__eth);
+        __offerMint(hash, proto, user, nugg, swap, agency__eth, stake);
     } else {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
@@ -331,6 +331,7 @@ export function __offerMint(
     nugg: Nugg,
     swap: Swap,
     lead: BigInt,
+    stake: BigInt,
 ): void {
     log.info('__offerMint start', []);
 
@@ -349,7 +350,8 @@ export function __offerMint(
 
     proto.nuggftStakedShares = proto.nuggftStakedShares.plus(BigInt.fromString('1'));
     proto.save();
-
+    swap.bottom = _mspFromStake(stake);
+    swap.bottomUsd = wethToUsdc(swap.bottom);
     // swap.top = getCurrentUserOffer(user, nugg);
     swap.top = lead;
     swap.topUsd = wethToUsdc(swap.top);
@@ -369,7 +371,7 @@ export function __offerMint(
     offer.user = user.id;
     offer.swap = swap.id;
     offer.claimer = user.id;
-    offer.incrementX64 = BigInt.fromString('0');
+    offer.incrementX64 = makeIncrementX64(swap.top, swap.bottom);
     offer.save();
 
     log.info('__offerMint end', []);
@@ -392,8 +394,8 @@ export function __offerCommit(
 
     let epoch = safeLoadEpoch(BigInt.fromString(proto.epoch).plus(BigInt.fromString('1')));
     if (swap.bottom.equals(bigi(0))) {
-        swap.top = _mspFromStake(stake);
-        swap.topUsd = wethToUsdc(swap.bottom);
+        swap.bottom = _mspFromStake(stake);
+        swap.bottomUsd = wethToUsdc(swap.bottom);
         swap.top = swap.bottom;
         swap.topUsd = swap.bottomUsd;
     }
