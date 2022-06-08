@@ -122,6 +122,8 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
     proto.nextEpoch = id.plus(bigi(1)).toString();
     proto.defaultActiveNugg = nextNugg.id;
     proto.save();
+
+    nextNugg.live = true;
     log.info('onEpochStart OUT {}', [id.toString()]);
 }
 

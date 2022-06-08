@@ -155,7 +155,6 @@ export function safeLoadNuggNull(id: BigInt): Nugg | null {
 export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): Nugg {
     nugg.activeSwap = swap.id;
     nugg.protocol = '0x42069';
-    nugg.live = true;
     nugg.lastPrice = swap.eth;
     nugg.save();
     return nugg;

@@ -195,7 +195,7 @@ function _offer(
     nugg.lastPrice = agency__eth;
     nugg.lastOfferBlock = block.number;
     nugg.lastOfferEpoch = bigs(proto.epoch);
-
+    nugg.live = true;
     nugg.save();
 
     if (swap.nextDelegateType == 'Commit') {
