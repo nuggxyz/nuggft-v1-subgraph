@@ -95,6 +95,8 @@ type Epoch @entity {
 type Item @entity {
     id: ID!
 
+    live: Boolean!
+
     idnum: Int!
     feature: BigInt!
     position: BigInt!
@@ -105,6 +107,9 @@ type Item @entity {
 
     protocol: Protocol
 
+    lastPrice: BigInt
+    lastOfferBlock: BigInt
+    lastOfferEpoch: BigInt
     # just to keep in the same format as the nuggs
     activeSnapshot: ItemSnapshot
 
@@ -137,6 +142,8 @@ type Nugg @entity {
     id: ID!
     idnum: Int!
 
+    live: Boolean!
+
     user: User!
     lastUser: User!
 
@@ -144,6 +151,9 @@ type Nugg @entity {
     activeSwap: Swap
     activeLoan: Loan
 
+    lastPrice: BigInt
+    lastOfferBlock: BigInt
+    lastOfferEpoch: BigInt
     lastTransfer: Int!
     pendingClaim: Boolean!
 
@@ -163,6 +173,7 @@ type Nugg @entity {
 
     _items: [Int!]!
     _displayed: [Int!]!
+    # nvsX64: BigInt!
 
     proof: BigInt
 
@@ -187,6 +198,9 @@ type Swap @entity {
     endingEpoch: BigInt
     startingEpoch: Epoch
     canceledEpoch: BigInt
+
+    commitBlock: BigInt
+    numOffers: Int!
 
     top: BigInt!
     topUsd: BigInt!
@@ -289,7 +303,11 @@ type ItemSwap @entity {
     bottom: BigInt!
     bottomUsd: BigInt!
 
+    commitBlock: BigInt
+
     nextDelegateType: NextOfferType!
+
+    numOffers: Int!
 
     num: BigInt!
 

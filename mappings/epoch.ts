@@ -69,6 +69,7 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     let nextSwap = safeNewSwapHelper(nextNugg);
 
     nextSwap.epoch = nextEpoch.id;
+
     nextSwap.startingEpoch = nextEpoch.id;
     nextSwap.endingEpoch = BigInt.fromString(nextEpoch.id);
     nextSwap.eth = bigi(0);
@@ -76,6 +77,7 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
     nextSwap.owner = proto.nullUser;
     nextSwap.leader = proto.nullUser;
     nextSwap.nugg = nextNugg.id;
+    nextSwap.numOffers = 0;
     nextSwap.nextDelegateType = 'Mint';
     nextSwap.bottom = bigi(0);
     nextSwap.bottomUsd = bigi(0);
@@ -98,6 +100,7 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
     nextEpoch.status = 'ACTIVE';
     nextEpoch.starttime = block.timestamp;
     nextSwap.startUnix = block.timestamp;
+    nextSwap.commitBlock = block.number;
 
     let _s = nextEpoch._activeSwaps as string[];
     _s.push(nextSwap.id as string);
@@ -183,6 +186,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
             nugg = safeRemoveNuggActiveSwap(nugg);
             nugg = _transfer(addrs(proto.nuggftUser), addrs(s.leader), bigs(nugg.id), block);
             nugg.pendingClaim = true;
+            nugg.live = false;
             nugg.save();
         }
     }
@@ -205,13 +209,14 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
         let nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
 
         let item = unsafeLoadItem(s.sellingItem);
+
         safeRemoveItemActiveSwap(item);
         safeRemoveNuggItemActiveSwap(nuggitem);
     }
     epoch.endtime = block.timestamp;
-    epoch._activeItemSwaps = [];
-    epoch._activeNuggItemSwaps = [];
-    epoch._activeSwaps = [];
+    // epoch._activeItemSwaps = [];
+    // epoch._activeNuggItemSwaps = [];
+    // epoch._activeSwaps = [];
     epoch.status = 'OVER';
 
     epoch.save();

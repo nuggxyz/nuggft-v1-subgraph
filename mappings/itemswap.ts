@@ -23,7 +23,7 @@ import {
 } from './safeload';
 import { ItemSwap, Nugg, NuggItem, Protocol, Item } from '../generated/schema';
 import { ClaimItem, OfferItem, SellItem } from '../generated/NuggftV1/NuggftV1';
-import { b32toBigEndian, bigb, bigi, MAX_UINT160 } from './utils';
+import { b32toBigEndian, bigb, bigi, bigs, MAX_UINT160 } from './utils';
 import { mask, _stake } from './nuggft';
 import { updateProof, cacheDotnugg } from './dotnugg';
 import { LOSS } from './constants';
@@ -54,6 +54,12 @@ export function handleEvent__OfferItem(event: OfferItem): void {
 
     safeSetNuggActiveItemSwap(buyingNugg, nuggitem, itemswap);
 
+    item.lastPrice = agency__eth;
+    item.lastOfferEpoch = event.block.number;
+    item.lastOfferEpoch = bigs(proto.epoch);
+
+    item.save();
+
     if (itemswap.nextDelegateType == 'Commit') {
         _offerCommitItem(
             event.transaction.hash.toHexString(),
@@ -64,7 +70,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
             nuggitem,
             itemswap,
             agency__eth,
-            event.block.timestamp,
+            event.block,
         );
     } else if (itemswap.nextDelegateType == 'Carry') {
         _offerOfferItem(
@@ -95,7 +101,7 @@ function _offerCommitItem(
     nuggItem: NuggItem,
     itemswap: ItemSwap,
     eth: BigInt,
-    time: BigInt,
+    block: ethereum.Block,
 ): void {
     log.debug('_offerCommitItem start', []);
 
@@ -161,10 +167,12 @@ function _offerCommitItem(
     itemoffer.incrementX64 = bigi(0);
     itemoffer.save();
 
-    itemswap.startUnix = time;
+    itemswap.startUnix = block.timestamp;
     itemswap.top = itemoffer.eth;
     itemswap.topUsd = itemoffer.ethUsd;
     itemswap.nextDelegateType = 'Carry';
+    itemswap.commitBlock = block.number;
+
     itemswap.leader = buyerNugg.id;
 
     itemswap.save();
@@ -198,6 +206,8 @@ function _offerOfferItem(
         itemoffer.txhash = hash;
 
         itemoffer.save();
+
+        itemswap.numOffers = itemswap.numOffers + 1;
     }
 
     itemoffer.txhash = hash;
@@ -317,6 +327,7 @@ export function _sellItem(
     itemSwap.topUsd = itemSwap.bottomUsd;
     itemSwap.owner = sellingNugg.id;
     itemSwap.leader = sellingNugg.id;
+    itemSwap.numOffers = 0;
     itemSwap.nextDelegateType = 'Commit';
     itemSwap.save();
 

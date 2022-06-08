@@ -262,6 +262,7 @@ export function _mint(
     nugg.save();
     swap.eth = bigi(0); // handled by Mint or Offer
     swap.ethUsd = bigi(0); // handled by Mint or Offer
+    swap.numOffers = 0;
 
     swap.top = bigi(0); // handled by Mint or Offer
     swap.topUsd = bigi(0);

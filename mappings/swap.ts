@@ -28,7 +28,7 @@ import {
     Rotate,
     Sell,
 } from '../generated/NuggftV1/NuggftV1';
-import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160, addrs } from './utils';
+import { addr_b, addr_i, b32toBigEndian, bigi, MAX_UINT160, addrs, bigs } from './utils';
 import { mask, _mint, _stake, _mspFromStake } from './nuggft';
 
 export function handleEvent__PreMint(event: PreMint): void {
@@ -66,7 +66,7 @@ export function handleEvent__OfferMint(event: OfferMint): void {
         event.transaction.hash.toHexString(),
         bigi(event.params.tokenId),
         event.params.agency,
-        event.block.timestamp,
+        event.block,
         inter,
     );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
@@ -80,7 +80,7 @@ export function handleEvent__Offer(event: Offer): void {
         event.transaction.hash.toHexString(),
         bigi(event.params.tokenId),
         event.params.agency,
-        event.block.timestamp,
+        event.block,
         inter,
     );
     _stake(inter);
@@ -163,7 +163,13 @@ export function _rotate(
     log.info('handleEvent__Rotate end', []);
 }
 
-function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt, stake: BigInt): void {
+function _offer(
+    hash: string,
+    tokenId: BigInt,
+    _agency: Bytes,
+    block: ethereum.Block,
+    stake: BigInt,
+): void {
     // log.debug('event.params.agency - a - ' + event.params.agency.toHex(), []);
 
     // transform bytes to Big-Endian
@@ -176,10 +182,6 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt, sta
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
 
-    // let agency__epoch = agency.rightShift(230).bitAnd(mask(24));
-
-    // let agency__flag = agency.rightShift(254);
-
     let proto = safeLoadProtocol();
 
     let nugg = safeLoadNugg(tokenId);
@@ -190,8 +192,14 @@ function _offer(hash: string, tokenId: BigInt, _agency: Bytes, time: BigInt, sta
 
     safeSetUserActiveSwap(user, nugg, swap);
 
+    nugg.lastPrice = agency__eth;
+    nugg.lastOfferBlock = block.number;
+    nugg.lastOfferEpoch = bigs(proto.epoch);
+
+    nugg.save();
+
     if (swap.nextDelegateType == 'Commit') {
-        __offerCommit(hash, proto, user, nugg, swap, agency__eth, time, stake);
+        __offerCommit(hash, proto, user, nugg, swap, agency__eth, stake, block);
     } else if (swap.nextDelegateType == 'Carry') {
         __offerCarry(hash, proto, user, nugg, swap, agency__eth);
     } else if (swap.nextDelegateType == 'Mint') {
@@ -253,6 +261,8 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
     swap.bottom = agency__eth;
     swap.bottomUsd = wethToUsdc(agency__eth);
     swap.eth = bigi(0);
+    swap.numOffers = 0;
+
     swap.ethUsd = bigi(0);
 
     swap.save();
@@ -357,6 +367,7 @@ export function __offerMint(
     swap.topUsd = wethToUsdc(swap.top);
     swap.leader = user.id;
     swap.nextDelegateType = 'Carry';
+    swap.numOffers = 1;
 
     swap.save();
 
@@ -384,8 +395,8 @@ export function __offerCommit(
     nugg: Nugg,
     swap: Swap,
     lead: BigInt,
-    time: BigInt,
     stake: BigInt,
+    block: ethereum.Block,
 ): void {
     log.info('__offerCommit start', []);
 
@@ -417,7 +428,9 @@ export function __offerCommit(
     // 2760000000000000
     // 2404156500000000
     let offer = safeLoadOfferHelperNull(swap, user, hash);
-
+    if (offer.eth.equals(bigi(0))) {
+        swap.numOffers = swap.numOffers + 1;
+    }
     offer.txhash = hash;
     offer.incrementX64 = makeIncrementX64(lead, swap.top);
 
@@ -427,7 +440,8 @@ export function __offerCommit(
     swap.topUsd = offer.ethUsd;
     swap.nextDelegateType = 'Carry';
     swap.leader = user.id;
-    swap.startUnix = time;
+    swap.startUnix = block.timestamp;
+    swap.commitBlock = block.number;
 
     offer.save();
     swap.save();
@@ -456,6 +470,10 @@ export function __offerCarry(
     log.info('__offerCarry start', []);
 
     let offer = safeLoadOfferHelperNull(swap, user, hash);
+
+    if (offer.eth.equals(bigi(0))) {
+        swap.numOffers = swap.numOffers + 1;
+    }
 
     offer.txhash = hash;
 

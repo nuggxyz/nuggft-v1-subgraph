@@ -155,6 +155,8 @@ export function safeLoadNuggNull(id: BigInt): Nugg | null {
 export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): Nugg {
     nugg.activeSwap = swap.id;
     nugg.protocol = '0x42069';
+    nugg.live = true;
+    nugg.lastPrice = swap.eth;
     nugg.save();
     return nugg;
 }
@@ -169,6 +171,7 @@ export function safeSetNuggActiveLoan(nugg: Nugg, loan: Loan): void {
 export function safeRemoveNuggActiveSwap(nugg: Nugg): Nugg {
     nugg.activeSwap = null;
     nugg.protocol = null;
+    nugg.live = false;
     nugg.save();
 
     return nugg;
@@ -198,6 +201,7 @@ export function safeNewNugg(
     loaded._tmp = 0;
     loaded._items = [];
     loaded._displayed = [];
+    loaded.live = false;
 
     loaded.save();
 
@@ -317,6 +321,7 @@ export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
     loaded._tmp = 0;
     loaded._items = [];
     loaded._displayed = [];
+    loaded.live = false;
     loaded.save();
 
     safeAddNuggToProtcol();
@@ -374,6 +379,7 @@ export function safeLoadItemNull(id: BigInt): Item | null {
 
 export function safeNewItem(id: BigInt): Item {
     let loaded = new Item('' + id.toString());
+    loaded.live = false;
     safeAddItemToProtcol();
     return loaded as Item;
 }
@@ -388,6 +394,7 @@ export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
     // let _item = safeLoadItem(BigInt.fromString(item));
     item.activeSwap = itemswap.id;
     item.protocol = '0x42069';
+    item.live = true;
     item.save();
 }
 
@@ -421,6 +428,7 @@ export function safeRemoveItemActiveSwap(item: Item): void {
     // let _item = safeLoadItem(BigInt.fromString(item));
     item.activeSwap = null;
     item.protocol = null;
+    item.live = false;
     item.save();
 }
 export function safeRemoveNuggItemActiveSwap(nuggitem: NuggItem): void {
@@ -581,6 +589,7 @@ export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
     safeAddItemSwapToProtcol();
     let swap = new ItemSwap(id);
     swap.num = sellingNuggItem.numSwaps;
+    swap.numOffers = 0;
 
     // swap.endingEpoch = endingEpoch;
     sellingNuggItem.activeSwap = swap.id;
