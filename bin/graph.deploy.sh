@@ -2,7 +2,7 @@
 
 NETWORK="$1"
 
-API_KEY="$2"
+API_KEY="${2:-$GRAPH_KEY}"
 
 graph="./node_modules/.bin/graph"
 mustache="./node_modules/.bin/mustache"
