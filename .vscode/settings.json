@@ -7,7 +7,6 @@
     "editor.codeActionsOnSave": {
         "source.fixAll": true
     },
-
     "typescript.referencesCodeLens.enabled": true,
     "typescript.implementationsCodeLens.enabled": true,
     "typescript.inlayHints.parameterNames.enabled": "literals",

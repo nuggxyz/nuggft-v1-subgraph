@@ -9,6 +9,8 @@ mustache="./node_modules/.bin/mustache"
 
 WORKING=.tmp.deploy."$NETWORK"
 
+yarn
+
 rm -rf "$WORKING"
 
 mkdir "$WORKING"

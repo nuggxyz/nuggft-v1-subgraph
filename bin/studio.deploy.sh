@@ -7,6 +7,8 @@ API_KEY="$2"
 graph="./node_modules/.bin/graph"
 mustache="./node_modules/.bin/mustache"
 
+yarn
+
 WORKING=.tmp.deploy."$NETWORK"
 
 rm -rf "$WORKING"

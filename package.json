@@ -1,10 +1,9 @@
 {
-    "name": "nuggft-subgraph",
+    "name": "nuggft-v1-subgraph",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "subgraph.template.yaml",
     "license": "MIT",
-    "repository": "https://github.com/nuggxyz/nuggft-subgraph.git",
-    "author": "dub6ix <dub6ix@nugg.xyz>",
+    "repository": "https://github.com/nuggxyz/nuggft-v1-subgraph.git",
     "devDependencies": {
         "@assemblyscript/loader": "0.19.17",
         "@graphprotocol/graph-cli": "0.30.2",
@@ -28,8 +27,7 @@
         "typescript": "^4.4.2"
     },
     "dependencies": {
-        "matchstick-as": "^0.5.0",
-        "sharp": "^0.29.3"
+        "matchstick-as": "^0.5.0"
     },
     "scripts": {
         "test": "yarn graph test",

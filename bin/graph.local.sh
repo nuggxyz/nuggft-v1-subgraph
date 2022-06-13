@@ -9,6 +9,8 @@ WORKING=generated
 
 mkdir "$WORKING"
 
+yarn
+
 $mustache networks/"$NETWORK".json subgraph.template.yaml >"$WORKING"/subgraph.yaml
 
 $graph codegen --output-dir "$WORKING" "$WORKING"/subgraph.yaml
