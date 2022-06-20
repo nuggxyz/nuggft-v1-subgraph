@@ -211,7 +211,7 @@ function _offerOfferItem(
     }
 
     itemoffer.txhash = hash;
-    itemoffer.eth = itemoffer.eth.plus(eth);
+    itemoffer.eth = eth;
     itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
 
     itemoffer.incrementX64 = makeIncrementX64(itemoffer.eth, itemswap.top);
