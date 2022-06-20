@@ -204,7 +204,7 @@ function _offerOfferItem(
         itemoffer.nugg = buyerNugg.id;
         itemoffer.swap = itemswap.id;
         itemoffer.txhash = hash;
-
+        itemoffer.incrementX64 = bigi(0);
         itemoffer.save();
 
         itemswap.numOffers = itemswap.numOffers + 1;
