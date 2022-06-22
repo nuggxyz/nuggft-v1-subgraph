@@ -673,6 +673,13 @@ export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: 
         loaded.save();
     } else {
         if (loaded.activeId != swap.id) {
+            // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
+
+            // loaded = new NuggActiveItemSwap(id);
+            // loaded.activeId = swap.id;
+            // loaded.save();
+
+            // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
             panicFatal(
                 'safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists',
             );
