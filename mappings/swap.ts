@@ -217,6 +217,7 @@ export function handleEvent__Sell(event: Sell): void {
 }
 
 export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void {
+    const proto = safeLoadProtocol();
     log.info('handleEvent__Sell start', []);
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(bigi(10).pow(8));
@@ -242,6 +243,8 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
         offer.ethUsd = wethToUsdc(agency__eth);
         offer.txhash = event.transaction.hash.toHexString();
         offer.incrementX64 = BigInt.fromString('0');
+        offer.epoch = proto.epoch;
+
         offer.save();
         log.info('handleEvent__Sell end', []);
 
@@ -281,6 +284,7 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
     offer.claimer = user.id;
     offer.swap = swap.id;
     offer.incrementX64 = BigInt.fromString('0');
+    offer.epoch = proto.epoch;
 
     offer.txhash = event.transaction.hash.toHexString();
 
@@ -383,6 +387,8 @@ export function __offerMint(
     offer.swap = swap.id;
     offer.claimer = user.id;
     offer.incrementX64 = makeIncrementX64(swap.top, swap.bottom);
+    offer.epoch = proto.epoch;
+
     offer.save();
 
     log.info('__offerMint end', []);

@@ -58,7 +58,7 @@ type Offer @entity {
     incrementX64: BigInt!
     eth: BigInt!
     ethUsd: BigInt!
-
+    epoch: Epoch!
     claimed: Boolean!
 
     owner: Boolean!
@@ -379,6 +379,7 @@ type NuggActiveItemSwap @entity {
 
 type ItemOffer @entity {
     id: ID!
+    epoch: Epoch!
 
     txhash: String!
     swap: ItemSwap!

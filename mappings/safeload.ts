@@ -715,6 +715,7 @@ export function safeGetAndDeleteNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggIte
 }
 
 export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): Offer {
+    let proto = safeLoadProtocol();
     let loaded = Offer.load('' + swap.id + '-' + user.id);
     if (loaded == null) {
         loaded = safeNewOfferHelper(swap, user);
@@ -727,6 +728,7 @@ export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): O
         loaded.claimer = user.id;
         loaded.txhash = hash;
         loaded.incrementX64 = bigi(0);
+        loaded.epoch = proto.epoch;
         loaded.save();
     }
     return loaded;

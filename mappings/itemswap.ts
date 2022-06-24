@@ -165,6 +165,7 @@ function _offerCommitItem(
     itemoffer.swap = itemswap.id;
     itemoffer.txhash = hash;
     itemoffer.incrementX64 = bigi(0);
+    itemoffer.epoch = proto.epoch;
     itemoffer.save();
 
     itemswap.startUnix = block.timestamp;
@@ -205,6 +206,9 @@ function _offerOfferItem(
         itemoffer.swap = itemswap.id;
         itemoffer.txhash = hash;
         itemoffer.incrementX64 = bigi(0);
+
+        itemoffer.epoch = proto.epoch;
+
         itemoffer.save();
 
         itemswap.numOffers = itemswap.numOffers + 1;
@@ -275,6 +279,8 @@ export function _sellItem(
     _sellingItemId: i32,
     proof: BigInt,
 ): void {
+    let proto = safeLoadProtocol();
+
     log.debug('handleEvent__SellItem start', []);
 
     let agency__eth = agency.rightShift(160).bitAnd(mask(70)).times(LOSS);
@@ -308,6 +314,8 @@ export function _sellItem(
         itemoffer.eth = agency__eth;
         itemoffer.ethUsd = wethToUsdc(agency__eth);
         itemoffer.txhash = event.transaction.hash.toHexString();
+        itemoffer.epoch = proto.epoch;
+
         itemoffer.save();
 
         log.debug('handleEvent__SellItem end EARLY', []);
@@ -345,6 +353,7 @@ export function _sellItem(
     itemoffer.swap = itemSwap.id;
     itemoffer.txhash = event.transaction.hash.toHexString();
     itemoffer.incrementX64 = BigInt.fromString('0');
+    itemoffer.epoch = proto.epoch;
 
     itemoffer.save();
     log.debug('handleEvent__SellItem a', []);

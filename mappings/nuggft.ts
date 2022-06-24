@@ -287,6 +287,7 @@ export function _mint(
     // offer.eth = bigi(0); // handled by Mint or Offer
     // offer.ethUsd = bigi(0);
     offer.owner = false;
+    offer.epoch = proto.epoch;
     offer.user = user.id;
     offer.swap = swap.id;
     offer.txhash = hash.toHexString();
