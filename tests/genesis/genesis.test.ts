@@ -1,16 +1,14 @@
-import { clearStore, test, assert, newMockEvent } from 'matchstick-as';
-import { logStore } from 'matchstick-as/assembly/store';
+import { test, newMockEvent } from 'matchstick-as';
 import { ethereum, BigInt, log, Address, Bytes } from '@graphprotocol/graph-ts';
-import { safeLoadProtocol } from '../../mappings/safeload';
-import { handleBlock__every } from '../../mappings/epoch';
-import { handleEvent__Genesis } from '../../mappings/nuggft';
+
+import { handleEvent__Genesis } from '../../mappings';
 import { Genesis } from '../../generated/NuggftV1/NuggftV1';
 import { b32toBigEndian } from '../../mappings/utils';
 
-let address0 = '0xa16081f360e3847006db660bae1c6d1b2e17ec2a';
+const address0 = '0xa16081f360e3847006db660bae1c6d1b2e17ec2a';
 
 export function mock__event__Genesis(): Genesis {
-    let event = changetype<Genesis>(newMockEvent());
+    const event = changetype<Genesis>(newMockEvent());
 
     const abc = Address.fromString(address0);
 
@@ -49,7 +47,7 @@ export function mock__event__Genesis(): Genesis {
     log.info('B {}', [abc.toHexString()]);
 
     for (let index = 0; index < event.parameters.length; index++) {
-        let c = event.params.early;
+        const c = event.params.early;
         log.info('{}', [c.toString()]);
     }
     log.info('C {}', [abc.toHexString()]);

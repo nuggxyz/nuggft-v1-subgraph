@@ -1,5 +1,11 @@
 {
-    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "assemblyscript"
+    ],
     "editor.detectIndentation": false,
     "prettier.requireConfig": true,
     "editor.formatOnSave": true,

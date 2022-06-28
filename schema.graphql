@@ -46,6 +46,10 @@ type Protocol @entity {
     activeNuggs: [Nugg!]! @derivedFrom(field: "protocol")
     activeNuggItems: [NuggItem!]! @derivedFrom(field: "protocol")
     activeItems: [Item!]! @derivedFrom(field: "protocol")
+
+    iloop: String!
+    tloop: String!
+    sloop: String!
 }
 
 type Offer @entity {

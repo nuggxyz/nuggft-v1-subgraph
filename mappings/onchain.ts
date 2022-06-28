@@ -1,31 +1,29 @@
-import { Address, BigInt, Bytes, store, log, ethereum } from '@graphprotocol/graph-ts';
-import { NuggftV1, Genesis } from '../generated/NuggftV1/NuggftV1';
+import { Address, ethereum, Bytes, BigInt } from '@graphprotocol/graph-ts';
+import { log } from 'matchstick-as';
 
-import { Item, Nugg, NuggItem, User } from '../generated/schema';
-import {
-    safeLoadItem,
-    safeLoadItemNull,
-    safeLoadNuggItemHelper,
-    safeLoadNuggItemHelperNull,
-    safeLoadProtocol,
-    safeNewActiveNuggSnapshot,
-    safeNewItem,
-    safeNewNuggItem,
-    safeSetNewActiveItemSnapshot,
-    safeSetNuggActiveSwap,
-} from './safeload';
-import { safeDiv } from './uniswap';
-import { bighs, bigi, bigs, b32toBigEndian } from './utils';
-import { safeNewNugg, safeNewItemSwap } from './safeload';
-import { _epsFromStake, _mint } from './nuggft';
+import { NuggftV1, Genesis } from '../generated/NuggftV1/NuggftV1';
+import { User, Nugg, Protocol, NuggItem } from '../generated/schema';
 import { xNuggftV1 } from '../generated/NuggftV1/xNuggftV1';
-import { _sell } from './swap';
-import { _sellItem } from './itemswap';
-import { LOSS } from './constants';
+
+import { _sell } from './handlers/sell';
+import { _sellItem } from './handlers/sellItem';
+import { _mint } from './handlers/mint';
+import { bigi, bighs, mask, difference, safeDiv } from './utils';
+import {
+    safeAddNuggToProtcol,
+    safeLoadProtocol,
+    safeNewItem,
+    safeSetNewActiveItemSnapshot,
+    safeNewActiveNuggSnapshot,
+    safeLoadItem,
+    safeLoadNuggItemHelperNull,
+    safeNewNuggItem,
+    safeLoadNuggItemHelper,
+} from './safeload';
 
 export function getDotnuggUserId(nuggftAddress: Address): Address {
-    let nuggft = NuggftV1.bind(nuggftAddress);
-    let callResult = nuggft.dotnuggv1();
+    const nuggft = NuggftV1.bind(nuggftAddress);
+    const callResult = nuggft.dotnuggv1();
     return callResult;
 }
 
@@ -37,23 +35,23 @@ export function getPremints(
 ): void {
     log.info('handleEvent__Write start ', []);
 
-    let nuggft = NuggftV1.bind(nuggftAddress);
+    const nuggft = NuggftV1.bind(nuggftAddress);
 
-    let res = nuggft.premintTokens();
+    const res = nuggft.premintTokens();
 
-    let first = res.value0;
-    let last = res.value1;
+    const first = res.value0;
+    const last = res.value1;
 
-    let eps = nuggft.eps();
+    const eps = nuggft.eps();
 
     for (let i = first; i <= last; i++) {
-        let nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block);
+        const nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block);
 
         nugg.pendingClaim = true;
 
         nugg.save();
 
-        let agency = bigi(1).leftShift(254).plus(bighs(owner.id));
+        const agency = bigi(1).leftShift(254).plus(bighs(owner.id));
 
         _mint(i, agency, event.transaction.hash, eps, BigInt.zero(), block);
 
@@ -63,19 +61,79 @@ export function getPremints(
     }
 }
 
+export const _mspFromStake = (cache: BigInt): BigInt => {
+    const eth = cache.rightShift(96).bitAnd(mask(96));
+    const shares = cache.rightShift(192);
+
+    const ethPerShare = safeDiv(eth.times(BigInt.fromI64(10).pow(18)), shares);
+    const protocolFee = ethPerShare.div(BigInt.fromString('1'));
+    const premium = ethPerShare.times(shares).div(BigInt.fromString('2000'));
+    const final = ethPerShare.plus(protocolFee).plus(premium);
+
+    return final.div(BigInt.fromI64(10).pow(18));
+};
+
+export function _epsFromStake(cache: BigInt): BigInt {
+    const eth = cache.rightShift(96).bitAnd(mask(96));
+    const shares = cache.rightShift(192);
+
+    return safeDiv(eth, shares);
+}
+
+export function safeNewNugg(
+    id: BigInt,
+    userId: string,
+    epoch: BigInt,
+    block: ethereum.Block,
+): Nugg {
+    let loaded = new Nugg(id.toString());
+    loaded.idnum = id.toI32();
+    loaded.burned = false;
+    loaded.numSwaps = BigInt.fromString('0');
+    loaded.user = userId;
+    loaded.lastUser = userId;
+    loaded.lastTransfer = epoch.toI32();
+    loaded.pendingClaim = false;
+    loaded.dotnuggRawCache = '';
+    loaded._tmp = 0;
+    loaded._items = [];
+    loaded._displayed = [];
+    loaded.live = false;
+
+    loaded.save();
+
+    safeAddNuggToProtcol();
+
+    loaded = updateProof(loaded, bigi(0), true, block);
+
+    loaded = cacheDotnugg(loaded, block.number);
+
+    return loaded;
+}
+
+export function update__iloop(proto: Protocol | null): void {
+    log.info('handleEvent__Write start ', []);
+
+    if (proto == null) proto = safeLoadProtocol();
+
+    // let xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
+    // xnuggftv1.try_i;
+
+    // let xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
+}
 export function getItemURIs(xnuggftAddress: Address): void {
     log.info('handleEvent__Write start ', []);
 
-    let xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
+    const xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
 
     for (let i = 0; i < 8; i++) {
-        let amount = xnuggftv1.featureSupply(i).toI32();
+        const amount = xnuggftv1.featureSupply(i).toI32();
         for (let j = 1; j < amount + 1; j++) {
-            let itemId = i * 1000 + j;
-            let callResult = xnuggftv1.try_imageSVG(bigi(itemId));
-            let rarityResult = xnuggftv1.try_rarity(bigi(itemId));
+            const itemId = i * 1000 + j;
+            const callResult = xnuggftv1.try_imageSVG(bigi(itemId));
+            const rarityResult = xnuggftv1.try_rarity(bigi(itemId));
 
-            let item = safeNewItem(bigi(itemId));
+            const item = safeNewItem(bigi(itemId));
             item.count = bigi(0);
             item.dotnuggRawCache = callResult.reverted ? 'ERROR' : callResult.value;
 
@@ -95,18 +153,18 @@ export function getItemURIs(xnuggftAddress: Address): void {
 export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
     log.info('cacheDotnugg start [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
 
-    let proto = safeLoadProtocol();
+    const proto = safeLoadProtocol();
 
-    let snap = safeNewActiveNuggSnapshot(nugg, nugg.user, blocknum);
+    const snap = safeNewActiveNuggSnapshot(nugg, nugg.user, blocknum);
     if (snap === null) {
         log.info('cacheDotnugg end (early) [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
         return nugg;
     }
 
     // if (blockNum > 10276528) {
-    let dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
+    const dotnugg = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
-    let callResult = dotnugg.try_imageSVG(bigi(nugg.idnum));
+    const callResult = dotnugg.try_imageSVG(bigi(nugg.idnum));
 
     let str = '';
 
@@ -115,9 +173,9 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
     } else {
         let value = new Bytes(0);
         for (let a = 1; a <= 3; a++) {
-            let callResult = dotnugg.try_image123(bigi(nugg.idnum), false, a, value);
+            const callResult2 = dotnugg.try_image123(bigi(nugg.idnum), false, a, value);
 
-            if (callResult.reverted) {
+            if (callResult2.reverted) {
                 log.error('cacheDotnugg reverted trying to 123 [NuggId:{}] [chunk:{}/3]', [
                     nugg.id,
                     a.toString(),
@@ -133,7 +191,7 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
                 return nugg;
             }
 
-            value = callResult.value;
+            value = callResult2.value;
         }
 
         str = value.toString();
@@ -153,8 +211,8 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
 }
 
 export function updatedStakedSharesAndEth(): void {
-    let proto = safeLoadProtocol();
-    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
+    const proto = safeLoadProtocol();
+    const nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
     proto.nuggftStakedEth = nuggft.staked();
     proto.nuggftStakedShares = nuggft.shares();
     proto.nuggftStakedEthPerShare = safeDiv(proto.nuggftStakedEth, proto.nuggftStakedShares);
@@ -168,13 +226,13 @@ export function updateProof(
     block: ethereum.Block,
 ): Nugg {
     log.debug('updateProof IN args:[{}]', [nugg.id]);
-    let proto = safeLoadProtocol();
-    let nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
+    const proto = safeLoadProtocol();
+    const nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
 
-    let tmpFeatureTotals = proto.featureTotals;
+    const tmpFeatureTotals = proto.featureTotals;
 
     if (preload.equals(BigInt.zero())) {
-        let res = nuggft.try_proofOf(nugg.idnum);
+        const res = nuggft.try_proofOf(nugg.idnum);
 
         if (res.reverted) return nugg;
 
@@ -183,18 +241,18 @@ export function updateProof(
 
     let proof = preload;
 
-    let items: i32[] = [];
+    const items: i32[] = [];
 
-    let _displayed: i32[] = [];
-    let seen = [false, false, false, false, false, false, false, false];
+    const _displayed: i32[] = [];
+    const seen = [false, false, false, false, false, false, false, false];
 
     let index = 0;
     let aWittleBittyHack = 0;
     do {
-        let curr = proof.bitAnd(BigInt.fromString('65535'));
+        const curr = proof.bitAnd(BigInt.fromString('65535'));
         if (!curr.isZero()) {
             items.push(curr.toI32());
-            let feature = curr.div(bigi(1000)).toI32();
+            const feature = curr.div(bigi(1000)).toI32();
             if (index < 8 && !seen[feature]) {
                 _displayed.push(curr.toI32());
                 seen[feature] = true;
@@ -205,12 +263,12 @@ export function updateProof(
         index++;
     } while (!(proof = proof.rightShift(16)).isZero());
 
-    let toCreate = difference(items, nugg._items);
+    const toCreate = difference(items, nugg._items);
 
-    let toDelete = difference(nugg._items, items);
+    const toDelete = difference(nugg._items, items);
 
     for (let i = 0; i < toCreate.length; i++) {
-        let item = safeLoadItem(BigInt.fromI32(toCreate[i]));
+        const item = safeLoadItem(BigInt.fromI32(toCreate[i]));
 
         let nuggItem = safeLoadNuggItemHelperNull(nugg, item);
 
@@ -224,7 +282,7 @@ export function updateProof(
         nuggItem = nuggItem as NuggItem;
 
         if (incrementItemCount) {
-            let feature = bigi(item.idnum).div(bigi(1000)).toI32();
+            const feature = bigi(item.idnum).div(bigi(1000)).toI32();
 
             tmpFeatureTotals[feature]++;
             item.count = item.count.plus(BigInt.fromString('1'));
@@ -239,8 +297,8 @@ export function updateProof(
     }
 
     for (let i = 0; i < toDelete.length; i++) {
-        let item = safeLoadItem(BigInt.fromI32(toDelete[i]));
-        let nuggItem = safeLoadNuggItemHelper(nugg, item);
+        const item = safeLoadItem(BigInt.fromI32(toDelete[i]));
+        const nuggItem = safeLoadNuggItemHelper(nugg, item);
         nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
         nuggItem.displayed = false;
         nuggItem.save();
@@ -255,9 +313,9 @@ export function updateProof(
     proto.save();
 
     for (let i = 0; i < items.length; i++) {
-        let item = safeLoadItem(bigi(items[i]));
+        const item = safeLoadItem(bigi(items[i]));
 
-        let nuggItem = safeLoadNuggItemHelper(nugg, item);
+        const nuggItem = safeLoadNuggItemHelper(nugg, item);
         if (_displayed.includes(items[i])) {
             if (!nuggItem.displayed) {
                 nuggItem.displayed = true;
@@ -265,29 +323,27 @@ export function updateProof(
                 nuggItem.displayedSinceUnix = block.timestamp;
                 nuggItem.save();
             }
-        } else {
-            if (nuggItem.displayed) {
-                nuggItem.displayed = false;
-                nuggItem.displayedSinceBlock = null;
-                nuggItem.displayedSinceUnix = null;
-                nuggItem.save();
-            }
+        } else if (nuggItem.displayed) {
+            nuggItem.displayed = false;
+            nuggItem.displayedSinceBlock = null;
+            nuggItem.displayedSinceUnix = null;
+            nuggItem.save();
         }
     }
     log.debug('updateProof OUT args:[{}]', [nugg.id]);
 
     return nugg;
 }
-export function difference(arr1: i32[], arr2: i32[]): i32[] {
-    let tmp: i32[] = [];
-    for (let i = 0; i < arr1.length; i++) {
-        if (!arr2.includes(arr1[i])) {
-            tmp.push(arr1[i]);
-        }
-    }
-    return tmp;
-}
 
-export function duplicates(arr1: BigInt[]): BigInt[] {
-    return arr1.filter((item, index) => arr1.indexOf(item) !== index);
-}
+export const calculateMsp = (shares: BigInt, eth: BigInt): BigInt => {
+    const ethPerShare = safeDiv(
+        eth.times(BigInt.fromI64(10).pow(18)),
+
+        shares,
+    );
+    const protocolFee = ethPerShare.div(BigInt.fromString('1'));
+    const premium = ethPerShare.times(shares).div(BigInt.fromString('2000'));
+    const final = ethPerShare.plus(protocolFee).plus(premium);
+
+    return final.div(BigInt.fromI64(10).pow(18));
+};

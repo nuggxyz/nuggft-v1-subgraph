@@ -1,34 +1,34 @@
-import { log, BigInt, ethereum, Address, store, JSONValue } from '@graphprotocol/graph-ts';
+import { Address, store, log, BigInt } from '@graphprotocol/graph-ts';
+
 import {
     Epoch,
-    Item,
-    ItemOffer,
-    ItemSwap,
     Nugg,
     NuggItem,
-    Offer,
     Protocol,
     Swap,
-    User,
     Loan,
+    NuggSnapshot,
+    Item,
+    ItemSnapshot,
+    User,
+    ItemSwap,
     UserActiveSwap,
     NuggActiveItemSwap,
-    NuggSnapshot,
-    ItemSnapshot,
+    Offer,
+    ItemOffer,
 } from '../generated/schema';
-import { cacheDotnugg, updateProof, difference } from './dotnugg';
-import { panicFatal } from './uniswap';
-import { bigi } from './utils';
+
+import { bigi, difference, panicFatal } from './utils';
 
 export function safeLoadActiveEpoch(): Epoch {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
 
     if (loaded.epoch == null) panicFatal('safeLoadActiveEpoch: Protocol.epoch CANNOT BE NULL:');
 
-    let epoch = Epoch.load(loaded.epoch);
+    const epoch = Epoch.load(loaded.epoch);
 
     if (epoch == null)
-        panicFatal('safeLoadActiveEpoch: ACTIVE EPOCH CANNOT BE NULL: ' + loaded.epoch);
+        panicFatal(`safeLoadActiveEpoch: ACTIVE EPOCH CANNOT BE NULL: ${loaded.epoch}`);
 
     return epoch as Epoch;
 }
@@ -36,9 +36,9 @@ export function safeLoadActiveEpoch(): Epoch {
 export function safeLoadEpoch(id: BigInt): Epoch {
     log.info('safeLoadEpoch IN [id:{}]', [id.toString()]);
 
-    let epoch = Epoch.load(id.toString());
+    const epoch = Epoch.load(id.toString());
 
-    if (epoch == null) panicFatal('safeLoadEpoch: EPOCH CANNOT BE NULL: ' + id.toString());
+    if (epoch == null) panicFatal(`safeLoadEpoch: EPOCH CANNOT BE NULL: ${id.toString()}`);
 
     log.info('safeLoadEpoch OUT [epoch:id:{}]', [(epoch as Epoch).id]);
 
@@ -46,17 +46,17 @@ export function safeLoadEpoch(id: BigInt): Epoch {
 }
 
 export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
-    let proto = safeLoadProtocol();
+    const proto = safeLoadProtocol();
     proto.totalNuggs = proto.totalNuggs.minus(bigi(1));
     proto.totalSwaps = proto.totalSwaps.minus(bigi(1));
-    let tmpFeatureTotals = proto.featureTotals;
+    const tmpFeatureTotals = proto.featureTotals;
 
-    let itm = nugg._items;
+    const itm = nugg._items;
 
     for (let abc = 0; abc < itm.length; abc++) {
-        let item = safeLoadItem(bigi(itm[abc]));
+        const item = safeLoadItem(bigi(itm[abc]));
 
-        let feature = bigi(item.idnum).div(bigi(1000)).toI32();
+        const feature = bigi(item.idnum).div(bigi(1000)).toI32();
         tmpFeatureTotals[feature]--;
 
         item.count = item.count.minus(bigi(1));
@@ -74,66 +74,66 @@ export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
 
     store.remove('Nugg', nugg.id);
 
-    store.remove('Swap', nugg.id + '-0');
+    store.remove('Swap', `${nugg.id}-0`);
 }
-export function safeRemoveNuggItemFromProtcol(nuggItem: NuggItem): void {
-    let loaded = safeLoadProtocol();
+export function safeRemoveNuggItemFromProtcol(): void {
+    const loaded = safeLoadProtocol();
     loaded.totalItems = loaded.totalItems.minus(bigi(1));
     loaded.save();
 }
 
 export function safeNewEpoch(id: BigInt): Epoch {
-    let epoch = new Epoch(id.toString());
+    const epoch = new Epoch(id.toString());
     epoch.idnum = id;
     return epoch;
 }
 export function safeAddNuggToProtcol(): void {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
     loaded.totalNuggs = loaded.totalNuggs.plus(bigi(1));
     loaded.save();
 }
 
 export function safeAddUserToProtcol(): void {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
     loaded.totalUsers = loaded.totalUsers.plus(bigi(1));
     loaded.save();
 }
 export function safeAddSwapToProtcol(): void {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
     loaded.totalSwaps = loaded.totalSwaps.plus(bigi(1));
     loaded.save();
 }
 
 export function safeAddLoanToProtcol(): void {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
     loaded.totalLoans = loaded.totalLoans.plus(bigi(1));
     loaded.save();
 }
 export function safeAddItemToProtcol(): void {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
     loaded.totalItems = loaded.totalItems.plus(bigi(1));
     loaded.save();
 }
 
 export function safeAddItemSwapToProtcol(): void {
-    let loaded = safeLoadProtocol();
+    const loaded = safeLoadProtocol();
     loaded.totalItemSwaps = loaded.totalItemSwaps.plus(bigi(1));
     loaded.save();
 }
 
 export function safeLoadProtocol(): Protocol {
-    let loaded = Protocol.load('0x42069');
+    const loaded = Protocol.load('0x42069');
     if (loaded == null) panicFatal('safeLoadProtocol: Protocol CANNOT BE NULL:');
     return loaded as Protocol;
 }
 
 export function safeLoadNugg(id: BigInt): Nugg {
     log.info('safeLoadNugg IN {}', [id.toString()]);
-    let ids = id.toString();
-    let loaded = Nugg.load(ids);
+    const ids = id.toString();
+    const loaded = Nugg.load(ids);
     if (loaded == null) {
         log.error('safeLoadNugg ERROR [loaded == null] - {}', [ids]);
-        panicFatal('safeLoadNugg: CRITICAL: Nugg CANNOT BE NULL:' + ids);
+        panicFatal(`safeLoadNugg: CRITICAL: Nugg CANNOT BE NULL:${ids}`);
     }
     log.info('safeLoadNugg OUT {}', [ids]);
 
@@ -141,8 +141,8 @@ export function safeLoadNugg(id: BigInt): Nugg {
 }
 
 export function safeLoadNuggNull(id: BigInt): Nugg | null {
-    let ids = '' + id.toString();
-    let loaded = Nugg.load(ids);
+    const ids = `${id.toString()}`;
+    const loaded = Nugg.load(ids);
     return loaded;
 }
 
@@ -182,37 +182,6 @@ export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
     nugg.save();
 }
 
-export function safeNewNugg(
-    id: BigInt,
-    userId: string,
-    epoch: BigInt,
-    block: ethereum.Block,
-): Nugg {
-    let loaded = new Nugg(id.toString());
-    loaded.idnum = id.toI32();
-    loaded.burned = false;
-    loaded.numSwaps = BigInt.fromString('0');
-    loaded.user = userId;
-    loaded.lastUser = userId;
-    loaded.lastTransfer = epoch.toI32();
-    loaded.pendingClaim = false;
-    loaded.dotnuggRawCache = '';
-    loaded._tmp = 0;
-    loaded._items = [];
-    loaded._displayed = [];
-    loaded.live = false;
-
-    loaded.save();
-
-    safeAddNuggToProtcol();
-
-    loaded = updateProof(loaded, bigi(0), true, block);
-
-    loaded = cacheDotnugg(loaded, block.number);
-
-    return loaded;
-}
-
 export function safeNewActiveNuggSnapshot(
     nugg: Nugg,
     userId: string,
@@ -238,11 +207,11 @@ export function safeNewActiveNuggSnapshot(
         num = curr.snapshotNum + 1;
         // let missmatch = false;
 
-        const _displayed = nugg._displayed;
+        const __displayed = nugg._displayed;
 
-        const diff = difference(_displayed, curr._displayed);
+        const diff = difference(__displayed, curr._displayed);
 
-        if (diff.length === 0 && _displayed.length === curr._displayed.length) return null;
+        if (diff.length === 0 && __displayed.length === curr._displayed.length) return null;
 
         // if (curr._displayed.length !== _displayed.length) missmatch = true;
 
@@ -258,7 +227,7 @@ export function safeNewActiveNuggSnapshot(
     }
     log.info('b-C', []);
 
-    let next = new NuggSnapshot(nugg.id + '-' + num.toString());
+    const next = new NuggSnapshot(`${nugg.id}-${num.toString()}`);
     next.nugg = nugg.id;
     next.block = blocknum;
     next.user = userId;
@@ -285,9 +254,9 @@ export function safeNewActiveNuggSnapshot(
 // }
 
 export function safeSetNewActiveItemSnapshot(item: Item, data: string): Item {
-    let id = item.id + '-' + '0';
+    const id = `${item.id}-0`;
 
-    let next = new ItemSnapshot(id);
+    const next = new ItemSnapshot(id);
 
     next.item = item.id;
     next.chunkError = !!data.startsWith('ERROR');
@@ -308,7 +277,7 @@ export function safeSetNewActiveItemSnapshot(item: Item, data: string): Item {
 }
 
 export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
-    let loaded = new Nugg(id.toString());
+    const loaded = new Nugg(id.toString());
     loaded.idnum = id.toI32();
     loaded.burned = false;
     loaded.numSwaps = BigInt.fromString('0');
@@ -330,29 +299,29 @@ export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
 // "nuggft": "0x5d5f16B48af3fB4f6acbCf3087699d99bd902A40",
 
 export function safeLoadUserFromString(userId: string): User {
-    let id = '' + userId;
-    let loaded = User.load(id);
-    if (loaded == null) panicFatal('User CANNOT BE NULL:' + id);
+    const id = `${userId}`;
+    const loaded = User.load(id);
+    if (loaded == null) panicFatal(`User CANNOT BE NULL:${id}`);
     return loaded as User;
 }
 
 export function safeLoadUser(userId: Address): User {
-    let id = '' + userId.toHexString();
-    let loaded = User.load(id);
-    if (loaded == null) panicFatal('safeLoadUser: User CANNOT BE NULL:' + id);
+    const id = `${userId.toHexString()}`;
+    const loaded = User.load(id);
+    if (loaded == null) panicFatal(`safeLoadUser: User CANNOT BE NULL:${id}`);
     return loaded as User;
 }
 
 export function safeNewUser(userId: Address): User {
-    let id = '' + userId.toHexString();
+    const id = `${userId.toHexString()}`;
     // 0xf0dcdec50135504e000000000000000000000040
-    let loaded = new User(id);
+    const loaded = new User(id);
     safeAddUserToProtcol();
     return loaded;
 }
 
 export function safeLoadUserNull(userId: Address): User {
-    let id = '' + userId.toHexString();
+    const id = `${userId.toHexString()}`;
     let loaded = User.load(id);
 
     if (loaded == null) {
@@ -364,20 +333,20 @@ export function safeLoadUserNull(userId: Address): User {
 }
 
 export function safeLoadItem(id: BigInt): Item {
-    let loaded = Item.load(id.toString());
+    const loaded = Item.load(id.toString());
     if (loaded === null) {
-        panicFatal('safeLoadItem: Item CANNOT BE NULL:' + id.toString());
+        panicFatal(`safeLoadItem: Item CANNOT BE NULL:${id.toString()}`);
     }
     return loaded as Item;
 }
 
 export function safeLoadItemNull(id: BigInt): Item | null {
-    let loaded = Item.load('' + id.toString());
+    const loaded = Item.load(`${id.toString()}`);
     return loaded;
 }
 
 export function safeNewItem(id: BigInt): Item {
-    let loaded = new Item('' + id.toString());
+    const loaded = new Item(`${id.toString()}`);
     loaded.live = false;
     safeAddItemToProtcol();
     return loaded as Item;
@@ -405,7 +374,7 @@ export function safeSetUpcomingItemActiveSwap(item: Item, itemswap: ItemSwap): v
 }
 
 export function unsafeIncrementItemActiveSwap(_item: string): void {
-    let item = safeLoadItem(BigInt.fromString(_item));
+    const item = safeLoadItem(BigInt.fromString(_item));
     item.activeSwap = item.upcomingActiveSwap;
     item.upcomingActiveSwap = null;
     if (item.activeSwap === null) {
@@ -437,45 +406,45 @@ export function safeRemoveNuggItemActiveSwap(nuggitem: NuggItem): void {
     nuggitem.save();
 }
 export function unsafeLoadNuggItem(id: string): NuggItem {
-    let loaded = NuggItem.load('' + id);
-    if (loaded == null) panicFatal('NuggItem CANNOT BE NULL:' + id);
+    const loaded = NuggItem.load(`${id}`);
+    if (loaded == null) panicFatal(`NuggItem CANNOT BE NULL:${id}`);
     return loaded as NuggItem;
 }
 
 export function unsafeLoadItem(id: string): Item {
-    let loaded = Item.load('' + id);
-    if (loaded == null) panicFatal('Item CANNOT BE NULL:' + id);
+    const loaded = Item.load(`${id}`);
+    if (loaded == null) panicFatal(`Item CANNOT BE NULL:${id}`);
     return loaded as Item;
 }
 
 export function safeLoadNuggItemHelper(nugg: Nugg, item: Item): NuggItem {
-    let id = item.id + '-' + nugg.id;
-    let loaded = NuggItem.load(id);
+    const id = `${item.id}-${nugg.id}`;
+    const loaded = NuggItem.load(id);
     if (loaded == null) {
-        panicFatal('NuggItem CANNOT BE NULL:' + id);
+        panicFatal(`NuggItem CANNOT BE NULL:${id}`);
     }
     return loaded as NuggItem;
 }
 
 export function safeLoadNuggItemHelperNull(nugg: Nugg, item: Item): NuggItem | null {
-    let id = item.id + '-' + nugg.id;
-    let loaded = NuggItem.load(id);
+    const id = `${item.id}-${nugg.id}`;
+    const loaded = NuggItem.load(id);
 
     return loaded;
 }
 
 export function safeNewNuggItem(nugg: Nugg, item: Item): NuggItem {
-    let id = item.id + '-' + nugg.id;
-    let loaded = new NuggItem(id);
+    const id = `${item.id}-${nugg.id}`;
+    const loaded = new NuggItem(id);
     loaded.numSwaps = BigInt.fromString('0');
     return loaded;
 }
 export function safeLoadActiveSwap(nugg: Nugg): Swap {
     log.info(' safeLoadActiveSwap IN [NuggId:{}]', [nugg.id]);
     if (nugg.activeSwap == null) panicFatal('safeLoadActiveSwap: NUGG.activeSwap CANNOT BE NULL,');
-    let id = nugg.activeSwap as string;
-    let loaded = Swap.load(nugg.activeSwap as string);
-    if (loaded == null) panicFatal('Swap CANNOT BE NULL:' + id);
+    const id = nugg.activeSwap as string;
+    const loaded = Swap.load(nugg.activeSwap as string);
+    if (loaded == null) panicFatal(`Swap CANNOT BE NULL:${id}`);
     log.info(' safeLoadActiveSwap OUT [NuggId:{}]', [nugg.id]);
 
     return loaded as Swap;
@@ -491,12 +460,12 @@ export function safeLoadActiveSwap(nugg: Nugg): Swap {
 // }
 
 export function safeNewSwapHelper(nugg: Nugg): Swap {
-    let currNum = nugg.numSwaps;
+    const currNum = nugg.numSwaps;
     nugg.numSwaps = nugg.numSwaps.plus(bigi(1));
     nugg.save();
 
-    let id = '' + nugg.id + '-' + currNum.toString();
-    let swap = new Swap(id);
+    const id = `${nugg.id}-${currNum.toString()}`;
+    const swap = new Swap(id);
     // swap.endingEpoch = endingEpoch;
     swap.num = currNum;
 
@@ -513,8 +482,8 @@ export function safeNewSwapHelper(nugg: Nugg): Swap {
 
 export function unsafeLoadSwap(id: string): Swap {
     // let id = '' + tokenId.toString() + '-' + endingEpoch.toString();
-    let loaded = Swap.load(id);
-    if (loaded == null) panicFatal('Swap CANNOT BE NULL:' + id);
+    const loaded = Swap.load(id);
+    if (loaded == null) panicFatal(`Swap CANNOT BE NULL:${id}`);
     return loaded as Swap;
 }
 
@@ -524,18 +493,18 @@ export function unsafeLoadSwap(id: string): Swap {
 // }
 
 export function safeNewLoanHelper(): Loan {
-    let loaded = safeLoadProtocol();
-    let id = loaded.totalLoans.toString();
-    let loan = new Loan(id);
+    const loaded = safeLoadProtocol();
+    const id = loaded.totalLoans.toString();
+    const loan = new Loan(id);
     safeAddLoanToProtcol();
     return loan as Loan;
 }
 
 export function safeLoadLoanHelper(nugg: Nugg): Loan {
-    if (nugg.activeLoan == null) panicFatal('nugg.activeLoan CANNOT BE NULL:' + nugg.id);
-    let id = nugg.activeLoan as string;
-    let loaded = Loan.load(id);
-    if (loaded == null) panicFatal('Loan CANNOT BE NULL:' + id);
+    if (nugg.activeLoan == null) panicFatal(`nugg.activeLoan CANNOT BE NULL:${nugg.id}`);
+    const id = nugg.activeLoan as string;
+    const loaded = Loan.load(id);
+    if (loaded == null) panicFatal(`Loan CANNOT BE NULL:${id}`);
     return loaded as Loan;
 }
 
@@ -543,9 +512,9 @@ export function safeLoadActiveNuggItemSwap(nuggItem: NuggItem): ItemSwap {
     if (nuggItem.activeSwap == '' || nuggItem.activeSwap == null)
         panicFatal('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL');
 
-    let id = nuggItem.activeSwap as string;
-    let loaded = ItemSwap.load(id);
-    if (loaded == null) panicFatal('safeLoadActiveItemSwap ItemSwap CANNOT BE NULL:' + id);
+    const id = nuggItem.activeSwap as string;
+    const loaded = ItemSwap.load(id);
+    if (loaded == null) panicFatal(`safeLoadActiveItemSwap ItemSwap CANNOT BE NULL:${id}`);
     return loaded as ItemSwap;
 }
 
@@ -553,14 +522,14 @@ export function safeLoadActiveItemSwap(item: Item): ItemSwap {
     if (item.activeSwap == '')
         panicFatal('handleOfferOfferItem: NUGGITEM.activeSwap CANNOT BE NULL');
 
-    let id = item.activeSwap as string;
-    let loaded = ItemSwap.load(id);
-    if (loaded == null) panicFatal('safeLoadActiveItemSwap ItemSwap CANNOT BE NULL:' + id);
+    const id = item.activeSwap as string;
+    const loaded = ItemSwap.load(id);
+    if (loaded == null) panicFatal(`safeLoadActiveItemSwap ItemSwap CANNOT BE NULL:${id}`);
     return loaded as ItemSwap;
 }
 export function unsafeLoadItemSwap(id: string): ItemSwap {
-    let loaded = ItemSwap.load(id);
-    if (loaded == null) panicFatal('ItemSwap CANNOT BE NULL:' + id);
+    const loaded = ItemSwap.load(id);
+    if (loaded == null) panicFatal(`ItemSwap CANNOT BE NULL:${id}`);
     return loaded as ItemSwap;
 }
 
@@ -579,14 +548,14 @@ export function unsafeLoadItemSwap(id: string): ItemSwap {
 // }
 
 export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
-    let currNum = sellingNuggItem.numSwaps;
+    const currNum = sellingNuggItem.numSwaps;
     sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(bigi(1));
     sellingNuggItem.save();
 
-    let id = sellingNuggItem.id + '-' + currNum.toString();
+    const id = `${sellingNuggItem.id}-${currNum.toString()}`;
 
     safeAddItemSwapToProtcol();
-    let swap = new ItemSwap(id);
+    const swap = new ItemSwap(id);
     swap.num = sellingNuggItem.numSwaps;
     swap.numOffers = 0;
 
@@ -609,18 +578,16 @@ export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void 
     if (swap == null) {
         panicFatal('safeSetUserActiveSwap: swap CANNOT BE NULL,');
     }
-    let id = user.id + '-' + nugg.id;
+    const id = `${user.id}-${nugg.id}`;
     let loaded = UserActiveSwap.load(id);
     if (loaded == null) {
         loaded = new UserActiveSwap(id);
         loaded.activeId = swap.id;
         loaded.save();
-    } else {
-        if (loaded.activeId != swap.id) {
-            panicFatal(
-                'safeSetUserActiveSwap: new useractiveswap trying to be set when old still exists',
-            );
-        }
+    } else if (loaded.activeId != swap.id) {
+        panicFatal(
+            'safeSetUserActiveSwap: new useractiveswap trying to be set when old still exists',
+        );
     }
 }
 
@@ -635,12 +602,12 @@ export function safeGetAndDeleteUserActiveSwap(user: User, nugg: Nugg): Swap {
         panicFatal('safeGetAndDeleteUserActiveSwap: nugg CANNOT BE NULL,');
     }
 
-    let id = user.id + '-' + nugg.id;
-    let loaded = UserActiveSwap.load(id);
+    const id = `${user.id}-${nugg.id}`;
+    const loaded = UserActiveSwap.load(id);
     if (loaded == null) {
-        panicFatal('safeGetAndDeleteUserActiveSwap: UserActiveSwap CANNOT BE NULL: id:' + id);
+        panicFatal(`safeGetAndDeleteUserActiveSwap: UserActiveSwap CANNOT BE NULL: id:${id}`);
     }
-    let swap = Swap.load((loaded as UserActiveSwap).activeId);
+    const swap = Swap.load((loaded as UserActiveSwap).activeId);
 
     if (swap == null) {
         panicFatal('safeGetAndDeleteUserActiveSwap: swap CANNOT BE NULL,');
@@ -650,7 +617,7 @@ export function safeGetAndDeleteUserActiveSwap(user: User, nugg: Nugg): Swap {
 
     return swap as Swap;
 }
-//////////////////////////////////
+/// ///////////////////////////////
 export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: ItemSwap): void {
     // require nugg && swap
     if (nugg == null) {
@@ -664,26 +631,24 @@ export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: 
     if (swap == null) {
         panicFatal('safeSetNuggActiveItemSwap: swap CANNOT BE NULL,');
     }
-    let id = nugg.id + '-' + nuggItem.id;
+    const id = `${nugg.id}-${nuggItem.id}`;
 
     let loaded = NuggActiveItemSwap.load(id);
     if (loaded == null) {
         loaded = new NuggActiveItemSwap(id);
         loaded.activeId = swap.id;
         loaded.save();
-    } else {
-        if (loaded.activeId != swap.id) {
-            // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
+    } else if (loaded.activeId != swap.id) {
+        // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
 
-            // loaded = new NuggActiveItemSwap(id);
-            // loaded.activeId = swap.id;
-            // loaded.save();
+        // loaded = new NuggActiveItemSwap(id);
+        // loaded.activeId = swap.id;
+        // loaded.save();
 
-            // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
-            panicFatal(
-                'safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists',
-            );
-        }
+        // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
+        panicFatal(
+            'safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists',
+        );
     }
 }
 
@@ -698,12 +663,12 @@ export function safeGetAndDeleteNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggIte
         panicFatal('safeGetAndDeleteNuggActiveItemSwap: nuggItem CANNOT BE NULL,');
     }
 
-    let id = nugg.id + '-' + nuggItem.id;
-    let loaded = NuggActiveItemSwap.load(id);
+    const id = `${nugg.id}-${nuggItem.id}`;
+    const loaded = NuggActiveItemSwap.load(id);
     if (loaded == null) {
         panicFatal('safeGetAndDeleteNuggActiveItemSwap: NuggActiveItemSwap CANNOT BE NULL,');
     }
-    let swap = ItemSwap.load((loaded as NuggActiveItemSwap).activeId);
+    const swap = ItemSwap.load((loaded as NuggActiveItemSwap).activeId);
 
     if (swap == null) {
         panicFatal('safeGetAndDeleteNuggActiveItemSwap: swap CANNOT BE NULL,');
@@ -715,8 +680,8 @@ export function safeGetAndDeleteNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggIte
 }
 
 export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): Offer {
-    let proto = safeLoadProtocol();
-    let loaded = Offer.load('' + swap.id + '-' + user.id);
+    const proto = safeLoadProtocol();
+    let loaded = Offer.load(`${swap.id}-${user.id}`);
     if (loaded == null) {
         loaded = safeNewOfferHelper(swap, user);
         loaded.claimed = false;
@@ -735,14 +700,14 @@ export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): O
 }
 
 export function safeNewOfferHelper(swap: Swap, user: User): Offer {
-    let loaded = new Offer('' + swap.id + '-' + user.id);
+    const loaded = new Offer(`${swap.id}-${user.id}`);
     return loaded;
 }
 
 export function safeLoadOfferHelper(swap: Swap, user: User): Offer {
-    let id = '' + swap.id + '-' + user.id;
-    let loaded = Offer.load(id);
-    if (loaded == null) panicFatal('Offer CANNOT BE NULL:' + id);
+    const id = `${swap.id}-${user.id}`;
+    const loaded = Offer.load(id);
+    if (loaded == null) panicFatal(`Offer CANNOT BE NULL:${id}`);
     return loaded as Offer;
 }
 
@@ -755,18 +720,18 @@ export function safeLoadOfferHelper(swap: Swap, user: User): Offer {
 // }
 
 export function safeNewItemOffer(swap: ItemSwap, nugg: Nugg): ItemOffer {
-    let id = swap.id + '-' + nugg.id;
+    const id = `${swap.id}-${nugg.id}`;
     return new ItemOffer(id);
 }
 
 export function safeLoadItemOfferHelperNull(swap: ItemSwap, nugg: Nugg): ItemOffer | null {
-    let id = swap.id + '-' + nugg.id;
+    const id = `${swap.id}-${nugg.id}`;
     return ItemOffer.load(id);
 }
 
 export function safeLoadItemOfferHelper(swap: ItemSwap, nugg: Nugg): ItemOffer {
-    let id = swap.id + '-' + nugg.id;
-    let loaded = ItemOffer.load(id);
-    if (loaded == null) panicFatal('ItemOffer CANNOT BE NULL:' + id);
+    const id = `${swap.id}-${nugg.id}`;
+    const loaded = ItemOffer.load(id);
+    if (loaded == null) panicFatal(`ItemOffer CANNOT BE NULL:${id}`);
     return loaded as ItemOffer;
 }
