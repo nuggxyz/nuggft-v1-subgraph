@@ -289,6 +289,8 @@ export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
     loaded._tmp = 0;
     loaded._items = [];
     loaded._displayed = [];
+    loaded._pickups = [];
+
     loaded.live = false;
     loaded.save();
 

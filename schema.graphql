@@ -177,6 +177,8 @@ type Nugg @entity {
 
     _items: [Int!]!
     _displayed: [Int!]!
+
+    _pickups: [String!]!
     # nvsX64: BigInt!
 
     proof: BigInt

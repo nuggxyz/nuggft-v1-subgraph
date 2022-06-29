@@ -9,7 +9,7 @@ mustache="./node_modules/.bin/mustache"
 
 WORKING=.tmp.deploy."$NETWORK"
 
-yarn
+bin/graph.local.sh
 
 rm -rf "$WORKING"
 

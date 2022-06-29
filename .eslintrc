@@ -37,6 +37,7 @@
     },
     "plugins": ["@typescript-eslint", "prettier", "import", "unused-imports"],
     "rules": {
+        "prefer-const": "off",
         "import/no-cycle": "off",
         "eqeqeq": "off",
         "new-cap": "warn",

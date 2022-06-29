@@ -5,7 +5,6 @@ import { Epoch, Protocol } from '../generated/schema';
 import {
     safeLoadActiveEpoch,
     safeLoadEpoch,
-    safeLoadProtocol,
     safeNewEpoch,
     safeNewSwapHelper,
     unsafeLoadSwap,
@@ -23,26 +22,26 @@ import {
     unsafeLoadNuggItem,
     safeSetNuggActiveSwap,
 } from './safeload';
-import { cacheDotnugg, updateProof } from './onchain';
+import { cacheDotnugg, updateProof, update__tloop } from './onchain';
 import { addrs, bigi, bigs, safeDiv } from './utils';
 import { _transfer } from './handlers/transfer';
 
 export function onBlockFinishedIndexing(block: ethereum.Block): void {
-    const proto = Protocol.load('0x42069');
+    let proto = Protocol.load('0x42069');
     if (proto == null || !proto.init) return;
 
-    const currentEpochId = getCurrentEpoch(
+    let currentEpochId = getCurrentEpoch(
         proto.genesisBlock,
         proto.interval,
         block.number,
         proto.epochOffset,
     );
 
-    const epoch = safeLoadActiveEpoch();
+    let epoch = safeLoadActiveEpoch();
 
     // let startblock = getCurrentStartBlock(proto.interval, block.number)
 
-    const check = epoch.endblock.minus(block.number);
+    let check = epoch.endblock.minus(block.number);
     // log.warning(check.toString(), []);
 
     switch (check.toI32()) {
@@ -52,11 +51,12 @@ export function onBlockFinishedIndexing(block: ethereum.Block): void {
             // }
 
             // must be called before on epoch start
-            onEpochClose(epoch, proto, block);
+            proto = onEpochClose(epoch, proto, block);
 
-            onEpochStart(currentEpochId, proto, block);
+            proto = onEpochStart(currentEpochId, proto, block);
 
             onEpochInit(currentEpochId.plus(bigi(2)), proto);
+
             break;
         }
         case 1: {
@@ -91,6 +91,12 @@ export function onBlockFinishedIndexing(block: ethereum.Block): void {
             break;
     }
 
+    const check2 = epoch.startblock.equals(block.number);
+
+    if (check2) {
+        proto = update__tloop(proto);
+    }
+
     // if (block.number.toI32() === 10276528)
     //     for (let i = 0; i < proto.nuggsNotCached.length; i++) {
     //         // proto.nuggsNotCached.forEach((id) => {
@@ -104,13 +110,12 @@ export function onBlockFinishedIndexing(block: ethereum.Block): void {
 }
 
 export function onEpochGenesis(
+    proto: Protocol,
     block: ethereum.Block,
     genesisBlock: BigInt,
     interval: BigInt,
     offset: BigInt,
-): void {
-    const proto = safeLoadProtocol();
-
+): Protocol {
     proto.genesisBlock = genesisBlock;
     proto.interval = interval;
     proto.init = true;
@@ -125,7 +130,7 @@ export function onEpochGenesis(
     );
 
     onEpochInit(currentEpochId, proto);
-    onSwapInit(currentEpochId, proto);
+    proto = onSwapInit(currentEpochId, proto);
 
     let nugg = safeLoadNugg(currentEpochId);
 
@@ -136,15 +141,17 @@ export function onEpochGenesis(
 
     onEpochInit(currentEpochId.plus(BigInt.fromString('1')), proto);
     onEpochInit(currentEpochId.plus(BigInt.fromString('2')), proto);
+
+    return proto;
 }
-export function onSwapInit(id: BigInt, proto: Protocol): void {
+export function onSwapInit(id: BigInt, proto: Protocol): Protocol {
     log.info('onSwapInit IN {}', [id.toString()]);
 
-    const nextEpoch = safeLoadEpoch(id);
+    let nextEpoch = safeLoadEpoch(id);
 
-    const nextNugg = safeNewNuggNoCache(id, proto.nullUser);
+    let nextNugg = safeNewNuggNoCache(id, proto.nullUser);
 
-    const nextSwap = safeNewSwapHelper(nextNugg);
+    let nextSwap = safeNewSwapHelper(nextNugg);
 
     nextSwap.epoch = nextEpoch.id;
 
@@ -165,31 +172,33 @@ export function onSwapInit(id: BigInt, proto: Protocol): void {
 
     safeSetNuggActiveSwap(nextNugg, nextSwap);
     log.info('onSwapInit OUT {}', [id.toString()]);
+
+    return proto;
 }
-export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block): void {
+export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block): Protocol {
     log.info('onEpochStart IN  [id:{}]', [id.toString()]);
-    const nextEpoch = safeLoadEpoch(id);
+    let nextEpoch = safeLoadEpoch(id);
     // let nextNextEpoch = safeLoadEpoch(id.plus(bigi(1)));
 
-    const nextNugg = safeLoadNugg(id);
+    let nextNugg = safeLoadNugg(id);
 
-    const nextSwap = safeLoadActiveSwap(nextNugg);
+    let nextSwap = safeLoadActiveSwap(nextNugg);
 
     nextEpoch.status = 'ACTIVE';
     nextEpoch.starttime = block.timestamp;
     nextSwap.startUnix = block.timestamp;
     nextSwap.commitBlock = block.number;
 
-    const _s = nextEpoch._activeSwaps as string[];
+    let _s = nextEpoch._activeSwaps as string[];
     _s.push(nextSwap.id as string);
     nextEpoch._activeSwaps = _s as string[];
 
-    const swaps = nextEpoch._upcomingActiveItemSwaps as string[];
+    let swaps = nextEpoch._upcomingActiveItemSwaps as string[];
 
     nextEpoch._activeItemSwaps = swaps;
 
     for (let index = 0; index < swaps.length; index++) {
-        const itemswap = unsafeLoadItemSwap(swaps[index]);
+        let itemswap = unsafeLoadItemSwap(swaps[index]);
         unsafeIncrementItemActiveSwap(itemswap.sellingItem);
     }
 
@@ -203,12 +212,14 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
 
     nextNugg.live = true;
     log.info('onEpochStart OUT {}', [id.toString()]);
+
+    return proto;
 }
 
 export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     log.info('onEpochInit IN {}', [id.toString()]);
 
-    const newEpoch = safeNewEpoch(id);
+    let newEpoch = safeNewEpoch(id);
 
     newEpoch.endblock = getEndBlockFromEpoch(
         id,
@@ -233,7 +244,8 @@ export function onEpochInit(id: BigInt, proto: Protocol): Epoch {
     return newEpoch;
 }
 
-export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Block): void {
+export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Block): Protocol {
+    log.info('onEpochClose IN {}', [epoch.id]);
     log.info('onEpochClose IN {}', [epoch.id]);
 
     const swaps = epoch._activeSwaps;
@@ -258,7 +270,7 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     workingRemoval = [];
 
     for (let i = 0; i < swaps.length; i++) {
-        const s = unsafeLoadSwap(swaps[i]);
+        let s = unsafeLoadSwap(swaps[i]);
         let nugg = safeLoadNugg(BigInt.fromString(s.nugg));
         if (nugg.id == epoch.id && nugg.user == proto.nullUser) {
             workingRemoval.push(nugg.id);
@@ -288,6 +300,14 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
         const s = unsafeLoadItemSwap(itemswaps[j]);
         const nuggitem = unsafeLoadNuggItem(s.sellingNuggItem);
 
+        if (s.leader) {
+            const nugg = safeLoadNugg(bigs(s.leader as string));
+            const tmp = nugg._pickups;
+            tmp.push(s.sellingItem);
+            nugg._pickups = tmp;
+            nugg.save();
+        }
+
         const item = unsafeLoadItem(s.sellingItem);
 
         safeRemoveItemActiveSwap(item);
@@ -304,6 +324,8 @@ export function onEpochClose(epoch: Epoch, proto: Protocol, block: ethereum.Bloc
     proto.lastEpoch = epoch.id;
     proto.save();
     log.info('onEpochClose OUT {}', [epoch.id]);
+
+    return proto;
 }
 
 export function getCurrentEpoch(

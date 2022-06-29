@@ -78,6 +78,7 @@ function __offerMint(
     log.info('__offerMint start', []);
 
     // let proto = safeLoadProtocol();
+    log.info('__offerMint start 1', []);
 
     log.info('__offerMint start 2', []);
 

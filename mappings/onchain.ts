@@ -8,7 +8,7 @@ import { xNuggftV1 } from '../generated/NuggftV1/xNuggftV1';
 import { _sell } from './handlers/sell';
 import { _sellItem } from './handlers/sellItem';
 import { _mint } from './handlers/mint';
-import { bigi, bighs, mask, difference, safeDiv } from './utils';
+import { bigi, bighs, mask, difference, safeDiv, addrs } from './utils';
 import {
     safeAddNuggToProtcol,
     safeLoadProtocol,
@@ -96,6 +96,7 @@ export function safeNewNugg(
     loaded.pendingClaim = false;
     loaded.dotnuggRawCache = '';
     loaded._tmp = 0;
+    loaded._pickups = [];
     loaded._items = [];
     loaded._displayed = [];
     loaded.live = false;
@@ -111,16 +112,69 @@ export function safeNewNugg(
     return loaded;
 }
 
-export function update__iloop(proto: Protocol | null): void {
+export function update__iloop(proto: Protocol | null): Protocol {
     log.info('handleEvent__Write start ', []);
 
     if (proto == null) proto = safeLoadProtocol();
 
-    // let xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
-    // xnuggftv1.try_i;
+    const xnuggftv1 = xNuggftV1.bind(addrs(proto.xnuggftv1));
 
-    // let xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
+    const res = xnuggftv1.try_iloop();
+
+    if (res.reverted) {
+        log.error('xnuggftv1.iloop() reverted', []);
+        return proto;
+    }
+
+    proto.iloop = res.value.toHexString();
+
+    proto.save();
+
+    return proto;
 }
+
+export function update__tloop(proto: Protocol | null): Protocol {
+    log.info('handleEvent__Write start ', []);
+
+    if (proto == null) proto = safeLoadProtocol();
+
+    const xnuggftv1 = xNuggftV1.bind(addrs(proto.xnuggftv1));
+
+    const res = xnuggftv1.try_tloop();
+
+    if (res.reverted) {
+        log.error('xnuggftv1.tloop() reverted', []);
+        return proto;
+    }
+
+    proto.tloop = res.value.toHexString();
+
+    proto.save();
+
+    return proto;
+}
+
+// export function update__sloop(proto: Protocol | null): Protocol {
+//     log.info('handleEvent__Write start ', []);
+
+//     if (proto == null) proto = safeLoadProtocol();
+
+//     const xnuggftv1 = xNuggftV1.bind(addrs(proto.xnuggftv1));
+
+//     const res = xnuggftv1.try_sloop();
+
+//     if (res.reverted) {
+//         log.error('xnuggftv1.sloop() reverted', []);
+//         return proto;
+//     }
+
+//     proto.sloop = res.value.toHexString();
+
+//     proto.save();
+
+//     return proto;
+// }
+
 export function getItemURIs(xnuggftAddress: Address): void {
     log.info('handleEvent__Write start ', []);
 
@@ -347,3 +401,11 @@ export const calculateMsp = (shares: BigInt, eth: BigInt): BigInt => {
 
     return final.div(BigInt.fromI64(10).pow(18));
 };
+
+// export const prepSloop(epoch: BigInt, flag: 0 | 1 | 2 | 3, owner: BigInt, tokenId: BigInt, itemId: BigInt): BigInt {
+//     let working = BigInt.fromI32(3);
+
+//     working = working.leftShift(254)
+
+//     working = working.bitOr(BigInt.fromI32(epoch.toI32()).leftShift(230));
+// }

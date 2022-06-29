@@ -27,7 +27,15 @@ import { _sell } from './handlers/sell';
 import { _sellItem } from './handlers/sellItem';
 import { _stake } from './handlers/stake';
 import { _transfer } from './handlers/transfer';
-import { cacheDotnugg, getDotnuggUserId, getItemURIs, getPremints, updateProof } from './onchain';
+import {
+    cacheDotnugg,
+    getDotnuggUserId,
+    getItemURIs,
+    getPremints,
+    updateProof,
+    update__iloop,
+    update__tloop,
+} from './onchain';
 import {
     safeLoadProtocol,
     safeLoadNugg,
@@ -71,7 +79,7 @@ export function handleEvent__Genesis(event: Genesis): void {
         ],
     );
 
-    const proto = new Protocol('0x42069');
+    let proto = new Protocol('0x42069');
 
     proto.init = false;
     proto.nuggsNotCached = [];
@@ -99,7 +107,11 @@ export function handleEvent__Genesis(event: Genesis): void {
     proto.featureTotals = [0, 0, 0, 0, 0, 0, 0, 0];
     proto.nuggftStakedShares = bigi(0);
 
-    const epoch = new Epoch('NOTLIVE');
+    proto.iloop = '0x0';
+    proto.tloop = '0x0';
+    proto.sloop = '0x0';
+
+    let epoch = new Epoch('NOTLIVE');
     epoch.startblock = bigi(0);
     epoch.endblock = bigi(0);
     epoch.status = 'PENDING';
@@ -110,7 +122,7 @@ export function handleEvent__Genesis(event: Genesis): void {
     epoch._activeNuggItemSwaps = [];
     epoch.save();
 
-    const nil = new User('0x0000000000000000000000000000000000000000');
+    let nil = new User('0x0000000000000000000000000000000000000000');
     nil.shares = bigi(0);
     nil.save();
     proto.nextEpoch = epoch.id;
@@ -130,17 +142,17 @@ export function handleEvent__Genesis(event: Genesis): void {
     proto.save();
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    const xnuggftv1 = safeNewUser(event.params.xnuggftv1);
+    let xnuggftv1 = safeNewUser(event.params.xnuggftv1);
     xnuggftv1.shares = bigi(0);
     xnuggftv1.save();
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    const dotnuggv1 = safeNewUser(event.params.dotnugg);
+    let dotnuggv1 = safeNewUser(event.params.dotnugg);
     dotnuggv1.shares = bigi(0);
     dotnuggv1.save();
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    const nuggft = safeNewUser(event.address);
+    let nuggft = safeNewUser(event.address);
     nuggft.shares = bigi(0);
     nuggft.save();
     proto.nuggftUser = nuggft.id;
@@ -153,7 +165,8 @@ export function handleEvent__Genesis(event: Genesis): void {
 
     getItemURIs(event.params.xnuggftv1);
 
-    onEpochGenesis(
+    proto = onEpochGenesis(
+        proto,
         event.block,
         event.params.blocknum,
         event.params.interval,
@@ -163,6 +176,11 @@ export function handleEvent__Genesis(event: Genesis): void {
     getPremints(event, event.address, nuggft, event.block);
 
     _stake(b32toBigEndian(event.params.stake));
+
+    proto = update__iloop(proto);
+    proto = update__tloop(proto);
+
+    proto.save();
 
     log.info('handleEvent__Genesis end {}', [proto.epoch]);
 }
@@ -186,6 +204,8 @@ export function handleEvent__OfferMint(event: OfferMint): void {
     );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
     _stake(inter);
+
+    update__tloop(null);
 }
 
 export function handleEvent__Offer(event: Offer): void {
@@ -279,6 +299,17 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
         buyingNugg = updateProof(buyingNugg, proof, false, event.block);
 
         buyingNugg = cacheDotnugg(buyingNugg, event.block.number);
+
+        const tmp = buyingNugg._pickups;
+
+        for (let i = 0; i < tmp.length; i++) {
+            if (item.id == tmp[i]) {
+                tmp.splice(i, 1);
+                buyingNugg._pickups = tmp;
+                buyingNugg.save();
+                break;
+            }
+        }
     }
 }
 
