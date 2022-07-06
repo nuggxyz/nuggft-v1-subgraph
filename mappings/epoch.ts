@@ -17,7 +17,6 @@ import {
     safeLoadNuggNull,
     unsafeLoadItem,
     safeRemoveItemActiveSwap,
-    unsafeIncrementItemActiveSwap,
     safeRemoveNuggFromProtcol,
     unsafeLoadNuggItem,
     safeSetNuggActiveSwap,
@@ -193,16 +192,16 @@ export function onEpochStart(id: BigInt, proto: Protocol, block: ethereum.Block)
     _s.push(nextSwap.id as string);
     nextEpoch._activeSwaps = _s as string[];
 
-    let swaps = nextEpoch._upcomingActiveItemSwaps as string[];
+    // let swaps = nextEpoch._upcomingActiveItemSwaps as string[];
 
-    nextEpoch._activeItemSwaps = swaps;
+    // nextEpoch._activeItemSwaps = swaps;
 
-    for (let index = 0; index < swaps.length; index++) {
-        let itemswap = unsafeLoadItemSwap(swaps[index]);
-        unsafeIncrementItemActiveSwap(itemswap.sellingItem);
-    }
+    // for (let index = 0; index < swaps.length; index++) {
+    //     let itemswap = unsafeLoadItemSwap(swaps[index]);
+    //     unsafeIncrementItemActiveSwap(itemswap.sellingItem);
+    // }
 
-    nextEpoch._upcomingActiveItemSwaps = [];
+    // nextEpoch._upcomingActiveItemSwaps = [];
     nextEpoch.save();
     nextSwap.save();
     proto.epoch = nextEpoch.id;

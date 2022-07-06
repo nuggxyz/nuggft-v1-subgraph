@@ -175,12 +175,12 @@ export function handleEvent__Genesis(event: Genesis): void {
 
     getPremints(event, event.address, nuggft, event.block);
 
-    _stake(b32toBigEndian(event.params.stake));
-
     proto = update__iloop(proto);
     proto = update__tloop(proto);
 
     proto.save();
+
+    _stake(b32toBigEndian(event.params.stake));
 
     log.info('handleEvent__Genesis end {}', [proto.epoch]);
 }

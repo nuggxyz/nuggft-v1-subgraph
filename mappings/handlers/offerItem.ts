@@ -5,7 +5,6 @@ import { LOSS } from '../constants';
 import {
     safeLoadEpoch,
     safeLoadItemOfferHelperNull,
-    safeSetUpcomingItemActiveSwap,
     safeNewItemOffer,
     safeLoadActiveNuggItemSwap,
     safeLoadItem,
@@ -13,6 +12,8 @@ import {
     safeLoadNuggItemHelper,
     safeLoadProtocol,
     safeSetNuggActiveItemSwap,
+    safeSetItemActiveSwap,
+    safeSetNuggItemActiveSwap,
 } from '../safeload';
 import { wethToUsdc } from '../uniswap';
 import { bigi, bigs, makeIncrementX64, mask, MAX_UINT160, panicFatal } from '../utils';
@@ -111,12 +112,13 @@ function _offerCommitItem(
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
 
-    safeSetUpcomingItemActiveSwap(item, itemswap);
+    safeSetItemActiveSwap(item, itemswap);
+    safeSetNuggItemActiveSwap(nuggItem, itemswap);
 
-    const __s = epoch._upcomingActiveItemSwaps as string[];
-    __s.push(itemswap.id as string);
-    epoch._upcomingActiveItemSwaps = __s as string[];
-    epoch.save();
+    // const __s = epoch._upcomingActiveItemSwaps as string[];
+    // __s.push(itemswap.id as string);
+    // epoch._upcomingActiveItemSwaps = __s as string[];
+    // epoch.save();
 
     // if (item.activeSwap !== null) {
     //     log.debug("a",[])

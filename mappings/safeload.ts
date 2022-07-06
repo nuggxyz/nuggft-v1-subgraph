@@ -199,11 +199,8 @@ export function safeNewActiveNuggSnapshot(
         curr = NuggSnapshot.load(nugg.activeSnapshot as string);
     }
 
-    log.info('b-A', []);
     let num = 0;
     if (curr !== null) {
-        log.info('b-B', []);
-
         num = curr.snapshotNum + 1;
         // let missmatch = false;
 
@@ -225,7 +222,6 @@ export function safeNewActiveNuggSnapshot(
 
         // if (!missmatch)
     }
-    log.info('b-C', []);
 
     const next = new NuggSnapshot(`${nugg.id}-${num.toString()}`);
     next.nugg = nugg.id;
@@ -368,24 +364,24 @@ export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
     item.save();
 }
 
-export function safeSetUpcomingItemActiveSwap(item: Item, itemswap: ItemSwap): void {
-    // let _item = safeLoadItem(BigInt.fromString(item));
-    item.upcomingActiveSwap = itemswap.id;
-    item.protocol = '0x42069';
-    item.save();
-}
+// export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
+//     // let _item = safeLoadItem(BigInt.fromString(item));
+//     item.activeSwap = itemswap.id;
+//     item.protocol = '0x42069';
+//     item.save();
+// }
 
-export function unsafeIncrementItemActiveSwap(_item: string): void {
-    const item = safeLoadItem(BigInt.fromString(_item));
-    item.activeSwap = item.upcomingActiveSwap;
-    item.upcomingActiveSwap = null;
-    if (item.activeSwap === null) {
-        item.protocol = null;
-    } else {
-        item.protocol = '0x42069';
-    }
-    item.save();
-}
+// export function unsafeIncrementItemActiveSwap(_item: string): void {
+//     const item = safeLoadItem(BigInt.fromString(_item));
+//     item.activeSwap = item.upcomingActiveSwap;
+//     item.upcomingActiveSwap = null;
+//     if (item.activeSwap === null) {
+//         item.protocol = null;
+//     } else {
+//         item.protocol = '0x42069';
+//     }
+//     item.save();
+// }
 
 // export function unsafeSetItemActiveSwap(item: string, itemswap: ItemSwap): void {
 //     let _item = safeLoadItem(BigInt.fromString(item));
