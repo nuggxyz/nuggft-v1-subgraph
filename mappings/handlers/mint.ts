@@ -1,4 +1,5 @@
 import { Bytes, ethereum, Address, BigInt, log } from '@graphprotocol/graph-ts';
+
 import { safeNewNugg, _mspFromStake } from '../onchain';
 import {
     safeLoadProtocol,
@@ -34,11 +35,13 @@ export function _mint(
 
     const user = safeLoadUser(Address.fromString(nugg.user));
 
-    const swap = safeNewSwapHelper(nugg);
+    const swap = safeNewSwapHelper(nugg, block);
 
     nugg.numSwaps = BigInt.fromString('1');
+    nugg.updatedAt = block.number;
 
-    nugg.save();
+    nugg.save(); // OK
+
     swap.eth = bigi(0); // handled by Mint or Offer
     swap.ethUsd = bigi(0); // handled by Mint or Offer
     swap.numOffers = 0;
@@ -57,8 +60,9 @@ export function _mint(
     swap.bottom = msp;
     swap.bottomUsd = msp;
     swap.startUnix = block.timestamp;
+    swap.updatedAt = block.number;
 
-    swap.save();
+    swap.save(); // OK
 
     const offer = safeNewOfferHelper(swap, user);
 
@@ -70,7 +74,6 @@ export function _mint(
     offer.user = user.id;
     offer.swap = swap.id;
     offer.txhash = hash.toHexString();
-    // offer.save();
 
     // let offer = safeLoadOfferHelper(swap, user);
     swap.top = value;
@@ -79,8 +82,11 @@ export function _mint(
     offer.ethUsd = value;
     offer.incrementX64 = makeIncrementX64(value, msp);
 
-    swap.save();
-    offer.save();
+    swap.save(); // OK
+
+    offer.updatedAt = block.number;
+
+    offer.save(); // OK
 
     log.debug('handleEvent__Mint end', []);
 }

@@ -23,7 +23,7 @@ export function _transfer(
 
     const sender = safeLoadUser(from);
 
-    const receiver = safeLoadUserNull(to);
+    const receiver = safeLoadUserNull(to, block);
 
     // check if we have aready preprocesed this transfer
     /// this should be equal to the !nugg.pendingClaim check
@@ -41,10 +41,13 @@ export function _transfer(
 
         nugg.user = receiver.id;
         nugg.lastUser = sender.id;
+        nugg.updatedAt = block.number;
+        receiver.updatedAt = block.number;
+        sender.updatedAt = block.number;
 
-        receiver.save();
-        nugg.save();
-        sender.save();
+        receiver.save(); // OK
+        nugg.save(); // OK
+        sender.save(); // OK
 
         // cacheDotnugg(nugg, 0);
     } else {
@@ -53,8 +56,9 @@ export function _transfer(
     }
 
     nugg.lastTransfer = BigInt.fromString(proto.epoch).toI32();
+    nugg.updatedAt = block.number;
 
-    nugg.save();
+    nugg.save(); // OK
 
     log.info('handleEvent__Transfer end', []);
 

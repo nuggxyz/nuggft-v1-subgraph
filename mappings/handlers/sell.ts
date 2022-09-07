@@ -31,7 +31,8 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
         swap.bottomUsd = wethToUsdc(agency__eth);
         swap.top = agency__eth;
         swap.topUsd = wethToUsdc(agency__eth);
-        swap.save();
+        swap.updatedAt = event.block.number;
+        swap.save(); // OK
 
         const user = safeLoadUser(Address.fromString(swap.owner));
 
@@ -42,8 +43,9 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
         offer.txhash = event.transaction.hash.toHexString();
         offer.incrementX64 = BigInt.fromString('0');
         offer.epoch = proto.epoch;
+        offer.updatedAt = event.block.number;
 
-        offer.save();
+        offer.save(); // OK
         log.info('handleEvent__Sell end', []);
 
         return;
@@ -51,7 +53,7 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
 
     const user = safeLoadUser(Address.fromString(nugg.user));
 
-    const swap = safeNewSwapHelper(nugg);
+    const swap = safeNewSwapHelper(nugg, event.block);
 
     swap.top = agency__eth;
     swap.topUsd = wethToUsdc(agency__eth);
@@ -65,12 +67,12 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
     swap.numOffers = 0;
 
     swap.ethUsd = bigi(0);
+    swap.updatedAt = event.block.number;
+    swap.save(); // OK
 
-    swap.save();
+    safeSetNuggActiveSwap(nugg, swap, event.block);
 
-    safeSetNuggActiveSwap(nugg, swap);
-
-    safeSetUserActiveSwap(user, nugg, swap);
+    safeSetUserActiveSwap(user, nugg, swap, event.block);
 
     const offer = safeNewOfferHelper(swap, user);
 
@@ -85,8 +87,8 @@ export function _sell(event: ethereum.Event, agency: BigInt, tokenId: i32): void
     offer.epoch = proto.epoch;
 
     offer.txhash = event.transaction.hash.toHexString();
-
-    offer.save();
+    offer.updatedAt = event.block.number;
+    offer.save(); // OK
 
     // updatedStakedSharesAndEth();
 

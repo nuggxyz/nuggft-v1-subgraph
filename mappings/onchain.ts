@@ -48,8 +48,9 @@ export function getPremints(
         const nugg = safeNewNugg(bigi(i), owner.id, bigi(1), event.block);
 
         nugg.pendingClaim = true;
+        nugg.updatedAt = event.block.number;
 
-        nugg.save();
+        nugg.save(); // OK
 
         const agency = bigi(1).leftShift(254).plus(bighs(owner.id));
 
@@ -100,10 +101,11 @@ export function safeNewNugg(
     loaded._items = [];
     loaded._displayed = [];
     loaded.live = false;
+    loaded.updatedAt = block.number;
 
-    loaded.save();
+    loaded.save(); // OK
 
-    safeAddNuggToProtcol();
+    safeAddNuggToProtcol(block);
 
     loaded = updateProof(loaded, bigi(0), true, block);
 
@@ -112,7 +114,7 @@ export function safeNewNugg(
     return loaded;
 }
 
-export function update__iloop(proto: Protocol | null): Protocol {
+export function update__iloop(proto: Protocol | null, block: ethereum.Block): Protocol {
     log.info('handleEvent__Write start ', []);
 
     if (proto == null) proto = safeLoadProtocol();
@@ -127,13 +129,14 @@ export function update__iloop(proto: Protocol | null): Protocol {
     }
 
     proto.iloop = res.value.toHexString();
+    proto.updatedAt = block.number;
 
-    proto.save();
+    proto.save(); // OK
 
     return proto;
 }
 
-export function update__tloop(proto: Protocol | null): Protocol {
+export function update__tloop(proto: Protocol | null, block: ethereum.Block): Protocol {
     log.info('handleEvent__Write start ', []);
 
     if (proto == null) proto = safeLoadProtocol();
@@ -148,34 +151,14 @@ export function update__tloop(proto: Protocol | null): Protocol {
     }
 
     proto.tloop = res.value.toHexString();
+    proto.updatedAt = block.number;
 
-    proto.save();
+    proto.save(); // OK
 
     return proto;
 }
 
-// export function update__sloop(proto: Protocol | null): Protocol {
-//     log.info('handleEvent__Write start ', []);
-
-//     if (proto == null) proto = safeLoadProtocol();
-
-//     const xnuggftv1 = xNuggftV1.bind(addrs(proto.xnuggftv1));
-
-//     const res = xnuggftv1.try_sloop();
-
-//     if (res.reverted) {
-//         log.error('xnuggftv1.sloop() reverted', []);
-//         return proto;
-//     }
-
-//     proto.sloop = res.value.toHexString();
-
-//     proto.save();
-
-//     return proto;
-// }
-
-export function getItemURIs(xnuggftAddress: Address): void {
+export function getItemURIs(xnuggftAddress: Address, block: ethereum.Block): void {
     log.info('handleEvent__Write start ', []);
 
     const xnuggftv1 = xNuggftV1.bind(xnuggftAddress);
@@ -187,7 +170,7 @@ export function getItemURIs(xnuggftAddress: Address): void {
             const callResult = xnuggftv1.try_imageSVG(bigi(itemId));
             const rarityResult = xnuggftv1.try_rarity(bigi(itemId));
 
-            const item = safeNewItem(bigi(itemId));
+            const item = safeNewItem(bigi(itemId), block);
             item.count = bigi(0);
             item.dotnuggRawCache = callResult.reverted ? 'ERROR' : callResult.value;
 
@@ -195,10 +178,12 @@ export function getItemURIs(xnuggftAddress: Address): void {
             item.position = bigi(j);
             item.idnum = itemId;
             item.rarityX16 = rarityResult.reverted ? bigi(0) : bigi(rarityResult.value);
-            item.save();
+            item.updatedAt = block.number;
 
-            if (!callResult.reverted) safeSetNewActiveItemSnapshot(item, callResult.value);
-            else safeSetNewActiveItemSnapshot(item, 'ERROR');
+            item.save(); // OK
+
+            if (!callResult.reverted) safeSetNewActiveItemSnapshot(item, callResult.value, block);
+            else safeSetNewActiveItemSnapshot(item, 'ERROR', block);
         }
     }
     log.info('handleEvent__Write end ', []);
@@ -236,11 +221,15 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
                 ]);
                 snap.chunk = 'ERROR';
                 snap.chunkError = true;
-                snap.save();
+                snap.updatedAt = blocknum;
+
+                snap.save(); // OK
 
                 nugg.dotnuggRawCache = 'ERROR';
                 nugg.activeSnapshot = snap.id;
-                nugg.save();
+                nugg.updatedAt = blocknum;
+
+                nugg.save(); // OK
 
                 return nugg;
             }
@@ -252,25 +241,30 @@ export function cacheDotnugg(nugg: Nugg, blocknum: BigInt): Nugg {
     }
 
     nugg.dotnuggRawCache = str;
+    snap.updatedAt = blocknum;
+
+    nugg.updatedAt = blocknum;
 
     snap.chunk = str;
     snap.chunkError = false;
-    snap.save();
+
+    snap.save(); // OK
     nugg.activeSnapshot = snap.id;
 
-    nugg.save();
+    nugg.save(); // OK
     log.info('cacheDotnugg end [Nugg:{},blocknum:{}]', [nugg.id, blocknum.toString()]);
 
     return nugg;
 }
 
-export function updatedStakedSharesAndEth(): void {
+export function updatedStakedSharesAndEth(block: ethereum.Block): void {
     const proto = safeLoadProtocol();
     const nuggft = NuggftV1.bind(Address.fromString(proto.nuggftUser));
     proto.nuggftStakedEth = nuggft.staked();
     proto.nuggftStakedShares = nuggft.shares();
     proto.nuggftStakedEthPerShare = safeDiv(proto.nuggftStakedEth, proto.nuggftStakedShares);
-    proto.save();
+    proto.updatedAt = block.number;
+    proto.save(); // OK
 }
 
 export function updateProof(
@@ -340,14 +334,16 @@ export function updateProof(
 
             tmpFeatureTotals[feature]++;
             item.count = item.count.plus(BigInt.fromString('1'));
-            item.save();
+            item.updatedAt = block.number;
+            item.save(); // OK
         }
 
         // if (_displayed.includes(toCreate[i]))
 
         nuggItem.count = nuggItem.count.plus(BigInt.fromString('1'));
         nuggItem.displayed = false;
-        nuggItem.save();
+        nuggItem.updatedAt = block.number;
+        nuggItem.save(); // OK
     }
 
     for (let i = 0; i < toDelete.length; i++) {
@@ -355,16 +351,18 @@ export function updateProof(
         const nuggItem = safeLoadNuggItemHelper(nugg, item);
         nuggItem.count = nuggItem.count.minus(BigInt.fromString('1'));
         nuggItem.displayed = false;
-        nuggItem.save();
+        nuggItem.updatedAt = block.number;
+        nuggItem.save(); // OK
     }
     nugg._tmp = aWittleBittyHack;
     nugg._items = items;
     nugg.proof = preload;
     nugg._displayed = _displayed;
-
-    nugg.save();
+    nugg.updatedAt = block.number;
+    nugg.save(); // OK
     proto.featureTotals = tmpFeatureTotals;
-    proto.save();
+    proto.updatedAt = block.number;
+    proto.save(); // OK
 
     for (let i = 0; i < items.length; i++) {
         const item = safeLoadItem(bigi(items[i]));
@@ -375,13 +373,15 @@ export function updateProof(
                 nuggItem.displayed = true;
                 nuggItem.displayedSinceBlock = block.number;
                 nuggItem.displayedSinceUnix = block.timestamp;
-                nuggItem.save();
+                nuggItem.updatedAt = block.number;
+                nuggItem.save(); // OK
             }
         } else if (nuggItem.displayed) {
             nuggItem.displayed = false;
             nuggItem.displayedSinceBlock = null;
             nuggItem.displayedSinceUnix = null;
-            nuggItem.save();
+            nuggItem.updatedAt = block.number;
+            nuggItem.save(); // OK
         }
     }
     log.debug('updateProof OUT args:[{}]', [nugg.id]);

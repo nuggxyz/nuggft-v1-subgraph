@@ -53,7 +53,8 @@ export function _sellItem(
         swap.topUsd = agency__eth;
         swap.bottom = wethToUsdc(agency__eth);
         swap.bottomUsd = wethToUsdc(agency__eth);
-        swap.save();
+        swap.updatedAt = event.block.number;
+        swap.save(); // OK
 
         const itemoffer = safeLoadItemOfferHelper(swap, sellingNugg);
 
@@ -61,15 +62,16 @@ export function _sellItem(
         itemoffer.ethUsd = wethToUsdc(agency__eth);
         itemoffer.txhash = event.transaction.hash.toHexString();
         itemoffer.epoch = proto.epoch;
+        itemoffer.updatedAt = event.block.number;
 
-        itemoffer.save();
+        itemoffer.save(); // OK
 
         log.debug('handleEvent__SellItem end EARLY', []);
 
         return;
     }
 
-    const itemSwap = safeNewItemSwap(nuggitem);
+    const itemSwap = safeNewItemSwap(nuggitem, event.block);
 
     itemSwap.sellingNuggItem = nuggitem.id;
     itemSwap.sellingItem = nuggitem.item;
@@ -83,11 +85,12 @@ export function _sellItem(
     itemSwap.leader = sellingNugg.id;
     itemSwap.numOffers = 0;
     itemSwap.nextDelegateType = 'Commit';
-    itemSwap.save();
+    itemSwap.updatedAt = event.block.number;
+    itemSwap.save(); // OK
 
-    safeSetNuggItemActiveSwap(nuggitem, itemSwap);
+    safeSetNuggItemActiveSwap(nuggitem, itemSwap, event.block);
 
-    safeSetNuggActiveItemSwap(sellingNugg, nuggitem, itemSwap);
+    safeSetNuggActiveItemSwap(sellingNugg, nuggitem, itemSwap, event.block);
 
     const itemoffer = safeNewItemOffer(itemSwap, sellingNugg);
 
@@ -100,8 +103,8 @@ export function _sellItem(
     itemoffer.txhash = event.transaction.hash.toHexString();
     itemoffer.incrementX64 = BigInt.fromString('0');
     itemoffer.epoch = proto.epoch;
-
-    itemoffer.save();
+    itemoffer.updatedAt = event.block.number;
+    itemoffer.save(); // OK
     log.debug('handleEvent__SellItem a', []);
 
     sellingNugg = updateProof(sellingNugg, proof, false, event.block);

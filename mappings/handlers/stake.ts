@@ -1,9 +1,9 @@
-import { log, BigInt } from '@graphprotocol/graph-ts';
+import { log, BigInt, ethereum } from '@graphprotocol/graph-ts';
 
 import { safeLoadProtocol } from '../safeload';
 import { mask, safeDiv } from '../utils';
 
-export function _stake(agency: BigInt): void {
+export function _stake(agency: BigInt, block: ethereum.Block): void {
     // let copy = Bytes.fromHexString(cache.toHexString());
     // let agency = b32toBigEndian(copy);
 
@@ -24,8 +24,9 @@ export function _stake(agency: BigInt): void {
     proto.nuggftStakedEth = eth;
     proto.nuggftStakedShares = shares;
     proto.nuggftStakedEthPerShare = safeDiv(eth, shares);
+    proto.updatedAt = block.number;
 
-    proto.save();
+    proto.save(); // OK
 
     log.info('handleEvent__Stake end', []);
 }

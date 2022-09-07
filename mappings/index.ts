@@ -120,11 +120,15 @@ export function handleEvent__Genesis(event: Genesis): void {
     epoch._activeSwaps = [];
     epoch._upcomingActiveItemSwaps = [];
     epoch._activeNuggItemSwaps = [];
-    epoch.save();
+    epoch.updatedAt = event.block.number;
+
+    epoch.save(); // OK
 
     let nil = new User('0x0000000000000000000000000000000000000000');
     nil.shares = bigi(0);
-    nil.save();
+    nil.updatedAt = event.block.number;
+
+    nil.save(); // OK
     proto.nextEpoch = epoch.id;
     proto.lastEpoch = epoch.id;
     proto.epoch = epoch.id;
@@ -138,32 +142,39 @@ export function handleEvent__Genesis(event: Genesis): void {
     proto.nuggsPendingRemoval = [];
     proto.dotnuggV1Processor = getDotnuggUserId(event.address).toHexString();
     proto.nuggsNotCached = [];
+    proto.updatedAt = event.block.number;
 
-    proto.save();
+    proto.save(); // OK
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    let xnuggftv1 = safeNewUser(event.params.xnuggftv1);
+    let xnuggftv1 = safeNewUser(event.params.xnuggftv1, event.block);
     xnuggftv1.shares = bigi(0);
-    xnuggftv1.save();
+    xnuggftv1.updatedAt = event.block.number;
+
+    xnuggftv1.save(); // OK
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    let dotnuggv1 = safeNewUser(event.params.dotnugg);
+    let dotnuggv1 = safeNewUser(event.params.dotnugg, event.block);
     dotnuggv1.shares = bigi(0);
-    dotnuggv1.save();
+    dotnuggv1.updatedAt = event.block.number;
+
+    dotnuggv1.save(); // OK
 
     // safeNewUser loads Protocol, so this needs to be below proto.save()
-    let nuggft = safeNewUser(event.address);
+    let nuggft = safeNewUser(event.address, event.block);
     nuggft.shares = bigi(0);
-    nuggft.save();
+    nuggft.updatedAt = event.block.number;
+
+    nuggft.save(); // OK
     proto.nuggftUser = nuggft.id;
 
     proto.xnuggftv1 = xnuggftv1.id;
     proto.dotnuggv1 = dotnuggv1.id;
     // proto.xnuggftv1 = xnuggftv1.id;
 
-    proto.save();
+    proto.save(); // OK
 
-    getItemURIs(event.params.xnuggftv1);
+    getItemURIs(event.params.xnuggftv1, event.block);
 
     proto = onEpochGenesis(
         proto,
@@ -175,18 +186,18 @@ export function handleEvent__Genesis(event: Genesis): void {
 
     getPremints(event, event.address, nuggft, event.block);
 
-    proto = update__iloop(proto);
-    proto = update__tloop(proto);
+    proto = update__iloop(proto, event.block);
+    proto = update__tloop(proto, event.block);
 
-    proto.save();
+    proto.save(); // OK
 
-    _stake(b32toBigEndian(event.params.stake));
+    _stake(b32toBigEndian(event.params.stake), event.block);
 
     log.info('handleEvent__Genesis end {}', [proto.epoch]);
 }
 
 export function handleEvent__Stake(event: Stake): void {
-    _stake(b32toBigEndian(event.params.stake));
+    _stake(b32toBigEndian(event.params.stake), event.block);
 }
 
 export function handleEvent__Transfer(event: Transfer): void {
@@ -203,9 +214,9 @@ export function handleEvent__OfferMint(event: OfferMint): void {
         inter,
     );
     _rotate(bigi(event.params.tokenId), event.block, event.params.proof, true);
-    _stake(inter);
+    _stake(inter, event.block);
 
-    update__tloop(null);
+    update__tloop(null, event.block);
 }
 
 export function handleEvent__Offer(event: Offer): void {
@@ -218,7 +229,7 @@ export function handleEvent__Offer(event: Offer): void {
         event.block,
         inter,
     );
-    _stake(inter);
+    _stake(inter, event.block);
 }
 
 export function handleEvent__Rotate(event: Rotate): void {
@@ -244,13 +255,18 @@ export function handleEvent__Claim(event: Claim): void {
 
     offer.claimed = true;
     offer.claimer = null;
-    offer.save();
+
+    offer.updatedAt = event.block.number;
+
+    offer.save(); // OK
 
     if (swap.leader == user.id) {
         if (swap.owner == user.id) {
-            safeRemoveNuggActiveSwap(nugg);
+            safeRemoveNuggActiveSwap(nugg, event.block);
             swap.canceledEpoch = BigInt.fromString(proto.epoch);
-            swap.save();
+            swap.updatedAt = event.block.number;
+
+            swap.save(); // OK
         }
     }
 
@@ -267,7 +283,7 @@ export function handleEvent__OfferItem(event: OfferItem): void {
         bigi(event.params.itemId),
     );
 
-    _stake(b32toBigEndian(event.params.stake));
+    _stake(b32toBigEndian(event.params.stake), event.block);
 }
 
 export function handleEvent__ClaimItem(event: ClaimItem): void {
@@ -287,11 +303,13 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
 
     const itemoffer = safeLoadItemOfferHelper(itemswap, buyingNugg);
 
-    safeRemoveNuggItemActiveSwap(nuggitem);
+    safeRemoveNuggItemActiveSwap(nuggitem, event.block);
 
     itemoffer.claimed = true;
 
-    itemoffer.save();
+    itemoffer.updatedAt = event.block.number;
+
+    itemoffer.save(); // OK
 
     const proof = b32toBigEndian(event.params.proof);
 
@@ -306,7 +324,8 @@ export function handleEvent__ClaimItem(event: ClaimItem): void {
             if (item.id == tmp[i]) {
                 tmp.splice(i, 1);
                 buyingNugg._pickups = tmp;
-                buyingNugg.save();
+                buyingNugg.updatedAt = event.block.number;
+                buyingNugg.save(); // OK
                 break;
             }
         }
@@ -336,7 +355,7 @@ export function handleEvent__Loan(event: Loan): void {
 
     const user = safeLoadUser(Address.fromString(nugg.user));
 
-    const loan = safeNewLoanHelper();
+    const loan = safeNewLoanHelper(event.block);
 
     loan.liquidated = false;
     loan.liquidatedForEth = BigInt.fromString('0');
@@ -358,7 +377,7 @@ export function handleEvent__Loan(event: Loan): void {
     loan.feeUsd = BigInt.fromString('0');
     loan.endingEpoch = agency__epoch.plus(LIQUDATION_PERIOD);
 
-    // loan.save();
+    // loan.save(); // OK
 
     // saves
     // updateLoanFromChain(loan);
@@ -368,7 +387,7 @@ export function handleEvent__Loan(event: Loan): void {
     // loan.earned = tmp.value.value3;
     // loan.epochDue = BigInt.fromI32(tmp.value.value4);
 
-    safeSetNuggActiveLoan(nugg, loan);
+    safeSetNuggActiveLoan(nugg, loan, event.block);
 
     log.info('handleEvent__Loan end', []);
 }
@@ -384,17 +403,18 @@ export function handleEvent__Liquidate(event: Liquidate): void {
 
     const loan = safeLoadLoanHelper(nugg);
 
-    const user = safeLoadUserNull(agency__account);
+    const user = safeLoadUserNull(agency__account, event.block);
 
     loan.liquidated = true;
 
     loan.liquidatedForEth = event.transaction.value;
     loan.liquidatedForUsd = wethToUsdc(loan.liquidatedForEth);
     loan.liquidatedBy = user.id;
+    loan.updatedAt = event.block.number;
 
-    loan.save();
+    loan.save(); // OK
 
-    safeRemoveNuggActiveLoan(nugg);
+    safeRemoveNuggActiveLoan(nugg, event.block);
 
     log.info('handlePayoff', []);
 }
@@ -419,8 +439,9 @@ export function handleEvent__Rebalance(event: Rebalance): void {
     loan.eth = agency__eth;
     loan.epoch = agency__epoch.toString();
     loan.endingEpoch = agency__epoch.plus(LIQUDATION_PERIOD);
+    loan.updatedAt = event.block.number;
 
-    loan.save();
+    loan.save(); // OK
 
     log.info('handleRebalance', []);
 }

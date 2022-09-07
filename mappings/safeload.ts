@@ -1,4 +1,4 @@
-import { Address, store, log, BigInt } from '@graphprotocol/graph-ts';
+import { Address, store, log, BigInt, ethereum } from '@graphprotocol/graph-ts';
 
 import {
     Epoch,
@@ -45,7 +45,7 @@ export function safeLoadEpoch(id: BigInt): Epoch {
     return epoch as Epoch;
 }
 
-export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
+export function safeRemoveNuggFromProtcol(nugg: Nugg, block: ethereum.Block): void {
     const proto = safeLoadProtocol();
     proto.totalNuggs = proto.totalNuggs.minus(bigi(1));
     proto.totalSwaps = proto.totalSwaps.minus(bigi(1));
@@ -61,7 +61,8 @@ export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
 
         item.count = item.count.minus(bigi(1));
 
-        item.save();
+        item.updatedAt = block.number;
+        item.save(); // OK
 
         store.remove('NuggItem', `${itm[abc]}-${nugg.id}`);
     }
@@ -69,17 +70,18 @@ export function safeRemoveNuggFromProtcol(nugg: Nugg): void {
     proto.featureTotals = tmpFeatureTotals;
 
     proto.totalItems = proto.totalItems.minus(bigi(itm.length));
-
-    proto.save();
+    proto.updatedAt = block.number;
+    proto.save(); // OK
 
     store.remove('Nugg', nugg.id);
 
     store.remove('Swap', `${nugg.id}-0`);
 }
-export function safeRemoveNuggItemFromProtcol(): void {
+export function safeRemoveNuggItemFromProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalItems = loaded.totalItems.minus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
 
 export function safeNewEpoch(id: BigInt): Epoch {
@@ -87,38 +89,44 @@ export function safeNewEpoch(id: BigInt): Epoch {
     epoch.idnum = id;
     return epoch;
 }
-export function safeAddNuggToProtcol(): void {
+export function safeAddNuggToProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalNuggs = loaded.totalNuggs.plus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
 
-export function safeAddUserToProtcol(): void {
+export function safeAddUserToProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalUsers = loaded.totalUsers.plus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
-export function safeAddSwapToProtcol(): void {
+export function safeAddSwapToProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalSwaps = loaded.totalSwaps.plus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
 
-export function safeAddLoanToProtcol(): void {
+export function safeAddLoanToProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalLoans = loaded.totalLoans.plus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
-export function safeAddItemToProtcol(): void {
+export function safeAddItemToProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalItems = loaded.totalItems.plus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
 
-export function safeAddItemSwapToProtcol(): void {
+export function safeAddItemSwapToProtcol(block: ethereum.Block): void {
     const loaded = safeLoadProtocol();
     loaded.totalItemSwaps = loaded.totalItemSwaps.plus(bigi(1));
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 }
 
 export function safeLoadProtocol(): Protocol {
@@ -146,40 +154,40 @@ export function safeLoadNuggNull(id: BigInt): Nugg | null {
     return loaded;
 }
 
-// export function safeRemoveNuggItemActiveSwap(nuggItem: NuggItem): void {
-//     nuggItem.activeSwap = null;
-//     nuggItem.protocol = null;
-//     nuggItem.save();
-// }
-
-export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap): Nugg {
+export function safeSetNuggActiveSwap(nugg: Nugg, swap: Swap, block: ethereum.Block): Nugg {
     nugg.activeSwap = swap.id;
     nugg.protocol = '0x42069';
     nugg.lastPrice = swap.eth;
-    nugg.save();
+    nugg.updatedAt = block.number;
+    nugg.save(); // OK
     return nugg;
 }
 
-export function safeSetNuggActiveLoan(nugg: Nugg, loan: Loan): void {
+export function safeSetNuggActiveLoan(nugg: Nugg, loan: Loan, block: ethereum.Block): void {
     nugg.activeLoan = loan.id;
     loan.protocol = '0x42069';
-    nugg.save();
-    loan.save();
+    nugg.updatedAt = block.number;
+    nugg.save(); // OK
+
+    loan.updatedAt = block.number;
+    loan.save(); // OK
 }
 
-export function safeRemoveNuggActiveSwap(nugg: Nugg): Nugg {
+export function safeRemoveNuggActiveSwap(nugg: Nugg, block: ethereum.Block): Nugg {
     nugg.activeSwap = null;
     nugg.protocol = null;
     nugg.live = false;
-    nugg.save();
+    nugg.updatedAt = block.number;
+    nugg.save(); // OK
 
     return nugg;
 }
 
-export function safeRemoveNuggActiveLoan(nugg: Nugg): void {
+export function safeRemoveNuggActiveLoan(nugg: Nugg, block: ethereum.Block): void {
     nugg.activeLoan = null;
     nugg.protocol = null;
-    nugg.save();
+    nugg.updatedAt = block.number;
+    nugg.save(); // OK
 }
 
 export function safeNewActiveNuggSnapshot(
@@ -234,22 +242,17 @@ export function safeNewActiveNuggSnapshot(
     next.proof = nugg.proof;
     next.chunkError = false;
     next.chunk = 'pending';
-    next.save();
+    next.updatedAt = blocknum;
+    next.save(); // OK
 
     return next;
 }
 
-// export function safeSetNewDotnuggChunk(version: string, index: u32, data: string): void {
-//     let a = new DotnuggChunk(version + '-' + index.toString());
-
-//     a.data = data;
-
-//     a.index = index;
-
-//     a.save();
-// }
-
-export function safeSetNewActiveItemSnapshot(item: Item, data: string): Item {
+export function safeSetNewActiveItemSnapshot(
+    item: Item,
+    data: string,
+    block: ethereum.Block,
+): Item {
     const id = `${item.id}-0`;
 
     const next = new ItemSnapshot(id);
@@ -257,7 +260,8 @@ export function safeSetNewActiveItemSnapshot(item: Item, data: string): Item {
     next.item = item.id;
     next.chunkError = !!data.startsWith('ERROR');
     next.chunk = data;
-    next.save();
+    next.updatedAt = block.number;
+    next.save(); // OK
 
     // let chunk = new DotnuggItemChunk(id + '-' + '0');
 
@@ -266,13 +270,13 @@ export function safeSetNewActiveItemSnapshot(item: Item, data: string): Item {
     // chunk.data = data;
 
     item.activeSnapshot = next.id;
-
-    item.save();
+    item.updatedAt = block.number;
+    item.save(); // OK
 
     return item;
 }
 
-export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
+export function safeNewNuggNoCache(id: BigInt, userId: string, block: ethereum.Block): Nugg {
     const loaded = new Nugg(id.toString());
     loaded.idnum = id.toI32();
     loaded.burned = false;
@@ -288,9 +292,10 @@ export function safeNewNuggNoCache(id: BigInt, userId: string): Nugg {
     loaded._pickups = [];
 
     loaded.live = false;
-    loaded.save();
+    loaded.updatedAt = block.number;
+    loaded.save(); // OK
 
-    safeAddNuggToProtcol();
+    safeAddNuggToProtcol(block);
 
     return loaded;
 }
@@ -310,22 +315,23 @@ export function safeLoadUser(userId: Address): User {
     return loaded as User;
 }
 
-export function safeNewUser(userId: Address): User {
+export function safeNewUser(userId: Address, block: ethereum.Block): User {
     const id = `${userId.toHexString()}`;
     // 0xf0dcdec50135504e000000000000000000000040
     const loaded = new User(id);
-    safeAddUserToProtcol();
+    safeAddUserToProtcol(block);
     return loaded;
 }
 
-export function safeLoadUserNull(userId: Address): User {
+export function safeLoadUserNull(userId: Address, block: ethereum.Block): User {
     const id = `${userId.toHexString()}`;
     let loaded = User.load(id);
 
     if (loaded == null) {
-        loaded = safeNewUser(userId);
+        loaded = safeNewUser(userId, block);
         loaded.shares = BigInt.fromString('0');
-        loaded.save();
+        loaded.updatedAt = block.number;
+        loaded.save(); // OK
     }
     return loaded;
 }
@@ -343,65 +349,47 @@ export function safeLoadItemNull(id: BigInt): Item | null {
     return loaded;
 }
 
-export function safeNewItem(id: BigInt): Item {
+export function safeNewItem(id: BigInt, block: ethereum.Block): Item {
     const loaded = new Item(`${id.toString()}`);
     loaded.live = false;
-    safeAddItemToProtcol();
+    safeAddItemToProtcol(block);
     return loaded as Item;
 }
 
-export function safeSetNuggItemActiveSwap(nuggitem: NuggItem, itemswap: ItemSwap): void {
+export function safeSetNuggItemActiveSwap(
+    nuggitem: NuggItem,
+    itemswap: ItemSwap,
+    block: ethereum.Block,
+): void {
     nuggitem.activeSwap = itemswap.id;
     nuggitem.protocol = '0x42069';
-    nuggitem.save();
+    nuggitem.updatedAt = block.number;
+    nuggitem.save(); // OK
 }
 
-export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
+export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap, block: ethereum.Block): void {
     // let _item = safeLoadItem(BigInt.fromString(item));
     item.activeSwap = itemswap.id;
     item.protocol = '0x42069';
     item.live = true;
-    item.save();
+    item.updatedAt = block.number;
+    item.save(); // OK
 }
 
-// export function safeSetItemActiveSwap(item: Item, itemswap: ItemSwap): void {
-//     // let _item = safeLoadItem(BigInt.fromString(item));
-//     item.activeSwap = itemswap.id;
-//     item.protocol = '0x42069';
-//     item.save();
-// }
-
-// export function unsafeIncrementItemActiveSwap(_item: string): void {
-//     const item = safeLoadItem(BigInt.fromString(_item));
-//     item.activeSwap = item.upcomingActiveSwap;
-//     item.upcomingActiveSwap = null;
-//     if (item.activeSwap === null) {
-//         item.protocol = null;
-//     } else {
-//         item.protocol = '0x42069';
-//     }
-//     item.save();
-// }
-
-// export function unsafeSetItemActiveSwap(item: string, itemswap: ItemSwap): void {
-//     let _item = safeLoadItem(BigInt.fromString(item));
-//     _item.activeSwap = itemswap.id;
-//     _item.protocol = '0x42069';
-//     _item.save();
-// }
-
-export function safeRemoveItemActiveSwap(item: Item): void {
+export function safeRemoveItemActiveSwap(item: Item, block: ethereum.Block): void {
     // let _item = safeLoadItem(BigInt.fromString(item));
     item.activeSwap = null;
     item.protocol = null;
     item.live = false;
-    item.save();
+    item.updatedAt = block.number;
+    item.save(); // OK
 }
-export function safeRemoveNuggItemActiveSwap(nuggitem: NuggItem): void {
+export function safeRemoveNuggItemActiveSwap(nuggitem: NuggItem, block: ethereum.Block): void {
     // let acitveswap = nuggitem.activeSwap;
     nuggitem.activeSwap = null;
     nuggitem.protocol = null;
-    nuggitem.save();
+    nuggitem.updatedAt = block.number;
+    nuggitem.save(); // OK
 }
 export function unsafeLoadNuggItem(id: string): NuggItem {
     const loaded = NuggItem.load(`${id}`);
@@ -457,17 +445,18 @@ export function safeLoadActiveSwap(nugg: Nugg): Swap {
 //     return swap as Swap;
 // }
 
-export function safeNewSwapHelper(nugg: Nugg): Swap {
+export function safeNewSwapHelper(nugg: Nugg, block: ethereum.Block): Swap {
     const currNum = nugg.numSwaps;
     nugg.numSwaps = nugg.numSwaps.plus(bigi(1));
-    nugg.save();
+    nugg.updatedAt = block.number;
+    nugg.save(); // OK
 
     const id = `${nugg.id}-${currNum.toString()}`;
     const swap = new Swap(id);
-    // swap.endingEpoch = endingEpoch;
+    // swap.endingEpocerthgh = endingEpoch;
     swap.num = currNum;
 
-    safeAddSwapToProtcol();
+    safeAddSwapToProtcol(block);
     return swap as Swap;
 }
 
@@ -490,11 +479,11 @@ export function unsafeLoadSwap(id: string): Swap {
 //     return safeLoadNuggItem(id);
 // }
 
-export function safeNewLoanHelper(): Loan {
+export function safeNewLoanHelper(block: ethereum.Block): Loan {
     const loaded = safeLoadProtocol();
     const id = loaded.totalLoans.toString();
     const loan = new Loan(id);
-    safeAddLoanToProtcol();
+    safeAddLoanToProtcol(block);
     return loan as Loan;
 }
 
@@ -545,25 +534,31 @@ export function unsafeLoadItemSwap(id: string): ItemSwap {
 //     return ItemSwap.load(id);
 // }
 
-export function safeNewItemSwap(sellingNuggItem: NuggItem): ItemSwap {
+export function safeNewItemSwap(sellingNuggItem: NuggItem, block: ethereum.Block): ItemSwap {
     const currNum = sellingNuggItem.numSwaps;
     sellingNuggItem.numSwaps = sellingNuggItem.numSwaps.plus(bigi(1));
-    sellingNuggItem.save();
+    sellingNuggItem.updatedAt = block.number;
+    sellingNuggItem.save(); // OK
 
     const id = `${sellingNuggItem.id}-${currNum.toString()}`;
 
-    safeAddItemSwapToProtcol();
+    safeAddItemSwapToProtcol(block);
     const swap = new ItemSwap(id);
     swap.num = sellingNuggItem.numSwaps;
     swap.numOffers = 0;
 
     // swap.endingEpoch = endingEpoch;
     sellingNuggItem.activeSwap = swap.id;
-    sellingNuggItem.save();
-    // swap.save();
+
+    sellingNuggItem.save(); // OK
     return swap;
 }
-export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void {
+export function safeSetUserActiveSwap(
+    user: User,
+    nugg: Nugg,
+    swap: Swap,
+    block: ethereum.Block,
+): void {
     // require user && swap
     if (user == null) {
         panicFatal('safeSetUserActiveSwap: user CANNOT BE NULL,');
@@ -581,7 +576,8 @@ export function safeSetUserActiveSwap(user: User, nugg: Nugg, swap: Swap): void 
     if (loaded == null) {
         loaded = new UserActiveSwap(id);
         loaded.activeId = swap.id;
-        loaded.save();
+        loaded.updatedAt = block.number;
+        loaded.save(); // OK
     } else if (loaded.activeId != swap.id) {
         panicFatal(
             'safeSetUserActiveSwap: new useractiveswap trying to be set when old still exists',
@@ -616,7 +612,12 @@ export function safeGetAndDeleteUserActiveSwap(user: User, nugg: Nugg): Swap {
     return swap as Swap;
 }
 /// ///////////////////////////////
-export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: ItemSwap): void {
+export function safeSetNuggActiveItemSwap(
+    nugg: Nugg,
+    nuggItem: NuggItem,
+    swap: ItemSwap,
+    block: ethereum.Block,
+): void {
     // require nugg && swap
     if (nugg == null) {
         panicFatal('safeSetNuggActiveItemSwap: nugg CANNOT BE NULL,');
@@ -635,14 +636,9 @@ export function safeSetNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggItem, swap: 
     if (loaded == null) {
         loaded = new NuggActiveItemSwap(id);
         loaded.activeId = swap.id;
-        loaded.save();
+        loaded.updatedAt = block.number;
+        loaded.save(); // OK
     } else if (loaded.activeId != swap.id) {
-        // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
-
-        // loaded = new NuggActiveItemSwap(id);
-        // loaded.activeId = swap.id;
-        // loaded.save();
-
         // log.warning('I SHOULD HAVE FAILED, [id:{}] [swap.id:{}]', [id, swap.id]);
         panicFatal(
             'safeSetNuggActiveItemSwap: new nuggactiveswap trying to be set when old still exists',
@@ -677,7 +673,12 @@ export function safeGetAndDeleteNuggActiveItemSwap(nugg: Nugg, nuggItem: NuggIte
     return swap as ItemSwap;
 }
 
-export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): Offer {
+export function safeLoadOfferHelperNull(
+    swap: Swap,
+    user: User,
+    hash: string,
+    block: ethereum.Block,
+): Offer {
     const proto = safeLoadProtocol();
     let loaded = Offer.load(`${swap.id}-${user.id}`);
     if (loaded == null) {
@@ -692,7 +693,8 @@ export function safeLoadOfferHelperNull(swap: Swap, user: User, hash: string): O
         loaded.txhash = hash;
         loaded.incrementX64 = bigi(0);
         loaded.epoch = proto.epoch;
-        loaded.save();
+        loaded.updatedAt = block.number;
+        loaded.save(); // OK
     }
     return loaded;
 }

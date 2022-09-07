@@ -42,13 +42,13 @@ export function _offerItem(
 
     const itemswap = safeLoadActiveNuggItemSwap(nuggitem);
 
-    safeSetNuggActiveItemSwap(buyingNugg, nuggitem, itemswap);
+    safeSetNuggActiveItemSwap(buyingNugg, nuggitem, itemswap, event.block);
 
     item.lastPrice = agency__eth;
     item.lastOfferEpoch = event.block.number;
     item.lastOfferEpoch = bigs(proto.epoch);
-
-    item.save();
+    item.updatedAt = event.block.number;
+    item.save(); // OK
 
     if (itemswap.nextDelegateType == 'Commit') {
         _offerCommitItem(
@@ -72,6 +72,7 @@ export function _offerItem(
             nuggitem,
             itemswap,
             agency__eth,
+            event.block,
         );
     } else {
         panicFatal('itemswap.nextDelegateType should be Commit or Offer');
@@ -99,7 +100,8 @@ function _offerCommitItem(
     itemswap.startingEpoch = proto.epoch;
     itemswap.endingEpoch = BigInt.fromString(epoch.id);
     // itemswap.id = nuggitem.id.concat('-').concat(epoch.id);
-    itemswap.save();
+    itemswap.updatedAt = block.number;
+    itemswap.save(); // OK
 
     let _s = epoch._activeItemSwaps as string[];
     _s.push(itemswap.id as string);
@@ -108,17 +110,18 @@ function _offerCommitItem(
     _s = epoch._activeNuggItemSwaps as string[];
     _s.push(itemswap.id as string);
     epoch._activeNuggItemSwaps = _s as string[];
-    epoch.save();
+    epoch.updatedAt = block.number;
+    epoch.save(); // OK
 
     let itemoffer = safeLoadItemOfferHelperNull(itemswap, buyerNugg);
 
-    safeSetItemActiveSwap(item, itemswap);
-    safeSetNuggItemActiveSwap(nuggItem, itemswap);
+    safeSetItemActiveSwap(item, itemswap, block);
+    safeSetNuggItemActiveSwap(nuggItem, itemswap, block);
 
     // const __s = epoch._upcomingActiveItemSwaps as string[];
     // __s.push(itemswap.id as string);
     // epoch._upcomingActiveItemSwaps = __s as string[];
-    // epoch.save();
+    // epoch.save(); // OK
 
     // if (item.activeSwap !== null) {
     //     log.debug("a",[])
@@ -132,7 +135,7 @@ function _offerCommitItem(
     //             let _s = epoch._upcomingActiveItemSwaps as string[];
     //             _s.push(itemswap.id as string);
     //             epoch._upcomingActiveItemSwaps = _s as string[];
-    //             epoch.save();
+    //             epoch.save(); // OK
     //         } else {
     //             safeSetItemActiveSwap(item, itemswap);
     //         }
@@ -153,7 +156,8 @@ function _offerCommitItem(
     itemoffer.txhash = hash;
     itemoffer.incrementX64 = bigi(0);
     itemoffer.epoch = proto.epoch;
-    itemoffer.save();
+    itemoffer.updatedAt = block.number;
+    itemoffer.save(); // OK
 
     itemswap.startUnix = block.timestamp;
     itemswap.top = itemoffer.eth;
@@ -162,8 +166,9 @@ function _offerCommitItem(
     itemswap.commitBlock = block.number;
 
     itemswap.leader = buyerNugg.id;
+    itemswap.updatedAt = block.number;
 
-    itemswap.save();
+    itemswap.save(); // OK
 
     log.debug('_offerCommitItem end', []);
 }
@@ -177,6 +182,7 @@ function _offerOfferItem(
     nuggItem: NuggItem,
     itemswap: ItemSwap,
     eth: BigInt,
+    block: ethereum.Block,
 ): void {
     log.debug('_offerOfferItem start', []);
     log.debug('_offerOfferItem start', []);
@@ -195,8 +201,9 @@ function _offerOfferItem(
         itemoffer.incrementX64 = bigi(0);
 
         itemoffer.epoch = proto.epoch;
+        itemoffer.updatedAt = block.number;
 
-        itemoffer.save();
+        itemoffer.save(); // OK
 
         itemswap.numOffers += 1;
     }
@@ -206,13 +213,15 @@ function _offerOfferItem(
     itemoffer.ethUsd = wethToUsdc(itemoffer.eth);
 
     itemoffer.incrementX64 = makeIncrementX64(itemoffer.eth, itemswap.top);
+    itemoffer.updatedAt = block.number;
 
-    itemoffer.save();
+    itemoffer.save(); // OK
 
     itemswap.top = itemoffer.eth;
     itemswap.topUsd = itemoffer.ethUsd;
     itemswap.leader = buyerNugg.id;
-    itemswap.save();
+    itemswap.updatedAt = block.number;
+    itemswap.save(); // OK
 
     log.debug('handleOffer end', []);
 }

@@ -40,24 +40,25 @@ export function _offer(
 
     const nugg = safeLoadNugg(tokenId);
 
-    const user = safeLoadUserNull(agency__account);
+    const user = safeLoadUserNull(agency__account, block);
 
     const swap = safeLoadActiveSwap(nugg);
 
-    safeSetUserActiveSwap(user, nugg, swap);
+    safeSetUserActiveSwap(user, nugg, swap, block);
 
     nugg.lastPrice = agency__eth;
     nugg.lastOfferBlock = block.number;
     nugg.lastOfferEpoch = bigs(proto.epoch);
     nugg.live = true;
-    nugg.save();
+    nugg.updatedAt = block.timestamp;
+    nugg.save(); // OK
 
     if (swap.nextDelegateType == 'Commit') {
         __offerCommit(hash, proto, user, nugg, swap, agency__eth, stake, block);
     } else if (swap.nextDelegateType == 'Carry') {
-        __offerCarry(hash, proto, user, nugg, swap, agency__eth);
+        __offerCarry(hash, proto, user, nugg, swap, agency__eth, block);
     } else if (swap.nextDelegateType == 'Mint') {
-        __offerMint(hash, proto, user, nugg, swap, agency__eth, stake);
+        __offerMint(hash, proto, user, nugg, swap, agency__eth, stake, block);
     } else {
         log.error('swap.nextDelegateType should be Commit or Offer', [swap.nextDelegateType]);
         log.critical('', []);
@@ -74,6 +75,7 @@ function __offerMint(
     swap: Swap,
     lead: BigInt,
     stake: BigInt,
+    block: ethereum.Block,
 ): void {
     log.info('__offerMint start', []);
 
@@ -89,7 +91,8 @@ function __offerMint(
     }
 
     proto.nuggftStakedShares = proto.nuggftStakedShares.plus(BigInt.fromString('1'));
-    proto.save();
+    proto.updatedAt = block.number;
+    proto.save(); // OK
     swap.bottom = _mspFromStake(stake);
     swap.bottomUsd = wethToUsdc(swap.bottom);
     // swap.top = getCurrentUserOffer(user, nugg);
@@ -98,8 +101,8 @@ function __offerMint(
     swap.leader = user.id;
     swap.nextDelegateType = 'Carry';
     swap.numOffers = 1;
-
-    swap.save();
+    swap.updatedAt = block.number;
+    swap.save(); // OK
 
     const offer = safeNewOfferHelper(swap, user);
 
@@ -114,8 +117,8 @@ function __offerMint(
     offer.claimer = user.id;
     offer.incrementX64 = makeIncrementX64(swap.top, swap.bottom);
     offer.epoch = proto.epoch;
-
-    offer.save();
+    offer.updatedAt = block.number;
+    offer.save(); // OK
 
     log.info('__offerMint end', []);
 }
@@ -146,20 +149,22 @@ function __offerCommit(
     swap.startingEpoch = proto.epoch;
     swap.endingEpoch = BigInt.fromString(epoch.id);
     // swap.id = nugg.id.concat('-').concat(epoch.id);
-    swap.save();
+    swap.updatedAt = block.number;
+    swap.save(); // OK
     log.info('__offerCommit start 10', []);
 
     const _s = epoch._activeSwaps as string[];
     // _s[_s.indexOf(prevswapId)] = swap.id;
     _s.push(swap.id as string);
     epoch._activeSwaps = _s as string[];
-    epoch.save();
+    epoch.updatedAt = block.number;
+    epoch.save(); // OK
 
-    safeSetNuggActiveSwap(nugg, swap);
+    safeSetNuggActiveSwap(nugg, swap, block);
     // makeIncrementX64 [lead:2760000000000000,last:2404156500000000], data_source: NuggftV1
     // 2760000000000000
     // 2404156500000000
-    const offer = safeLoadOfferHelperNull(swap, user, hash);
+    const offer = safeLoadOfferHelperNull(swap, user, hash, block);
     if (offer.eth.equals(bigi(0))) {
         swap.numOffers += 1;
     }
@@ -174,9 +179,10 @@ function __offerCommit(
     swap.leader = user.id;
     swap.startUnix = block.timestamp;
     swap.commitBlock = block.number;
-
-    offer.save();
-    swap.save();
+    swap.updatedAt = block.number;
+    offer.updatedAt = block.number;
+    offer.save(); // OK
+    swap.save(); // OK
 
     log.info('__offerCommit end', []);
 }
@@ -188,10 +194,11 @@ function __offerCarry(
     nugg: Nugg,
     swap: Swap,
     lead: BigInt,
+    block: ethereum.Block,
 ): void {
     log.info('__offerCarry start', []);
 
-    const offer = safeLoadOfferHelperNull(swap, user, hash);
+    const offer = safeLoadOfferHelperNull(swap, user, hash, block);
 
     if (offer.eth.equals(bigi(0))) {
         swap.numOffers += 1;
@@ -209,8 +216,10 @@ function __offerCarry(
 
     swap.leader = user.id;
 
-    offer.save();
-    swap.save();
+    swap.updatedAt = block.number;
+    offer.updatedAt = block.number;
+    offer.save(); // OK
+    swap.save(); // OK
 
     log.info('__offerCarry end', []);
 }
