@@ -417,6 +417,8 @@ type ItemOffer @entity {
 
     updatedAt: BigInt!
 
+    user: User!
+
     txhash: String!
     swap: ItemSwap!
     nugg: Nugg!

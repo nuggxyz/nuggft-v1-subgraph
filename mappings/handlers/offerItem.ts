@@ -157,6 +157,7 @@ function _offerCommitItem(
     itemoffer.incrementX64 = bigi(0);
     itemoffer.epoch = proto.epoch;
     itemoffer.updatedAt = block.number;
+    itemoffer.user = buyerNugg.user;
     itemoffer.save(); // OK
 
     itemswap.startUnix = block.timestamp;
@@ -202,7 +203,7 @@ function _offerOfferItem(
 
         itemoffer.epoch = proto.epoch;
         itemoffer.updatedAt = block.number;
-
+        itemoffer.user = buyerNugg.user;
         itemoffer.save(); // OK
 
         itemswap.numOffers += 1;

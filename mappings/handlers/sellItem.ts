@@ -104,6 +104,8 @@ export function _sellItem(
     itemoffer.incrementX64 = BigInt.fromString('0');
     itemoffer.epoch = proto.epoch;
     itemoffer.updatedAt = event.block.number;
+    itemoffer.user = sellingNugg.user;
+
     itemoffer.save(); // OK
     log.debug('handleEvent__SellItem a', []);
 
