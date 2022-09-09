@@ -74,7 +74,7 @@ export function safeRemoveNuggFromProtcol(nugg: Nugg, block: ethereum.Block): vo
     proto.save(); // OK
 
     store.remove('Nugg', nugg.id);
-
+    store.remove('NuggSnapshot', `${nugg.id}-0`);
     store.remove('Swap', `${nugg.id}-0`);
 }
 export function safeRemoveNuggItemFromProtcol(block: ethereum.Block): void {
