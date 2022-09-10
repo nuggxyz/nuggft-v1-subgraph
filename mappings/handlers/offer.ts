@@ -78,12 +78,6 @@ function __offerMint(
     block: ethereum.Block,
 ): void {
     log.info('__offerMint start', []);
-
-    // let proto = safeLoadProtocol();
-    log.info('__offerMint start 1', []);
-
-    log.info('__offerMint start 2', []);
-
     if (proto.epoch != nugg.id) {
         log.info('__offerMint start 3', []);
 
@@ -100,6 +94,8 @@ function __offerMint(
     swap.topUsd = wethToUsdc(swap.top);
     swap.leader = user.id;
     swap.nextDelegateType = 'Carry';
+    swap.startUnix = block.timestamp;
+    swap.commitBlock = block.number;
     swap.numOffers = 1;
     swap.updatedAt = block.number;
     swap.save(); // OK
